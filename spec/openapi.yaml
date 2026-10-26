@@ -1,0 +1,3072 @@
+openapi: 3.0.3
+info:
+  title: Boxing Training System API
+  version: 1.0.0
+  description: |
+    Контракт операцій інформаційної системи планування та формування тренувань з боксу.
+
+    Статус контракту (ADD-002 D-28, Q-API-01): OpenAPI-специфікація — проєктний контракт операцій
+    системи (API-first). У MVP не розгортається як мережевий сервер; mock запускається лише
+    локально для перевірки контракту. SRS §2.3, REQ-NF-001, REQ-NF-004 не змінюються.
+
+    Джерела: docs/api/resource-model.md; spec/srs.md (SRS v1.0); spec/addenda/ADD-001.md;
+    spec/addenda/ADD-002.md.
+
+    Загальні угоди (resource-model.md, розділ 4.0):
+    - час інтервалів, відпочинку та орієнтовна тривалість — цілі секунди (SRS §5.3, §5.4);
+      цільова тривалість — години й хвилини (SRS §5.5);
+    - значення ознак (рівень, інтенсивність, акцент, обладнання, засіб виконання) — ідентифікатори
+      з GET /dictionaries/{dictionaryName};
+    - API не повертає текстів для користувача: помилки й попередження мають машинний code,
+      тексти будує клієнт через мовний файл (REQ-NF-005, D-13);
+    - 400 BAD_REQUEST — некоректний JSON або неправильний JSON-тип поля; 422 — запит синтаксично
+      коректний, але порушує правила предметної області, зокрема обмеження minimum/maximum/minLength
+      цієї специфікації та неціле число там, де очікується ціле;
+    - успіх для записувальних операцій повертається лише після повного завершення запису
+      (REQ-NF-003, AC-NF-003);
+    - операції, яких немає в MVP (resource-model.md, розділ 3.2), у контракті не описано.
+servers:
+  - url: http://127.0.0.1:4010
+    description: Локальний mock для перевірки контракту (ADD-002 D-28). Не є мережевим сервером MVP.
+tags:
+  - name: exercises
+    description: Вправа (SRS §3, §4.3.1) — елемент єдиного каталогу.
+  - name: variants
+    description: Варіант виконання (SRS §4.3.2) — вкладений у вправу, без окремих URI; змінюється лише у складі вправи.
+  - name: dictionaries
+    description: Спільні довідники (SRS §4.4), лише читання.
+  - name: plan-generations
+    description: Формування плану за параметрами тренування (SRS §4.3.3, §5).
+  - name: open-plans
+    description: Відкритий план (ADD-002 D-29, D-30) — робоча копія плану.
+  - name: training-plans
+    description: План тренування (збережений) (SRS §3, §4.5; D-16).
+  - name: items
+    description: Елемент плану (SRS §4.3.4) — вкладений у відкритий план.
+  - name: current-session
+    description: Поточне заняття (SRS §3; REQ-F-012) — одиничний ресурс.
+  - name: executed-plan
+    description: Виконаний план (SRS §3; D-19) — вкладений у поточне заняття та завершене тренування.
+  - name: completed-trainings
+    description: Завершене тренування (SRS §4.3.5), лише читання після створення (D-20).
+  - name: analytics
+    description: Аналітика (ADD-002 D-29; REQ-F-015, REQ-F-016) — обчислювані показники.
+
+paths:
+  /exercises:
+    get:
+      tags: [exercises]
+      operationId: listExercises
+      summary: Перелік незастарілих вправ каталогу з фільтрами
+      description: |
+        Вимоги: REQ-F-001, REQ-F-003.
+
+        Кілька значень одного параметра поєднуються через «АБО», різні параметри — через «І» (D-09).
+        Якщо задано loadCharacter, вправи зі значенням not-applicable не повертаються; правило
+        «не застосовна» стосується лише цієї ознаки (ADD-002 D-34). executionMeans і equipment має
+        задовольняти один і той самий варіант вправи (AC-F-003). Застарілі вправи не повертаються
+        ніколи (D-06). Порожня вибірка — items: []. Порядок переліку не гарантується.
+      x-req-ids: [REQ-F-001, REQ-F-003]
+      x-trace:
+        ac: [AC-F-003]
+        bdd: [BDD-001, BDD-004]
+        decisions: [D-06, D-09, "ADD-002 D-34"]
+      parameters:
+        - $ref: '#/components/parameters/StageFilter'
+        - $ref: '#/components/parameters/TypeFilter'
+        - $ref: '#/components/parameters/LevelFilter'
+        - $ref: '#/components/parameters/IntensityFilter'
+        - $ref: '#/components/parameters/EmphasisFilter'
+        - $ref: '#/components/parameters/LoadCharacterFilter'
+        - $ref: '#/components/parameters/ExecutionMeansFilter'
+        - $ref: '#/components/parameters/EquipmentFilter'
+      responses:
+        '200':
+          description: Параметри коректні; порожня вибірка — items [] (AC-F-003).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExerciseList'
+              examples:
+                catalog:
+                  $ref: '#/components/examples/ExerciseListCatalog'
+                emptySelection:
+                  $ref: '#/components/examples/ExerciseListEmpty'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnknownDictionaryValue'
+    post:
+      tags: [exercises, variants]
+      operationId: createExercise
+      summary: Створення власної вправи
+      description: |
+        Вимоги: REQ-F-002, REQ-F-004.
+
+        Поля id, origin, deprecated встановлює система (origin = custom, deprecated = false) і в тілі
+        ігнорує. Будь-яка комбінація відеополів, зокрема жодного, допустима (D-07).
+      x-req-ids: [REQ-F-002, REQ-F-004]
+      x-trace:
+        ac: [AC-F-002, AC-F-004]
+        bdd: [BDD-002, BDD-024]
+        decisions: [D-05, D-07, D-08]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExerciseInput'
+            examples:
+              customWithoutVideo:
+                $ref: '#/components/examples/ExerciseInputCustomWithoutVideo'
+      responses:
+        '201':
+          description: Вправу збережено повністю.
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+              examples:
+                customCreated:
+                  $ref: '#/components/examples/ExerciseCustomRope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ExerciseValidationFailed'
+        '500':
+          $ref: '#/components/responses/StorageWriteFailed'
+
+  /exercises/{exerciseId}:
+    parameters:
+      - $ref: '#/components/parameters/ExerciseId'
+    get:
+      tags: [exercises]
+      operationId: getExercise
+      summary: Картка вправи, зокрема застарілої
+      description: |
+        Вимоги: REQ-F-002, REQ-F-004.
+
+        Повертає вправу, зокрема застарілу (deprecated: true): її картку можна відкрити з плану чи
+        історії (D-06). Відсутні посилання повертаються як null (AC-F-004, D-07).
+      x-req-ids: [REQ-F-002, REQ-F-004]
+      x-trace:
+        ac: [AC-F-004]
+        bdd: [BDD-005, BDD-024]
+        decisions: [D-06, D-07]
+      responses:
+        '200':
+          description: Вправа існує.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+              examples:
+                initialExercise:
+                  $ref: '#/components/examples/ExerciseInitialShadow'
+                initialCombination:
+                  $ref: '#/components/examples/ExerciseInitialBag'
+                initialRepetitions:
+                  $ref: '#/components/examples/ExerciseInitialPushUps'
+                initialCoolDown:
+                  $ref: '#/components/examples/ExerciseInitialStretch'
+                customWithoutVideo:
+                  $ref: '#/components/examples/ExerciseCustomRope'
+                deprecatedExercise:
+                  $ref: '#/components/examples/ExerciseDeprecated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [exercises, variants]
+      operationId: updateExercise
+      summary: Повне атомарне редагування власної вправи
+      description: |
+        Вимоги: REQ-F-002, REQ-F-004.
+
+        Повна заміна. Наявні варіанти передаються зі своїм id, і цей id зберігається (ADD-002 D-33);
+        варіант без id — новий; варіант, відсутній у тілі, вилучається зі складу вправи. Некоректні
+        зміни не зберігаються частково (AC-F-002). Збережені плани та історія не змінюються (§4.5).
+      x-req-ids: [REQ-F-002, REQ-F-004]
+      x-trace:
+        ac: [AC-F-002]
+        bdd: [BDD-002, BDD-003]
+        decisions: [D-05, D-08, "ADD-002 D-33"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExerciseInput'
+            examples:
+              changeDescription:
+                $ref: '#/components/examples/ExerciseInputRopeUpdated'
+      responses:
+        '200':
+          description: Зміни збережено повністю.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+              examples:
+                updated:
+                  $ref: '#/components/examples/ExerciseCustomRopeUpdated'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/InitialExerciseReadOnly'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ExerciseValidationFailed'
+        '500':
+          $ref: '#/components/responses/StorageWriteFailed'
+
+  /dictionaries/{dictionaryName}:
+    parameters:
+      - $ref: '#/components/parameters/DictionaryName'
+    get:
+      tags: [dictionaries]
+      operationId: getDictionary
+      summary: Значення спільного довідника
+      description: |
+        Вимоги: REQ-F-003, REQ-F-005.
+
+        Спільні локальні довідники SRS §4.4, лише для читання.
+      x-req-ids: [REQ-F-003, REQ-F-005]
+      x-trace:
+        ac: []
+        bdd: []
+        decisions: []
+      responses:
+        '200':
+          description: Довідник існує.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dictionary'
+              examples:
+                trainingLevels:
+                  $ref: '#/components/examples/DictionaryTrainingLevels'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /plan-generations:
+    post:
+      tags: [plan-generations, open-plans]
+      operationId: generatePlan
+      summary: Формування плану за параметрами тренування
+      description: |
+        Вимоги: REQ-F-005, REQ-F-006, REQ-F-007, REQ-F-008, REQ-F-009.
+
+        У разі успіху створює відкритий план із name: null і sourcePlanId: null (ADD-002 D-30, D-32).
+        Гарантії успішної відповіді: три непорожні етапи у фіксованому порядку; кожен варіант
+        задовольняє правила §5.1, не застарілий і включений не більше одного разу; параметри в межах
+        [min; max] варіанта; 0,9 × D ≤ estimatedDurationSeconds ≤ 1,1 × D за точними секундами.
+        План автоматично не зберігається (D-17). Поточне заняття формуванню не заважає.
+
+        Неуспішні результати розрізняються кодом стану й code (AC-F-009 п. 5):
+        422 VALIDATION_FAILED — параметри не пройшли перевірку до початку пошуку;
+        422 PLAN_GENERATION_IMPOSSIBLE — доведена неможливість;
+        503 GENERATION_SEARCH_LIMIT_REACHED — технічний ліміт пошуку (≥ 3,000 с), не доказ відсутності плану;
+        500 GENERATION_FAILED — інша технічна помилка. У жодному неуспішному випадку відкритий план
+        не створюється.
+      x-req-ids: [REQ-F-005, REQ-F-006, REQ-F-007, REQ-F-008, REQ-F-009]
+      x-trace:
+        ac: [AC-F-005, AC-F-006, AC-F-007, AC-F-008, AC-F-009]
+        bdd: [BDD-006, BDD-007, BDD-010, BDD-011, BDD-012]
+        decisions: [D-06, D-10, D-11, D-12, D-13, D-14, D-25, "ADD-002 D-30", "ADD-002 D-31", "ADD-002 D-32"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanGenerationRequest'
+            examples:
+              target1h30:
+                $ref: '#/components/examples/PlanGenerationRequest1h30'
+      responses:
+        '201':
+          description: Знайдено допустимий план; створено відкритий план.
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPlan'
+              examples:
+                generated:
+                  $ref: '#/components/examples/OpenPlanGenerated'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/PlanGenerationUnprocessable'
+        '500':
+          $ref: '#/components/responses/GenerationFailed'
+        '503':
+          $ref: '#/components/responses/GenerationSearchLimitReached'
+
+  /open-plans:
+    post:
+      tags: [open-plans]
+      operationId: openSavedPlan
+      summary: Відкриття збереженого плану для редагування або запуску
+      description: |
+        Вимоги: REQ-F-011, REQ-F-012.
+
+        Створює відкритий план — копію збереженого плану з його назвою та sourcePlanId. Елементи із
+        застарілими вправами залишаються (D-06). API не блокує відкриття плану під час поточного
+        заняття: заборона відкрити інше тренування — поведінка інтерфейсу (AC-F-012 п. 5).
+      x-req-ids: [REQ-F-011, REQ-F-012]
+      x-trace:
+        ac: [AC-F-011]
+        bdd: [BDD-015]
+        decisions: [D-06, D-16, D-17, "ADD-002 D-30"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenSavedPlanRequest'
+            examples:
+              openPlan1:
+                $ref: '#/components/examples/OpenSavedPlanRequestPlan1'
+      responses:
+        '201':
+          description: План відкрито.
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPlan'
+              examples:
+                openedFromSaved:
+                  $ref: '#/components/examples/OpenPlanFromSaved'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/SavedPlanNotFound'
+
+  /open-plans/{openPlanId}:
+    parameters:
+      - $ref: '#/components/parameters/OpenPlanId'
+    get:
+      tags: [open-plans]
+      operationId: getOpenPlan
+      summary: Відкритий план з орієнтовною тривалістю та попередженнями
+      description: |
+        Вимоги: REQ-F-007, REQ-F-010.
+
+        Незбережений відкритий план після перезапуску застосунку відсутній — 404 (ADD-002 D-30).
+      x-req-ids: [REQ-F-007, REQ-F-010]
+      x-trace:
+        ac: [AC-F-007, AC-F-010]
+        bdd: []
+        decisions: ["ADD-002 D-30"]
+      responses:
+        '200':
+          description: Відкритий план з актуальними estimatedDurationSeconds і warnings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPlan'
+              examples:
+                generated:
+                  $ref: '#/components/examples/OpenPlanGenerated'
+                openedFromSaved:
+                  $ref: '#/components/examples/OpenPlanFromSaved'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [open-plans]
+      operationId: renameOpenPlan
+      summary: Зміна назви плану
+      description: |
+        Вимоги: REQ-F-011.
+
+        Порожня назва допустима — під час збереження її замінить назва за замовчуванням (D-16).
+        Назву можна задати й сформованому незбереженому плану, у якого name: null (ADD-002 D-32).
+      x-req-ids: [REQ-F-011]
+      x-trace:
+        ac: []
+        bdd: []
+        decisions: [D-16, "ADD-002 D-32"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenPlanPatchRequest'
+            examples:
+              rename:
+                $ref: '#/components/examples/OpenPlanPatchRequestRename'
+              emptyName:
+                $ref: '#/components/examples/OpenPlanPatchRequestEmpty'
+      responses:
+        '200':
+          description: Назву змінено.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPlan'
+              examples:
+                renamed:
+                  $ref: '#/components/examples/OpenPlanRenamed'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /open-plans/{openPlanId}/items:
+    parameters:
+      - $ref: '#/components/parameters/OpenPlanId'
+    post:
+      tags: [open-plans, items]
+      operationId: addOpenPlanItem
+      summary: Додавання елемента плану
+      description: |
+        Вимоги: REQ-F-010.
+
+        stage — будь-який етап, незалежно від allowedStages вправи. Якщо position відсутній — у кінець
+        етапу. Повторне включення того самого варіанта дозволене (D-15). Застарілу вправу додати не
+        можна (D-06). repetitionTimeSeconds не приймається — 422 VALIDATION_FAILED (D-08).
+      x-req-ids: [REQ-F-010]
+      x-trace:
+        ac: [AC-F-010]
+        bdd: [BDD-013, BDD-032]
+        decisions: [D-06, D-08, D-14, D-15, "ADD-002 D-33"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanItemCreateRequest'
+            examples:
+              addToCoolDown:
+                $ref: '#/components/examples/PlanItemCreateRequestShadowCoolDown'
+      responses:
+        '201':
+          description: Елемент додано; повертається оновлений відкритий план.
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPlan'
+              examples:
+                itemAdded:
+                  $ref: '#/components/examples/OpenPlanItemAdded'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/PlanItemUnprocessable'
+
+  /open-plans/{openPlanId}/items/{itemId}:
+    parameters:
+      - $ref: '#/components/parameters/OpenPlanId'
+      - $ref: '#/components/parameters/ItemId'
+    put:
+      tags: [open-plans, items]
+      operationId: replaceOpenPlanItem
+      summary: Заміна елемента плану
+      description: |
+        Вимоги: REQ-F-010.
+
+        Етап і позиція зберігаються. Вибрати можна будь-яку незастарілу вправу; якщо вона не
+        відповідає вихідним параметрам формування, план отримує попередження FILTER_MISMATCH
+        (AC-F-010). repetitionTimeSeconds не приймається — 422 VALIDATION_FAILED (D-08).
+      x-req-ids: [REQ-F-010]
+      x-trace:
+        ac: [AC-F-010]
+        bdd: []
+        decisions: [D-06, D-08, D-15, "ADD-002 D-33"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanItemReplaceRequest'
+            examples:
+              replaceWithRope:
+                $ref: '#/components/examples/PlanItemReplaceRequestRope'
+      responses:
+        '200':
+          description: Елемент замінено.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPlan'
+              examples:
+                itemReplaced:
+                  $ref: '#/components/examples/OpenPlanItemReplaced'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/PlanItemUnprocessable'
+    patch:
+      tags: [open-plans, items]
+      operationId: updateOpenPlanItem
+      summary: Зміна параметрів виконання, порядку в межах етапу, перенесення між етапами
+      description: |
+        Вимоги: REQ-F-010.
+
+        Принаймні одне поле обов'язкове. Перенесення в будь-який етап дозволене; класифікація вправи
+        в каталозі не змінюється; порядок самих етапів змінити неможливо. Параметри інших елементів
+        не змінюються (BDD-013). Спроба змінити repetitionTimeSeconds — 422 VALIDATION_FAILED (D-08).
+      x-req-ids: [REQ-F-010]
+      x-trace:
+        ac: [AC-F-010]
+        bdd: [BDD-013, BDD-023, BDD-032]
+        decisions: [D-08]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanItemPatchRequest'
+            examples:
+              changeRounds:
+                $ref: '#/components/examples/PlanItemPatchRequestRounds'
+              moveToWarmUp:
+                $ref: '#/components/examples/PlanItemPatchRequestMove'
+      responses:
+        '200':
+          description: Зміну застосовано; орієнтовну тривалість перераховано.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPlan'
+              examples:
+                roundsChanged:
+                  $ref: '#/components/examples/OpenPlanItemEdited'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/PlanItemPatchInvalid'
+    delete:
+      tags: [open-plans, items]
+      operationId: deleteOpenPlanItem
+      summary: Видалення елемента плану
+      description: |
+        Вимоги: REQ-F-010.
+
+        Спорожнення етапу дає попередження STAGE_EMPTY. Повне спорожнення відкритого плану
+        допустиме, але такий план не можна зберегти (saveNewTrainingPlan, overwriteTrainingPlan).
+      x-req-ids: [REQ-F-010]
+      x-trace:
+        ac: [AC-F-010]
+        bdd: [BDD-033]
+        decisions: []
+      responses:
+        '200':
+          description: Елемент видалено; повертається оновлений відкритий план.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenPlan'
+              examples:
+                warmUpEmptied:
+                  $ref: '#/components/examples/OpenPlanItemRemoved'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /training-plans:
+    get:
+      tags: [training-plans]
+      operationId: listTrainingPlans
+      summary: Перелік збережених планів
+      description: |
+        Вимоги: REQ-F-011.
+
+        Упорядковано за modifiedAt від новіших до старіших (D-16). Порожній перелік — items: [].
+      x-req-ids: [REQ-F-011]
+      x-trace:
+        ac: []
+        bdd: []
+        decisions: [D-16]
+      responses:
+        '200':
+          description: Перелік збережених планів.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingPlanList'
+              examples:
+                plans:
+                  $ref: '#/components/examples/TrainingPlanListTwo'
+                empty:
+                  $ref: '#/components/examples/TrainingPlanListEmpty'
+    post:
+      tags: [training-plans]
+      operationId: saveNewTrainingPlan
+      summary: Перше збереження відкритого плану, сформованого генератором
+      description: |
+        Вимоги: REQ-F-011, REQ-NF-002, REQ-NF-003.
+
+        Склад плану береться з відкритого плану; довільний склад у тілі не приймається (D-14).
+        Порожня назва або null замінюється назвою за замовчуванням «План від ДД.ММ.РРРР ГГ:ХХ», де
+        дата й час — момент збереження (D-16, ADD-002 D-32). Попередження не блокують збереження
+        (BDD-014). Після успіху sourcePlanId відкритого плану дорівнює новому planId.
+      x-req-ids: [REQ-F-011, REQ-NF-002, REQ-NF-003]
+      x-trace:
+        ac: [AC-F-011, AC-NF-003]
+        bdd: [BDD-014, BDD-023, BDD-033]
+        decisions: [D-14, D-16, "ADD-002 D-32"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavePlanRequest'
+            examples:
+              saveGenerated:
+                $ref: '#/components/examples/SavePlanRequestOpen1'
+      responses:
+        '201':
+          description: План збережено повністю.
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedPlan'
+              examples:
+                saved:
+                  $ref: '#/components/examples/SavedPlanPlan1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/OpenPlanAlreadySaved'
+        '422':
+          $ref: '#/components/responses/OpenPlanUnprocessable'
+        '500':
+          $ref: '#/components/responses/StorageWriteFailed'
+
+  /training-plans/{planId}:
+    parameters:
+      - $ref: '#/components/parameters/PlanId'
+    get:
+      tags: [training-plans]
+      operationId: getTrainingPlan
+      summary: Перегляд збереженого плану
+      description: |
+        Вимоги: REQ-F-011.
+
+        Ті самі етапи, порядок, варіанти й параметри, що були збережені; зміни каталогу план не
+        переписують (AC-F-011).
+      x-req-ids: [REQ-F-011]
+      x-trace:
+        ac: [AC-F-011]
+        bdd: [BDD-015]
+        decisions: [D-06, D-16]
+      responses:
+        '200':
+          description: Збережений план.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedPlan'
+              examples:
+                saved:
+                  $ref: '#/components/examples/SavedPlanPlan1'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [training-plans]
+      operationId: overwriteTrainingPlan
+      summary: Збереження відкритого плану з перезаписом збереженого
+      description: |
+        Вимоги: REQ-F-011, REQ-NF-003.
+
+        У відкритого плану sourcePlanId має дорівнювати planId. Порожня назва замінюється назвою за
+        замовчуванням із датою й часом моменту збереження (D-16, ADD-002 D-32). Якщо збережений план
+        видалили після відкриття — 404; «Зберегти як новий» поза MVP (D-16).
+      x-req-ids: [REQ-F-011, REQ-NF-003]
+      x-trace:
+        ac: [AC-F-011, AC-NF-003]
+        bdd: [BDD-014, BDD-033]
+        decisions: [D-16, "ADD-002 D-32"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavePlanRequest'
+            examples:
+              overwriteFromOpen2:
+                $ref: '#/components/examples/SavePlanRequestOpen2'
+      responses:
+        '200':
+          description: План перезаписано повністю; попередження не блокують збереження.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedPlan'
+              examples:
+                overwrittenOutOfTolerance:
+                  $ref: '#/components/examples/SavedPlanPlan1Overwritten'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/OpenPlanSourceMismatch'
+        '422':
+          $ref: '#/components/responses/OpenPlanUnprocessable'
+        '500':
+          $ref: '#/components/responses/StorageWriteFailed'
+    delete:
+      tags: [training-plans]
+      operationId: deleteTrainingPlan
+      summary: Видалення збереженого плану
+      description: |
+        Вимоги: REQ-F-011.
+
+        Підтвердження показує лише клієнт до запиту; ознаки підтвердження в API немає. Історія й
+        поточне заняття не змінюються, бо містять власні копії (§4.5).
+      x-req-ids: [REQ-F-011]
+      x-trace:
+        ac: []
+        bdd: []
+        decisions: [D-16]
+      responses:
+        '204':
+          description: План видалено. Тіла немає, тому приклад відсутній.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/StorageWriteFailed'
+
+  /current-session:
+    post:
+      tags: [current-session, executed-plan]
+      operationId: startCurrentSession
+      summary: Початок тренування з відкритого плану
+      description: |
+        Вимоги: REQ-F-012.
+
+        Можна почати з будь-якого відкритого плану, збереженого чи ні; план автоматично не
+        зберігається (D-17). startedAt і localStartDate фіксуються в момент обробки запиту;
+        executedPlan — робоча копія відкритого плану (AC-F-012). Якщо поточне заняття вже існує —
+        409 SESSION_ALREADY_ACTIVE, друге не створюється, дані наявного не змінюються (AC-F-012 п. 4).
+      x-req-ids: [REQ-F-012]
+      x-trace:
+        ac: [AC-F-012]
+        bdd: [BDD-016, BDD-025, BDD-026]
+        decisions: [D-17, D-18]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartSessionRequest'
+            examples:
+              startFromOpen1:
+                $ref: '#/components/examples/StartSessionRequestOpen1'
+      responses:
+        '201':
+          description: Заняття створено.
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentSession'
+              examples:
+                started:
+                  $ref: '#/components/examples/CurrentSessionStarted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/SessionAlreadyActive'
+        '422':
+          $ref: '#/components/responses/OpenPlanUnprocessable'
+    get:
+      tags: [current-session, executed-plan]
+      operationId: getCurrentSession
+      summary: Поточне заняття з робочою копією виконаного плану
+      description: |
+        Вимоги: REQ-F-012.
+
+        Після перезапуску чи вивантаження застосунку поточного заняття немає — 404 NO_CURRENT_SESSION (D-18).
+      x-req-ids: [REQ-F-012]
+      x-trace:
+        ac: []
+        bdd: []
+        decisions: [D-18]
+      responses:
+        '200':
+          description: Поточне заняття існує.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentSession'
+              examples:
+                started:
+                  $ref: '#/components/examples/CurrentSessionStarted'
+        '404':
+          $ref: '#/components/responses/NoCurrentSession'
+    delete:
+      tags: [current-session]
+      operationId: abortCurrentSession
+      summary: Припинення заняття без збереження
+      description: |
+        Вимоги: REQ-F-013.
+
+        Клієнт попередив про втрату даних і отримав підтвердження; ознаки підтвердження в API немає.
+        Заняття закривається, незбережені зміни відкидаються; запис історії не створюється; аналітика
+        й збережений план не змінюються (AC-F-013). Дозволено й для порожнього виконаного плану.
+      x-req-ids: [REQ-F-013]
+      x-trace:
+        ac: [AC-F-013]
+        bdd: [BDD-026, BDD-027, BDD-028]
+        decisions: []
+      responses:
+        '204':
+          description: Заняття припинено без збереження. Тіла немає, тому приклад відсутній.
+        '404':
+          $ref: '#/components/responses/NoCurrentSession'
+
+  /current-session/executed-plan/items/{itemId}:
+    parameters:
+      - $ref: '#/components/parameters/ItemId'
+    patch:
+      tags: [current-session, executed-plan]
+      operationId: updateExecutedPlanItem
+      summary: Уточнення фактичних параметрів виконаної вправи
+      description: |
+        Вимоги: REQ-F-013.
+
+        Межі варіанта [min; max] не застосовуються: значення понад максимум допустиме (D-19).
+        Кількість, повторення й інтервал — цілі ≥ 1, відпочинок — ціле ≥ 0. Поля поза переліком D-19
+        (зокрема stage, position, repetitionTimeSeconds) — 422 VALIDATION_FAILED.
+      x-req-ids: [REQ-F-013]
+      x-trace:
+        ac: [AC-F-013]
+        bdd: [BDD-016]
+        decisions: [D-19]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecutedPlanItemPatchRequest'
+            examples:
+              setsAboveVariantMax:
+                $ref: '#/components/examples/ExecutedPlanItemPatchRequestSets'
+      responses:
+        '200':
+          description: Значення прийнято; повертається поточне заняття.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentSession'
+              examples:
+                itemUpdated:
+                  $ref: '#/components/examples/CurrentSessionItemUpdated'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/SessionOrItemNotFound'
+        '422':
+          $ref: '#/components/responses/ExecutedPlanItemInvalid'
+    delete:
+      tags: [current-session, executed-plan]
+      operationId: deleteExecutedPlanItem
+      summary: Видалення вправи з виконаного плану
+      description: |
+        Вимоги: REQ-F-013.
+
+        Щоб не враховувати вправу, її видаляють з виконаного плану (D-19). Повне спорожнення
+        виконаного плану допустиме (BDD-028).
+      x-req-ids: [REQ-F-013]
+      x-trace:
+        ac: [AC-F-013]
+        bdd: [BDD-028]
+        decisions: [D-19]
+      responses:
+        '200':
+          description: Вправу видалено; повертається поточне заняття.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentSession'
+              examples:
+                itemRemoved:
+                  $ref: '#/components/examples/CurrentSessionItemRemoved'
+        '404':
+          $ref: '#/components/responses/SessionOrItemNotFound'
+
+  /completed-trainings:
+    post:
+      tags: [completed-trainings, current-session]
+      operationId: completeTraining
+      summary: Завершення поточного заняття зі збереженням
+      description: |
+        Вимоги: REQ-F-013, REQ-NF-002, REQ-NF-003.
+
+        Завершується поточне заняття; ключа ідемпотентності немає. Після успішного завершення
+        заняття не є поточним, тому повторний запит дає 409 NO_CURRENT_SESSION і дубліката немає
+        (AC-F-013). Завершення не залежить від часу, що минув від початку (BDD-029). Якщо виконаний
+        план порожній або запис не завершився, заняття залишається поточним.
+      x-req-ids: [REQ-F-013, REQ-NF-002, REQ-NF-003]
+      x-trace:
+        ac: [AC-F-013, AC-NF-003]
+        bdd: [BDD-016, BDD-021, BDD-028, BDD-029]
+        decisions: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteTrainingRequest'
+            examples:
+              withNote:
+                $ref: '#/components/examples/CompleteTrainingRequestWithNote'
+              withoutNote:
+                $ref: '#/components/examples/CompleteTrainingRequestWithoutNote'
+      responses:
+        '201':
+          description: Запис створено; заняття більше не поточне.
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletedTraining'
+              examples:
+                completedWithNote:
+                  $ref: '#/components/examples/CompletedTrainingWithNote'
+                completedWithoutNote:
+                  $ref: '#/components/examples/CompletedTrainingWithoutNote'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/NoCurrentSessionConflict'
+        '422':
+          $ref: '#/components/responses/ExecutedPlanEmpty'
+        '500':
+          $ref: '#/components/responses/StorageWriteFailed'
+    get:
+      tags: [completed-trainings]
+      operationId: listCompletedTrainings
+      summary: Історія завершених тренувань
+      description: |
+        Вимоги: REQ-F-014.
+
+        Упорядковано за startedAt від новіших до старіших (AC-F-014). Порожня історія — items: [].
+        Історія лише для читання (D-20).
+      x-req-ids: [REQ-F-014]
+      x-trace:
+        ac: [AC-F-014]
+        bdd: [BDD-020]
+        decisions: [D-20]
+      responses:
+        '200':
+          description: Перелік завершених тренувань.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletedTrainingList'
+              examples:
+                history:
+                  $ref: '#/components/examples/CompletedTrainingListTwo'
+                emptyHistory:
+                  $ref: '#/components/examples/CompletedTrainingListEmpty'
+
+  /completed-trainings/{trainingId}:
+    parameters:
+      - $ref: '#/components/parameters/TrainingId'
+    get:
+      tags: [completed-trainings, executed-plan]
+      operationId: getCompletedTraining
+      summary: Деталі завершеного тренування
+      description: |
+        Вимоги: REQ-F-014.
+
+        Копії назв, варіантів і фактичних параметрів; зміни каталогу запис не змінюють (BDD-017).
+      x-req-ids: [REQ-F-014]
+      x-trace:
+        ac: [AC-F-014]
+        bdd: [BDD-016, BDD-017]
+        decisions: [D-06, D-20]
+      responses:
+        '200':
+          description: Завершене тренування.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletedTraining'
+              examples:
+                completedWithNote:
+                  $ref: '#/components/examples/CompletedTrainingWithNote'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /analytics:
+    get:
+      tags: [analytics]
+      operationId: getAnalytics
+      summary: Показники завершених тренувань за період
+      description: |
+        Вимоги: REQ-F-015, REQ-F-016.
+
+        from і to задаються обидва або жоден (ADD-002 D-35). Якщо обидва відсутні — to = сьогодні
+        (локальна дата пристрою), from = to − 29 днів (AC-F-015). dailyCounts містить кожен день
+        періоду, зокрема з count 0 (D-22); сума count дорівнює completedTrainingCount.
+        exerciseFrequencies групується за exerciseId; назва — з копії в найновішому тренуванні
+        періоду (D-22); порядок елементів не визначається. Поточне заняття не враховується (BDD-019).
+        Довжина періоду не обмежена (D-21).
+      x-req-ids: [REQ-F-015, REQ-F-016]
+      x-trace:
+        ac: [AC-F-015, AC-F-016]
+        bdd: [BDD-018, BDD-019, BDD-020, BDD-026, BDD-030]
+        decisions: [D-21, D-22, "ADD-002 D-35"]
+      parameters:
+        - $ref: '#/components/parameters/PeriodFrom'
+        - $ref: '#/components/parameters/PeriodTo'
+      responses:
+        '200':
+          description: Період коректний, зокрема без даних.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analytics'
+              examples:
+                june2026:
+                  $ref: '#/components/examples/AnalyticsJune2026'
+                noData:
+                  $ref: '#/components/examples/AnalyticsNoData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/AnalyticsPeriodInvalid'
+
+components:
+  headers:
+    Location:
+      description: URI створеного ресурсу.
+      schema:
+        type: string
+        format: uri-reference
+      example: /open-plans/open-1
+
+  parameters:
+    ExerciseId:
+      name: exerciseId
+      in: path
+      required: true
+      description: Стабільний ідентифікатор вправи (SRS §4.3.1).
+      schema:
+        type: string
+        minLength: 1
+      example: ex-1
+    OpenPlanId:
+      name: openPlanId
+      in: path
+      required: true
+      description: Ідентифікатор відкритого плану.
+      schema:
+        type: string
+        minLength: 1
+      example: open-1
+    ItemId:
+      name: itemId
+      in: path
+      required: true
+      description: Ідентифікатор елемента плану.
+      schema:
+        type: string
+        minLength: 1
+      example: item-3
+    PlanId:
+      name: planId
+      in: path
+      required: true
+      description: Ідентифікатор збереженого плану.
+      schema:
+        type: string
+        minLength: 1
+      example: plan-1
+    TrainingId:
+      name: trainingId
+      in: path
+      required: true
+      description: Унікальний ідентифікатор завершеного тренування (SRS §4.3.5).
+      schema:
+        type: string
+        minLength: 1
+      example: training-1
+    DictionaryName:
+      name: dictionaryName
+      in: path
+      required: true
+      description: Назва спільного довідника (SRS §4.4).
+      schema:
+        $ref: '#/components/schemas/DictionaryName'
+    StageFilter:
+      name: stage
+      in: query
+      required: false
+      description: Етап; кілька значень — повторенням параметра, логіка «АБО» (D-09).
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/Stage'
+    TypeFilter:
+      name: type
+      in: query
+      required: false
+      description: Тип вправи; кілька значень — повторенням параметра, логіка «АБО» (D-09).
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/ExerciseType'
+    LevelFilter:
+      name: level
+      in: query
+      required: false
+      description: Ідентифікатор рівня підготовки з довідника training-levels.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    IntensityFilter:
+      name: intensity
+      in: query
+      required: false
+      description: Ідентифікатор інтенсивності з довідника intensities.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    EmphasisFilter:
+      name: emphasis
+      in: query
+      required: false
+      description: Ідентифікатор акценту з довідника emphases.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    LoadCharacterFilter:
+      name: loadCharacter
+      in: query
+      required: false
+      description: Характер навантаження; якщо задано, вправи з not-applicable не повертаються (D-09, ADD-002 D-34).
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/LoadCharacter'
+    ExecutionMeansFilter:
+      name: executionMeans
+      in: query
+      required: false
+      description: Засіб виконання з довідника execution-means; разом з equipment задовольняється одним варіантом (AC-F-003).
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    EquipmentFilter:
+      name: equipment
+      in: query
+      required: false
+      description: Обладнання з довідника equipment; означає «варіант використовує це обладнання» (AC-F-003).
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    PeriodFrom:
+      name: from
+      in: query
+      required: false
+      description: Початкова дата періоду включно; задається разом із to або не задається (ADD-002 D-35).
+      schema:
+        type: string
+        format: date
+      example: '2026-06-01'
+    PeriodTo:
+      name: to
+      in: query
+      required: false
+      description: Кінцева дата періоду включно, не пізніше локальної дати пристрою (D-21); задається разом із from (ADD-002 D-35).
+      schema:
+        type: string
+        format: date
+      example: '2026-06-30'
+
+  schemas:
+    Stage:
+      type: string
+      description: Етап тренування; порядок фіксований — warm-up, main, cool-down (SRS §5.2).
+      enum: [warm-up, main, cool-down]
+    ExerciseType:
+      type: string
+      description: Тип вправи — проста вправа, окремий удар, комбінація (SRS §3).
+      enum: [simple, single-punch, combination]
+    Origin:
+      type: string
+      description: Походження вправи — початкова або користувацька (SRS §4.3.1).
+      enum: [initial, custom]
+    LoadCharacter:
+      type: string
+      description: Характер навантаження — одне значення на вправу (ADD-002 D-34). general-physical — ЗФП, special-physical — СФП.
+      enum: [general-physical, special-physical, not-applicable]
+    Mode:
+      type: string
+      description: Режим виконання — за часом або за повтореннями (SRS §4.3.2).
+      enum: [time, repetitions]
+    DictionaryName:
+      type: string
+      description: Назва спільного довідника (SRS §4.4).
+      enum: [training-levels, intensities, emphases, equipment, execution-means]
+
+    CountRange:
+      type: object
+      description: Діапазон кількості (раунди, підходи, повторення) — додатні цілі; min ≤ recommended ≤ max (SRS §5.3, D-08).
+      required: [min, max, recommended]
+      properties:
+        min:
+          type: integer
+          minimum: 1
+        max:
+          type: integer
+          minimum: 1
+        recommended:
+          type: integer
+          minimum: 1
+    IntervalRange:
+      type: object
+      description: Діапазон тривалості інтервалу в секундах — додатні цілі; min ≤ recommended ≤ max (SRS §5.3, D-08).
+      required: [min, max, recommended]
+      properties:
+        min:
+          type: integer
+          minimum: 1
+        max:
+          type: integer
+          minimum: 1
+        recommended:
+          type: integer
+          minimum: 1
+    RestRange:
+      type: object
+      description: Діапазон відпочинку в секундах — невід'ємні цілі; min ≤ recommended ≤ max (SRS §5.3, D-08).
+      required: [min, max, recommended]
+      properties:
+        min:
+          type: integer
+          minimum: 0
+        max:
+          type: integer
+          minimum: 0
+        recommended:
+          type: integer
+          minimum: 0
+    TimeVariantFields:
+      type: object
+      description: Поля варіанта в режимі за часом (D-08).
+      required: [executionMeans, equipment, mode, rounds, intervalSeconds, restSeconds]
+      properties:
+        executionMeans:
+          type: string
+          description: Ідентифікатор засобу виконання з довідника execution-means.
+        equipment:
+          type: array
+          description: Ідентифікатори необхідного обладнання; порожній — без обладнання.
+          items:
+            type: string
+        mode:
+          allOf:
+            - $ref: '#/components/schemas/Mode'
+          enum: [time]
+        rounds:
+          $ref: '#/components/schemas/CountRange'
+        intervalSeconds:
+          $ref: '#/components/schemas/IntervalRange'
+        restSeconds:
+          $ref: '#/components/schemas/RestRange'
+    RepetitionsVariantFields:
+      type: object
+      description: Поля варіанта в режимі за повтореннями (D-08); repetitionTimeSeconds (e) фіксований для варіанта.
+      required: [executionMeans, equipment, mode, sets, repetitions, restSeconds, repetitionTimeSeconds]
+      properties:
+        executionMeans:
+          type: string
+          description: Ідентифікатор засобу виконання з довідника execution-means.
+        equipment:
+          type: array
+          description: Ідентифікатори необхідного обладнання; порожній — без обладнання.
+          items:
+            type: string
+        mode:
+          allOf:
+            - $ref: '#/components/schemas/Mode'
+          enum: [repetitions]
+        sets:
+          $ref: '#/components/schemas/CountRange'
+        repetitions:
+          $ref: '#/components/schemas/CountRange'
+        restSeconds:
+          $ref: '#/components/schemas/RestRange'
+        repetitionTimeSeconds:
+          type: integer
+          minimum: 1
+          description: Орієнтовний час одного повторення в секундах (SRS §5.3).
+    TimeVariant:
+      allOf:
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: Стабільний ідентифікатор варіанта в межах вправи (ADD-002 D-33).
+        - $ref: '#/components/schemas/TimeVariantFields'
+    RepetitionsVariant:
+      allOf:
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: Стабільний ідентифікатор варіанта в межах вправи (ADD-002 D-33).
+        - $ref: '#/components/schemas/RepetitionsVariantFields'
+    Variant:
+      description: Варіант виконання (SRS §4.3.2) зі стабільним id (ADD-002 D-33).
+      oneOf:
+        - $ref: '#/components/schemas/TimeVariant'
+        - $ref: '#/components/schemas/RepetitionsVariant'
+      discriminator:
+        propertyName: mode
+        mapping:
+          time: '#/components/schemas/TimeVariant'
+          repetitions: '#/components/schemas/RepetitionsVariant'
+    TimeVariantInput:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              description: Наявний варіант передається зі своїм id; без id — новий варіант (ADD-002 D-33).
+        - $ref: '#/components/schemas/TimeVariantFields'
+    RepetitionsVariantInput:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              description: Наявний варіант передається зі своїм id; без id — новий варіант (ADD-002 D-33).
+        - $ref: '#/components/schemas/RepetitionsVariantFields'
+    VariantInput:
+      description: Варіант виконання в тілі запиту створення чи редагування вправи.
+      oneOf:
+        - $ref: '#/components/schemas/TimeVariantInput'
+        - $ref: '#/components/schemas/RepetitionsVariantInput'
+      discriminator:
+        propertyName: mode
+        mapping:
+          time: '#/components/schemas/TimeVariantInput'
+          repetitions: '#/components/schemas/RepetitionsVariantInput'
+
+    Exercise:
+      type: object
+      description: Вправа каталогу (SRS §4.3.1).
+      required: [id, name, description, origin, type, allowedStages, allowedLevels, allowedIntensities, emphases, loadCharacter, variants, videoUrl, videoAuthorName, authorPageUrl, deprecated]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        origin:
+          $ref: '#/components/schemas/Origin'
+        type:
+          $ref: '#/components/schemas/ExerciseType'
+        allowedStages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stage'
+        allowedLevels:
+          type: array
+          items:
+            type: string
+        allowedIntensities:
+          type: array
+          items:
+            type: string
+        emphases:
+          type: array
+          items:
+            type: string
+        loadCharacter:
+          $ref: '#/components/schemas/LoadCharacter'
+        variants:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Variant'
+        videoUrl:
+          type: string
+          format: uri
+          pattern: '^https://'
+          nullable: true
+        videoAuthorName:
+          type: string
+          nullable: true
+        authorPageUrl:
+          type: string
+          format: uri
+          pattern: '^https://'
+          nullable: true
+        deprecated:
+          type: boolean
+          description: Застаріла вправа (D-06).
+    ExerciseInput:
+      type: object
+      description: |
+        Тіло створення чи повного редагування власної вправи. id, origin, deprecated встановлює система й
+        у тілі ігнорує. Порушення обмежень — 422 VALIDATION_FAILED (AC-F-002).
+      required: [name, description, type, allowedStages, allowedLevels, allowedIntensities, emphases, loadCharacter, variants]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        type:
+          $ref: '#/components/schemas/ExerciseType'
+        allowedStages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stage'
+        allowedLevels:
+          type: array
+          items:
+            type: string
+        allowedIntensities:
+          type: array
+          items:
+            type: string
+        emphases:
+          type: array
+          items:
+            type: string
+        loadCharacter:
+          $ref: '#/components/schemas/LoadCharacter'
+        variants:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/VariantInput'
+        videoUrl:
+          type: string
+          format: uri
+          pattern: '^https://'
+          nullable: true
+        videoAuthorName:
+          type: string
+          nullable: true
+        authorPageUrl:
+          type: string
+          format: uri
+          pattern: '^https://'
+          nullable: true
+    ExerciseListItem:
+      type: object
+      required: [id, name, type, origin]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/ExerciseType'
+        origin:
+          $ref: '#/components/schemas/Origin'
+    ExerciseList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExerciseListItem'
+
+    DictionaryValue:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    Dictionary:
+      type: object
+      required: [dictionary, values]
+      properties:
+        dictionary:
+          $ref: '#/components/schemas/DictionaryName'
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/DictionaryValue'
+
+    TargetDuration:
+      type: object
+      description: Цільова тривалість (SRS §5.5); загальна тривалість hours × 3600 + minutes × 60 має бути більшою за нуль.
+      required: [hours, minutes]
+      properties:
+        hours:
+          type: integer
+          minimum: 0
+        minutes:
+          type: integer
+          minimum: 0
+          maximum: 59
+    GenerationParameters:
+      type: object
+      description: П'ять параметрів REQ-F-005 (ADD-002 D-31).
+      required: [targetDuration, level, emphasis, availableEquipment, intensity]
+      properties:
+        targetDuration:
+          $ref: '#/components/schemas/TargetDuration'
+        level:
+          type: string
+          description: Ідентифікатор рівня підготовки.
+        emphasis:
+          type: string
+          description: Ідентифікатор акценту тренування.
+        availableEquipment:
+          type: array
+          description: Порожній список дозволений — лише варіанти без обладнання (AC-F-005).
+          items:
+            type: string
+        intensity:
+          type: string
+          description: Ідентифікатор інтенсивності.
+
+    TimeParameters:
+      type: object
+      description: Параметри елемента в режимі за часом (SRS §5.3).
+      required: [rounds, intervalSeconds, restSeconds]
+      additionalProperties: false
+      properties:
+        rounds:
+          type: integer
+          minimum: 1
+        intervalSeconds:
+          type: integer
+          minimum: 1
+        restSeconds:
+          type: integer
+          minimum: 0
+    RepetitionsParameters:
+      type: object
+      description: Параметри елемента в режимі за повтореннями (SRS §5.3); repetitionTimeSeconds лише для читання (D-08).
+      required: [sets, repetitions, restSeconds, repetitionTimeSeconds]
+      additionalProperties: false
+      properties:
+        sets:
+          type: integer
+          minimum: 1
+        repetitions:
+          type: integer
+          minimum: 1
+        restSeconds:
+          type: integer
+          minimum: 0
+        repetitionTimeSeconds:
+          type: integer
+          minimum: 1
+          readOnly: true
+    PlanItemParameters:
+      oneOf:
+        - $ref: '#/components/schemas/TimeParameters'
+        - $ref: '#/components/schemas/RepetitionsParameters'
+    PlanItemParametersInput:
+      type: object
+      description: |
+        Параметри елемента плану в запиті: застосовуються лише поля режиму варіанта (time — rounds,
+        intervalSeconds, restSeconds; repetitions — sets, repetitions, restSeconds) у межах [min; max]
+        варіанта (AC-F-010). repetitionTimeSeconds не приймається (D-08). Порушення — 422 VALIDATION_FAILED.
+      properties:
+        rounds:
+          type: integer
+          minimum: 1
+        intervalSeconds:
+          type: integer
+          minimum: 1
+        sets:
+          type: integer
+          minimum: 1
+        repetitions:
+          type: integer
+          minimum: 1
+        restSeconds:
+          type: integer
+          minimum: 0
+    ExecutedPlanItemParametersInput:
+      type: object
+      description: |
+        Фактичні параметри виконаної вправи (D-19): лише поля режиму варіанта; межі варіанта не
+        застосовуються. Інші поля (зокрема stage, position, repetitionTimeSeconds) — 422 VALIDATION_FAILED.
+      properties:
+        rounds:
+          type: integer
+          minimum: 1
+        intervalSeconds:
+          type: integer
+          minimum: 1
+        sets:
+          type: integer
+          minimum: 1
+        repetitions:
+          type: integer
+          minimum: 1
+        restSeconds:
+          type: integer
+          minimum: 0
+
+    PlanItem:
+      type: object
+      description: Елемент плану (SRS §4.3.4) з копією назви й варіанта (SRS §4.5).
+      required: [id, exerciseId, exerciseName, variant, stage, position, parameters, estimatedDurationSeconds]
+      properties:
+        id:
+          type: string
+        exerciseId:
+          type: string
+          description: Стабільний ідентифікатор вихідної вправи.
+        exerciseName:
+          type: string
+          description: Копія назви вправи.
+        variant:
+          $ref: '#/components/schemas/Variant'
+        stage:
+          $ref: '#/components/schemas/Stage'
+        position:
+          type: integer
+          minimum: 0
+          description: Позиція в межах етапу, з 0.
+        parameters:
+          $ref: '#/components/schemas/PlanItemParameters'
+        estimatedDurationSeconds:
+          type: integer
+          minimum: 1
+          description: Орієнтовна тривалість елемента за SRS §5.4.
+    PlanStage:
+      type: object
+      required: [stage, items]
+      properties:
+        stage:
+          $ref: '#/components/schemas/Stage'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanItem'
+    PlanWarning:
+      type: object
+      description: Попередження, що не блокує дію (AC-F-010).
+      required: [code]
+      properties:
+        code:
+          type: string
+          enum: [DURATION_OUT_OF_TOLERANCE, STAGE_EMPTY, FILTER_MISMATCH, STAGE_NOT_IN_EXERCISE]
+        stage:
+          $ref: '#/components/schemas/Stage'
+        itemId:
+          type: string
+        attribute:
+          type: string
+          enum: [level, intensity, availableEquipment, emphasis]
+    DurationTolerance:
+      type: object
+      description: Межі допуску ±10 % від D у секундах, включно (SRS §5.6).
+      required: [minSeconds, maxSeconds]
+      properties:
+        minSeconds:
+          type: integer
+          minimum: 0
+        maxSeconds:
+          type: integer
+          minimum: 0
+    Plan:
+      type: object
+      description: План тренування; три етапи завжди в порядку warm-up, main, cool-down.
+      required: [name, generationParameters, targetDurationSeconds, durationTolerance, stages, estimatedDurationSeconds, warnings]
+      properties:
+        name:
+          type: string
+          nullable: true
+          description: null у сформованого незбереженого плану (ADD-002 D-32).
+        generationParameters:
+          $ref: '#/components/schemas/GenerationParameters'
+        targetDurationSeconds:
+          type: integer
+          minimum: 60
+          description: D = hours × 3600 + minutes × 60 (SRS §5.5).
+        durationTolerance:
+          $ref: '#/components/schemas/DurationTolerance'
+        stages:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/PlanStage'
+        estimatedDurationSeconds:
+          type: integer
+          minimum: 0
+          description: Точна орієнтовна тривалість у секундах до округлення (SRS §5.4, §5.5).
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanWarning'
+    OpenPlan:
+      description: Відкритий план — робоча копія (ADD-002 D-29, D-30).
+      allOf:
+        - type: object
+          required: [id, sourcePlanId]
+          properties:
+            id:
+              type: string
+            sourcePlanId:
+              type: string
+              nullable: true
+              description: null для ще не збереженого результату формування.
+        - $ref: '#/components/schemas/Plan'
+    SavedPlan:
+      description: Збережений план (D-16); назва завжди задана.
+      allOf:
+        - type: object
+          required: [id, modifiedAt]
+          properties:
+            id:
+              type: string
+            modifiedAt:
+              type: string
+              format: date-time
+            name:
+              type: string
+              minLength: 1
+        - $ref: '#/components/schemas/Plan'
+    TrainingPlanListItem:
+      type: object
+      required: [id, name, modifiedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          minLength: 1
+        modifiedAt:
+          type: string
+          format: date-time
+    TrainingPlanList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainingPlanListItem'
+
+    ExecutedPlan:
+      type: object
+      description: Виконаний план (SRS §3) — уточнений склад і фактичні параметри (D-19).
+      required: [stages]
+      properties:
+        stages:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/PlanStage'
+    CurrentSession:
+      type: object
+      description: Поточне заняття (SRS §3; REQ-F-012).
+      required: [startedAt, localStartDate, executedPlan]
+      properties:
+        startedAt:
+          type: string
+          format: date-time
+        localStartDate:
+          type: string
+          format: date
+        executedPlan:
+          $ref: '#/components/schemas/ExecutedPlan'
+    CompletedTraining:
+      type: object
+      description: Завершене тренування (SRS §4.3.5).
+      required: [id, startedAt, localStartDate, executedPlan, note]
+      properties:
+        id:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        localStartDate:
+          type: string
+          format: date
+        executedPlan:
+          $ref: '#/components/schemas/ExecutedPlan'
+        note:
+          type: string
+          nullable: true
+    CompletedTrainingListItem:
+      type: object
+      required: [id, startedAt]
+      properties:
+        id:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+    CompletedTrainingList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompletedTrainingListItem'
+
+    AnalyticsPeriod:
+      type: object
+      required: [from, to]
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+    DailyCount:
+      type: object
+      required: [date, count]
+      properties:
+        date:
+          type: string
+          format: date
+        count:
+          type: integer
+          minimum: 0
+    ExerciseFrequency:
+      type: object
+      required: [exerciseId, exerciseName, trainingCount]
+      properties:
+        exerciseId:
+          type: string
+        exerciseName:
+          type: string
+          description: Назва з копії в найновішому тренуванні періоду (D-22).
+        trainingCount:
+          type: integer
+          minimum: 1
+          description: Кількість тренувань, у яких вправа трапляється хоча б раз (AC-F-016).
+    Analytics:
+      type: object
+      description: Аналітика (ADD-002 D-29) за період.
+      required: [period, completedTrainingCount, dailyCounts, exerciseFrequencies]
+      properties:
+        period:
+          $ref: '#/components/schemas/AnalyticsPeriod'
+        completedTrainingCount:
+          type: integer
+          minimum: 0
+        dailyCounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailyCount'
+        exerciseFrequencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExerciseFrequency'
+
+    PlanGenerationRequest:
+      description: Тіло запиту формування — п'ять параметрів REQ-F-005.
+      allOf:
+        - $ref: '#/components/schemas/GenerationParameters'
+    OpenSavedPlanRequest:
+      type: object
+      required: [sourcePlanId]
+      properties:
+        sourcePlanId:
+          type: string
+    OpenPlanPatchRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: Порожній рядок допустимий (D-16).
+    PlanItemCreateRequest:
+      type: object
+      required: [exerciseId, variantId, stage, parameters]
+      properties:
+        exerciseId:
+          type: string
+        variantId:
+          type: string
+          description: Ідентифікатор варіанта в межах вправи (ADD-002 D-33).
+        stage:
+          $ref: '#/components/schemas/Stage'
+        position:
+          type: integer
+          minimum: 0
+          description: Якщо відсутній — у кінець етапу.
+        parameters:
+          $ref: '#/components/schemas/PlanItemParametersInput'
+    PlanItemReplaceRequest:
+      type: object
+      required: [exerciseId, variantId, parameters]
+      properties:
+        exerciseId:
+          type: string
+        variantId:
+          type: string
+          description: Ідентифікатор варіанта в межах вправи (ADD-002 D-33).
+        parameters:
+          $ref: '#/components/schemas/PlanItemParametersInput'
+    PlanItemPatchRequest:
+      type: object
+      description: Принаймні одне поле обов'язкове; порожнє тіло — 422 VALIDATION_FAILED.
+      minProperties: 1
+      properties:
+        parameters:
+          $ref: '#/components/schemas/PlanItemParametersInput'
+        stage:
+          $ref: '#/components/schemas/Stage'
+        position:
+          type: integer
+          minimum: 0
+    SavePlanRequest:
+      type: object
+      required: [openPlanId]
+      properties:
+        openPlanId:
+          type: string
+    StartSessionRequest:
+      type: object
+      required: [openPlanId]
+      properties:
+        openPlanId:
+          type: string
+    ExecutedPlanItemPatchRequest:
+      type: object
+      required: [parameters]
+      properties:
+        parameters:
+          $ref: '#/components/schemas/ExecutedPlanItemParametersInput'
+    CompleteTrainingRequest:
+      type: object
+      properties:
+        note:
+          type: string
+          nullable: true
+          description: Відсутня або null — порожнє значення (AC-F-013).
+
+    ErrorDetail:
+      type: object
+      required: [field, constraint]
+      properties:
+        field:
+          type: string
+          description: Шлях до проблемного поля.
+        constraint:
+          type: string
+          description: Порушене правило (машинний ідентифікатор; клієнт будує текст через мовний файл).
+    ImpossibilityReason:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          enum: [NO_CANDIDATES_FOR_STAGE, MAX_VOLUME_BELOW_LOWER_BOUND, MIN_VOLUME_ABOVE_UPPER_BOUND]
+        stage:
+          $ref: '#/components/schemas/Stage'
+    Error:
+      type: object
+      description: Єдина модель помилки для всіх відповідей 4xx і 5xx.
+      required: [code]
+      properties:
+        code:
+          type: string
+          enum:
+            - BAD_REQUEST
+            - NOT_FOUND
+            - VALIDATION_FAILED
+            - UNKNOWN_DICTIONARY_VALUE
+            - INITIAL_EXERCISE_READ_ONLY
+            - STORAGE_WRITE_FAILED
+            - PLAN_GENERATION_IMPOSSIBLE
+            - GENERATION_FAILED
+            - GENERATION_SEARCH_LIMIT_REACHED
+            - PLAN_NOT_FOUND
+            - EXERCISE_NOT_FOUND
+            - VARIANT_NOT_FOUND
+            - EXERCISE_DEPRECATED
+            - OPEN_PLAN_ALREADY_SAVED
+            - OPEN_PLAN_NOT_FOUND
+            - PLAN_EMPTY
+            - OPEN_PLAN_SOURCE_MISMATCH
+            - SESSION_ALREADY_ACTIVE
+            - NO_CURRENT_SESSION
+            - EXECUTED_PLAN_EMPTY
+            - INVALID_PERIOD
+            - END_DATE_IN_FUTURE
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+        reasons:
+          type: array
+          description: Лише для PLAN_GENERATION_IMPOSSIBLE; необов'язковий.
+          items:
+            $ref: '#/components/schemas/ImpossibilityReason'
+        limitSeconds:
+          type: integer
+          minimum: 1
+          description: Лише для GENERATION_SEARCH_LIMIT_REACHED (D-13, D-25).
+
+  responses:
+    BadRequest:
+      description: 400 — некоректний JSON або неправильний JSON-тип поля.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            badRequest:
+              $ref: '#/components/examples/ErrorBadRequest'
+    NotFound:
+      description: 404 — ресурс із path-ідентифікатором не існує.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notFound:
+              $ref: '#/components/examples/ErrorNotFound'
+    NoCurrentSession:
+      description: 404 — поточного заняття немає, зокрема після перезапуску застосунку (D-18).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            noCurrentSession:
+              $ref: '#/components/examples/ErrorNoCurrentSession'
+    SessionOrItemNotFound:
+      description: 404 — поточного заняття немає (NO_CURRENT_SESSION) або елемента виконаного плану немає (NOT_FOUND).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            noCurrentSession:
+              $ref: '#/components/examples/ErrorNoCurrentSession'
+            itemNotFound:
+              $ref: '#/components/examples/ErrorNotFound'
+    StorageWriteFailed:
+      description: 500 — запис не завершено, діє попередній стан; успіх не повідомляється (REQ-NF-003).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            storageWriteFailed:
+              $ref: '#/components/examples/ErrorStorageWriteFailed'
+    UnknownDictionaryValue:
+      description: 422 — значення фільтра не існує в довіднику чи переліченні.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            unknownDictionaryValue:
+              $ref: '#/components/examples/ErrorUnknownDictionaryValue'
+    ExerciseValidationFailed:
+      description: 422 — вправа не пройшла перевірку (AC-F-002); жодних змін не збережено.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            validationFailed:
+              $ref: '#/components/examples/ErrorExerciseValidation'
+    InitialExerciseReadOnly:
+      description: 403 — початкова вправа, зокрема застаріла, лише для читання (D-05).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            initialReadOnly:
+              $ref: '#/components/examples/ErrorInitialExerciseReadOnly'
+    PlanGenerationUnprocessable:
+      description: |
+        422 — VALIDATION_FAILED: параметри не пройшли перевірку до початку пошуку (AC-F-005, BDD-006);
+        PLAN_GENERATION_IMPOSSIBLE: доведена неможливість формування (AC-F-009, BDD-011, BDD-012, D-10).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            validationFailed:
+              $ref: '#/components/examples/ErrorGenerationValidation'
+            impossibleNoCandidates:
+              $ref: '#/components/examples/ErrorGenerationImpossibleNoCandidates'
+            impossibleMaxVolume:
+              $ref: '#/components/examples/ErrorGenerationImpossibleMaxVolume'
+            impossibleMinVolume:
+              $ref: '#/components/examples/ErrorGenerationImpossibleMinVolume'
+    GenerationFailed:
+      description: 500 — технічна помилка генератора, не пов'язана з лімітом пошуку.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            generationFailed:
+              $ref: '#/components/examples/ErrorGenerationFailed'
+    GenerationSearchLimitReached:
+      description: 503 — пошук припинено за технічним лімітом (≥ 3,000 с, D-13, D-25); це не доказ відсутності плану (SRS §5.7).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            searchLimitReached:
+              $ref: '#/components/examples/ErrorGenerationSearchLimit'
+    SavedPlanNotFound:
+      description: 422 — збереженого плану з sourcePlanId немає.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            planNotFound:
+              $ref: '#/components/examples/ErrorPlanNotFound'
+    PlanItemUnprocessable:
+      description: |
+        422 — EXERCISE_NOT_FOUND / VARIANT_NOT_FOUND: вправи немає або варіант не належить вправі;
+        EXERCISE_DEPRECATED: вправа застаріла (D-06); VALIDATION_FAILED: параметр поза [min; max]
+        варіанта (BDD-032), неціле чи недодатне значення, поле не відповідає mode, передано
+        repetitionTimeSeconds (D-08), position поза межами етапу.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            exerciseNotFound:
+              $ref: '#/components/examples/ErrorExerciseNotFound'
+            variantNotFound:
+              $ref: '#/components/examples/ErrorVariantNotFound'
+            exerciseDeprecated:
+              $ref: '#/components/examples/ErrorExerciseDeprecated'
+            outOfVariantRange:
+              $ref: '#/components/examples/ErrorItemOutOfRange'
+            repetitionTimeNotAccepted:
+              $ref: '#/components/examples/ErrorItemRepetitionTime'
+    PlanItemPatchInvalid:
+      description: |
+        422 VALIDATION_FAILED — значення поза [min; max] варіанта (BDD-032), неціле значення, недодатна
+        кількість чи інтервал, від'ємний відпочинок, передано repetitionTimeSeconds (D-08), position
+        поза межами, порожнє тіло.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            outOfVariantRange:
+              $ref: '#/components/examples/ErrorItemOutOfRange'
+            repetitionTimeNotEditable:
+              $ref: '#/components/examples/ErrorItemRepetitionTime'
+    OpenPlanAlreadySaved:
+      description: 409 — відкритий план уже пов'язаний зі збереженим; «Зберегти як новий» поза MVP (D-16).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            alreadySaved:
+              $ref: '#/components/examples/ErrorOpenPlanAlreadySaved'
+    OpenPlanSourceMismatch:
+      description: 409 — відкритий план не походить із planId.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            sourceMismatch:
+              $ref: '#/components/examples/ErrorOpenPlanSourceMismatch'
+    OpenPlanUnprocessable:
+      description: 422 — OPEN_PLAN_NOT_FOUND (відкритого плану немає) або PLAN_EMPTY (у плані немає жодного елемента; AC-F-011, REQ-F-012).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            openPlanNotFound:
+              $ref: '#/components/examples/ErrorOpenPlanNotFound'
+            planEmpty:
+              $ref: '#/components/examples/ErrorPlanEmpty'
+    SessionAlreadyActive:
+      description: 409 — поточне заняття вже існує; друге не створюється, дані наявного не змінюються (AC-F-012 п. 4, BDD-025).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            sessionAlreadyActive:
+              $ref: '#/components/examples/ErrorSessionAlreadyActive'
+    ExecutedPlanItemInvalid:
+      description: 422 VALIDATION_FAILED — кількість, повторення чи інтервал не є цілим ≥ 1, відпочинок не є цілим ≥ 0, поле не відповідає mode або поза переліком D-19.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            zeroSets:
+              $ref: '#/components/examples/ErrorExecutedItemValidation'
+    NoCurrentSessionConflict:
+      description: 409 — поточного заняття немає, зокрема при повторному запиті після успішного завершення; дубліката немає (AC-F-013, BDD-016).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            noCurrentSession:
+              $ref: '#/components/examples/ErrorNoCurrentSession'
+    ExecutedPlanEmpty:
+      description: 422 — виконаний план порожній; запис не створюється, заняття залишається поточним (BDD-028).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            executedPlanEmpty:
+              $ref: '#/components/examples/ErrorExecutedPlanEmpty'
+    AnalyticsPeriodInvalid:
+      description: |
+        422 — INVALID_PERIOD: from пізніше за to (AC-F-015, BDD-030) або задано лише одну з дат
+        (ADD-002 D-35); END_DATE_IN_FUTURE: to пізніше за локальну дату пристрою (D-21).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            fromAfterTo:
+              $ref: '#/components/examples/ErrorInvalidPeriodFromAfterTo'
+            onlyOneDate:
+              $ref: '#/components/examples/ErrorInvalidPeriodOnlyOne'
+            endDateInFuture:
+              $ref: '#/components/examples/ErrorEndDateInFuture'
+
+  examples:
+    # Тестові дані за D-01: назви з префіксом [TEST], посилання на example.com.
+    ExerciseInitialShadow:
+      summary: Початкова вправа з відеоданими (AC-F-004)
+      value:
+        id: ex-1
+        name: '[TEST] Бій з тінню'
+        description: '[TEST] Опис виконання бою з тінню.'
+        origin: initial
+        type: simple
+        allowedStages: [warm-up]
+        allowedLevels: [level-beginner, level-intermediate]
+        allowedIntensities: [intensity-low, intensity-medium]
+        emphases: [emphasis-technique]
+        loadCharacter: special-physical
+        variants:
+          - &varShadow
+            id: var-1
+            executionMeans: means-no-equipment
+            equipment: []
+            mode: time
+            rounds: {min: 1, max: 5, recommended: 3}
+            intervalSeconds: {min: 60, max: 300, recommended: 180}
+            restSeconds: {min: 30, max: 120, recommended: 60}
+        videoUrl: https://example.com/test/shadow-boxing
+        videoAuthorName: '[TEST] Автор відео'
+        authorPageUrl: https://example.com/test/author
+        deprecated: false
+    ExerciseInitialBag:
+      summary: Початкова вправа для основної частини
+      value:
+        id: ex-2
+        name: '[TEST] Комбінації на мішку'
+        description: '[TEST] Опис виконання комбінацій на мішку.'
+        origin: initial
+        type: combination
+        allowedStages: [main]
+        allowedLevels: [level-beginner]
+        allowedIntensities: [intensity-medium, intensity-high]
+        emphases: [emphasis-technique, emphasis-endurance]
+        loadCharacter: special-physical
+        variants:
+          - &varBag
+            id: var-1
+            executionMeans: means-apparatus
+            equipment: [equipment-bag]
+            mode: time
+            rounds: {min: 1, max: 12, recommended: 6}
+            intervalSeconds: {min: 60, max: 180, recommended: 180}
+            restSeconds: {min: 30, max: 120, recommended: 60}
+        videoUrl: https://example.com/test/bag-combinations
+        videoAuthorName: '[TEST] Автор відео'
+        authorPageUrl: https://example.com/test/author
+        deprecated: false
+    ExerciseInitialPushUps:
+      summary: Початкова вправа в режимі за повтореннями
+      value:
+        id: ex-3
+        name: '[TEST] Віджимання'
+        description: '[TEST] Опис виконання віджимань.'
+        origin: initial
+        type: simple
+        allowedStages: [warm-up, main]
+        allowedLevels: [level-beginner]
+        allowedIntensities: [intensity-medium]
+        emphases: [emphasis-technique]
+        loadCharacter: general-physical
+        variants:
+          - &varPush
+            id: var-1
+            executionMeans: means-no-equipment
+            equipment: []
+            mode: repetitions
+            sets: {min: 1, max: 5, recommended: 3}
+            repetitions: {min: 5, max: 20, recommended: 10}
+            restSeconds: {min: 0, max: 60, recommended: 30}
+            repetitionTimeSeconds: 3
+        videoUrl: https://example.com/test/push-ups
+        videoAuthorName: '[TEST] Автор відео'
+        authorPageUrl: https://example.com/test/author
+        deprecated: false
+    ExerciseInitialStretch:
+      summary: Початкова вправа для заминки
+      value:
+        id: ex-4
+        name: '[TEST] Розтяжка'
+        description: '[TEST] Опис виконання розтяжки.'
+        origin: initial
+        type: simple
+        allowedStages: [cool-down]
+        allowedLevels: [level-beginner, level-intermediate]
+        allowedIntensities: [intensity-low, intensity-medium]
+        emphases: []
+        loadCharacter: not-applicable
+        variants:
+          - &varStretch
+            id: var-1
+            executionMeans: means-no-equipment
+            equipment: []
+            mode: time
+            rounds: {min: 1, max: 4, recommended: 2}
+            intervalSeconds: {min: 300, max: 600, recommended: 450}
+            restSeconds: {min: 0, max: 60, recommended: 30}
+        videoUrl: https://example.com/test/stretching
+        videoAuthorName: '[TEST] Автор відео'
+        authorPageUrl: https://example.com/test/author
+        deprecated: false
+    ExerciseCustomRope:
+      summary: Власна вправа без відеоданих (BDD-024)
+      value:
+        id: ex-5
+        name: '[TEST] Стрибки на скакалці'
+        description: '[TEST] Опис стрибків на скакалці.'
+        origin: custom
+        type: simple
+        allowedStages: [warm-up]
+        allowedLevels: [level-beginner]
+        allowedIntensities: [intensity-high]
+        emphases: [emphasis-endurance]
+        loadCharacter: general-physical
+        variants:
+          - &varRope
+            id: var-1
+            executionMeans: means-apparatus
+            equipment: [equipment-rope]
+            mode: time
+            rounds: {min: 1, max: 5, recommended: 3}
+            intervalSeconds: {min: 60, max: 180, recommended: 120}
+            restSeconds: {min: 30, max: 90, recommended: 60}
+        videoUrl: null
+        videoAuthorName: null
+        authorPageUrl: null
+        deprecated: false
+    ExerciseCustomRopeUpdated:
+      summary: Власна вправа після зміни опису; id варіанта збережено (ADD-002 D-33)
+      value:
+        id: ex-5
+        name: '[TEST] Стрибки на скакалці'
+        description: '[TEST] Оновлений опис стрибків на скакалці.'
+        origin: custom
+        type: simple
+        allowedStages: [warm-up]
+        allowedLevels: [level-beginner]
+        allowedIntensities: [intensity-high]
+        emphases: [emphasis-endurance]
+        loadCharacter: general-physical
+        variants:
+          - *varRope
+        videoUrl: null
+        videoAuthorName: null
+        authorPageUrl: null
+        deprecated: false
+    ExerciseDeprecated:
+      summary: Застаріла початкова вправа — картка відкривається з плану (D-06)
+      value:
+        id: ex-9
+        name: '[TEST] Застаріла вправа'
+        description: '[TEST] Опис застарілої вправи.'
+        origin: initial
+        type: single-punch
+        allowedStages: [main]
+        allowedLevels: [level-beginner]
+        allowedIntensities: [intensity-medium]
+        emphases: [emphasis-technique]
+        loadCharacter: special-physical
+        variants:
+          - *varShadow
+        videoUrl: https://example.com/test/deprecated
+        videoAuthorName: '[TEST] Автор відео'
+        authorPageUrl: https://example.com/test/author
+        deprecated: true
+    ExerciseListCatalog:
+      summary: Вибірка каталогу
+      value:
+        items:
+          - {id: ex-1, name: '[TEST] Бій з тінню', type: simple, origin: initial}
+          - {id: ex-2, name: '[TEST] Комбінації на мішку', type: combination, origin: initial}
+          - {id: ex-5, name: '[TEST] Стрибки на скакалці', type: simple, origin: custom}
+    ExerciseListEmpty:
+      summary: Порожня вибірка (AC-F-003)
+      value:
+        items: []
+    ExerciseInputCustomWithoutVideo:
+      summary: Нова власна вправа без відеоданих (D-07)
+      value:
+        name: '[TEST] Стрибки на скакалці'
+        description: '[TEST] Опис стрибків на скакалці.'
+        type: simple
+        allowedStages: [warm-up]
+        allowedLevels: [level-beginner]
+        allowedIntensities: [intensity-high]
+        emphases: [emphasis-endurance]
+        loadCharacter: general-physical
+        variants:
+          - executionMeans: means-apparatus
+            equipment: [equipment-rope]
+            mode: time
+            rounds: {min: 1, max: 5, recommended: 3}
+            intervalSeconds: {min: 60, max: 180, recommended: 120}
+            restSeconds: {min: 30, max: 90, recommended: 60}
+    ExerciseInputRopeUpdated:
+      summary: Повна заміна з тим самим id варіанта
+      value:
+        name: '[TEST] Стрибки на скакалці'
+        description: '[TEST] Оновлений опис стрибків на скакалці.'
+        type: simple
+        allowedStages: [warm-up]
+        allowedLevels: [level-beginner]
+        allowedIntensities: [intensity-high]
+        emphases: [emphasis-endurance]
+        loadCharacter: general-physical
+        variants:
+          - *varRope
+        videoUrl: null
+        videoAuthorName: null
+        authorPageUrl: null
+    DictionaryTrainingLevels:
+      summary: Довідник рівнів підготовки
+      value:
+        dictionary: training-levels
+        values:
+          - {id: level-beginner, name: '[TEST] Початковий'}
+          - {id: level-intermediate, name: '[TEST] Середній'}
+
+    PlanGenerationRequest1h30:
+      summary: Ціль 1 год 30 хв (D = 5400 с, AC-F-005)
+      value: &genParams
+        targetDuration: {hours: 1, minutes: 30}
+        level: level-beginner
+        emphasis: emphasis-technique
+        availableEquipment: [equipment-bag]
+        intensity: intensity-medium
+    OpenPlanGenerated:
+      summary: Сформований незбережений план; 5310 с у межах 4860–5940 с (±10 % від 5400 с)
+      value:
+        id: open-1
+        sourcePlanId: null
+        name: null
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: &tol1h30 {minSeconds: 4860, maxSeconds: 5940}
+        stages: &stagesGenerated
+          - stage: warm-up
+            items:
+              - &item1
+                id: item-1
+                exerciseId: ex-1
+                exerciseName: '[TEST] Бій з тінню'
+                variant: *varShadow
+                stage: warm-up
+                position: 0
+                parameters: {rounds: 3, intervalSeconds: 180, restSeconds: 60}
+                estimatedDurationSeconds: 660
+          - stage: main
+            items:
+              - &item2
+                id: item-2
+                exerciseId: ex-2
+                exerciseName: '[TEST] Комбінації на мішку'
+                variant: *varBag
+                stage: main
+                position: 0
+                parameters: {rounds: 12, intervalSeconds: 180, restSeconds: 60}
+                estimatedDurationSeconds: 2820
+              - &item3
+                id: item-3
+                exerciseId: ex-3
+                exerciseName: '[TEST] Віджимання'
+                variant: *varPush
+                stage: main
+                position: 1
+                parameters: {sets: 3, repetitions: 10, restSeconds: 30, repetitionTimeSeconds: 3}
+                estimatedDurationSeconds: 150
+          - stage: cool-down
+            items:
+              - &item4
+                id: item-4
+                exerciseId: ex-4
+                exerciseName: '[TEST] Розтяжка'
+                variant: *varStretch
+                stage: cool-down
+                position: 0
+                parameters: {rounds: 3, intervalSeconds: 540, restSeconds: 30}
+                estimatedDurationSeconds: 1680
+        estimatedDurationSeconds: 5310
+        warnings: []
+    OpenPlanRenamed:
+      summary: Сформований план із заданою назвою
+      value:
+        id: open-1
+        sourcePlanId: null
+        name: '[TEST] Ранкове тренування'
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: *tol1h30
+        stages: *stagesGenerated
+        estimatedDurationSeconds: 5310
+        warnings: []
+    OpenPlanFromSaved:
+      summary: Відкритий збережений план
+      value:
+        id: open-2
+        sourcePlanId: plan-1
+        name: 'План від 30.06.2026 17:45'
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: *tol1h30
+        stages: *stagesGenerated
+        estimatedDurationSeconds: 5310
+        warnings: []
+    OpenPlanItemAdded:
+      summary: Додано вправу до заминки поза її етапами (REQ-F-010); 5430 с
+      value:
+        id: open-1
+        sourcePlanId: null
+        name: null
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: *tol1h30
+        stages:
+          - stage: warm-up
+            items: [*item1]
+          - stage: main
+            items: [*item2, *item3]
+          - stage: cool-down
+            items:
+              - *item4
+              - id: item-5
+                exerciseId: ex-1
+                exerciseName: '[TEST] Бій з тінню'
+                variant: *varShadow
+                stage: cool-down
+                position: 1
+                parameters: {rounds: 1, intervalSeconds: 120, restSeconds: 30}
+                estimatedDurationSeconds: 120
+        estimatedDurationSeconds: 5430
+        warnings:
+          - {code: STAGE_NOT_IN_EXERCISE, itemId: item-5, stage: cool-down}
+    OpenPlanItemReplaced:
+      summary: Елемент замінено вправою, що не відповідає вихідним параметрам (FILTER_MISMATCH); 5280 с
+      value:
+        id: open-1
+        sourcePlanId: null
+        name: null
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: *tol1h30
+        stages:
+          - stage: warm-up
+            items: [*item1]
+          - stage: main
+            items:
+              - *item2
+              - id: item-3
+                exerciseId: ex-5
+                exerciseName: '[TEST] Стрибки на скакалці'
+                variant: *varRope
+                stage: main
+                position: 1
+                parameters: {rounds: 1, intervalSeconds: 120, restSeconds: 60}
+                estimatedDurationSeconds: 120
+          - stage: cool-down
+            items: [*item4]
+        estimatedDurationSeconds: 5280
+        warnings:
+          - {code: FILTER_MISMATCH, itemId: item-3, attribute: intensity}
+          - {code: FILTER_MISMATCH, itemId: item-3, attribute: availableEquipment}
+          - {code: FILTER_MISMATCH, itemId: item-3, attribute: emphasis}
+          - {code: STAGE_NOT_IN_EXERCISE, itemId: item-3, stage: main}
+    OpenPlanItemEdited:
+      summary: Кількість раундів зменшено до 10; 4830 с < 4860 с — попередження (AC-F-010)
+      value:
+        id: open-1
+        sourcePlanId: null
+        name: null
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: *tol1h30
+        stages: &stagesEdited
+          - stage: warm-up
+            items: [*item1]
+          - stage: main
+            items:
+              - id: item-2
+                exerciseId: ex-2
+                exerciseName: '[TEST] Комбінації на мішку'
+                variant: *varBag
+                stage: main
+                position: 0
+                parameters: {rounds: 10, intervalSeconds: 180, restSeconds: 60}
+                estimatedDurationSeconds: 2340
+              - *item3
+          - stage: cool-down
+            items: [*item4]
+        estimatedDurationSeconds: 4830
+        warnings:
+          - {code: DURATION_OUT_OF_TOLERANCE}
+    OpenPlanItemRemoved:
+      summary: Розминку спорожнено; 4650 с — попередження (BDD-033)
+      value:
+        id: open-1
+        sourcePlanId: null
+        name: null
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: *tol1h30
+        stages:
+          - stage: warm-up
+            items: []
+          - stage: main
+            items: [*item2, *item3]
+          - stage: cool-down
+            items: [*item4]
+        estimatedDurationSeconds: 4650
+        warnings:
+          - {code: STAGE_EMPTY, stage: warm-up}
+          - {code: DURATION_OUT_OF_TOLERANCE}
+    OpenSavedPlanRequestPlan1:
+      summary: Відкрити збережений план plan-1
+      value:
+        sourcePlanId: plan-1
+    OpenPlanPatchRequestRename:
+      summary: Задати назву
+      value:
+        name: '[TEST] Ранкове тренування'
+    OpenPlanPatchRequestEmpty:
+      summary: Порожня назва — під час збереження буде назва за замовчуванням (D-16)
+      value:
+        name: ''
+    PlanItemCreateRequestShadowCoolDown:
+      summary: Додати бій з тінню до заминки
+      value:
+        exerciseId: ex-1
+        variantId: var-1
+        stage: cool-down
+        parameters: {rounds: 1, intervalSeconds: 120, restSeconds: 30}
+    PlanItemReplaceRequestRope:
+      summary: Замінити віджимання стрибками на скакалці
+      value:
+        exerciseId: ex-5
+        variantId: var-1
+        parameters: {rounds: 1, intervalSeconds: 120, restSeconds: 60}
+    PlanItemPatchRequestRounds:
+      summary: Змінити кількість раундів у межах варіанта (BDD-013)
+      value:
+        parameters: {rounds: 10}
+    PlanItemPatchRequestMove:
+      summary: Перенести до розминки (BDD-023)
+      value:
+        stage: warm-up
+        position: 1
+
+    SavePlanRequestOpen1:
+      summary: Зберегти сформований план open-1
+      value:
+        openPlanId: open-1
+    SavePlanRequestOpen2:
+      summary: Перезаписати plan-1 відкритим планом open-2
+      value:
+        openPlanId: open-2
+    SavedPlanPlan1:
+      summary: Збережений план із назвою за замовчуванням (момент збереження, ADD-002 D-32)
+      value:
+        id: plan-1
+        modifiedAt: '2026-06-30T17:45:00+03:00'
+        name: 'План від 30.06.2026 17:45'
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: *tol1h30
+        stages: *stagesGenerated
+        estimatedDurationSeconds: 5310
+        warnings: []
+    SavedPlanPlan1Overwritten:
+      summary: Перезаписаний план поза допуском — збереження дозволене (BDD-014)
+      value:
+        id: plan-1
+        modifiedAt: '2026-06-30T17:55:00+03:00'
+        name: 'План від 30.06.2026 17:45'
+        generationParameters: *genParams
+        targetDurationSeconds: 5400
+        durationTolerance: *tol1h30
+        stages: *stagesEdited
+        estimatedDurationSeconds: 4830
+        warnings:
+          - {code: DURATION_OUT_OF_TOLERANCE}
+    TrainingPlanListTwo:
+      summary: Два плани, новіші зверху (D-16)
+      value:
+        items:
+          - {id: plan-2, name: '[TEST] Ранкове тренування', modifiedAt: '2026-07-01T08:30:00+03:00'}
+          - {id: plan-1, name: 'План від 30.06.2026 17:45', modifiedAt: '2026-06-30T17:55:00+03:00'}
+    TrainingPlanListEmpty:
+      summary: Немає збережених планів
+      value:
+        items: []
+
+    StartSessionRequestOpen1:
+      summary: Почати з незбереженого відкритого плану (D-17)
+      value:
+        openPlanId: open-1
+    CurrentSessionStarted:
+      summary: Поточне заняття, розпочате о 18:00 (BDD-016)
+      value:
+        startedAt: '2026-06-30T18:00:00+03:00'
+        localStartDate: '2026-06-30'
+        executedPlan:
+          stages: *stagesGenerated
+    ExecutedPlanItemPatchRequestSets:
+      summary: Фактично 6 підходів — понад максимум варіанта 5 (D-19)
+      value:
+        parameters: {sets: 6}
+    CurrentSessionItemUpdated:
+      summary: Уточнено кількість підходів
+      value:
+        startedAt: '2026-06-30T18:00:00+03:00'
+        localStartDate: '2026-06-30'
+        executedPlan:
+          stages: &stagesExecuted
+            - stage: warm-up
+              items: [*item1]
+            - stage: main
+              items:
+                - *item2
+                - id: item-3
+                  exerciseId: ex-3
+                  exerciseName: '[TEST] Віджимання'
+                  variant: *varPush
+                  stage: main
+                  position: 1
+                  parameters: {sets: 6, repetitions: 10, restSeconds: 30, repetitionTimeSeconds: 3}
+                  estimatedDurationSeconds: 330
+            - stage: cool-down
+              items: [*item4]
+    CurrentSessionItemRemoved:
+      summary: Вправу видалено з виконаного плану
+      value:
+        startedAt: '2026-06-30T18:00:00+03:00'
+        localStartDate: '2026-06-30'
+        executedPlan:
+          stages:
+            - stage: warm-up
+              items: [*item1]
+            - stage: main
+              items: [*item2]
+            - stage: cool-down
+              items: [*item4]
+    CompleteTrainingRequestWithNote:
+      summary: Завершення з приміткою
+      value:
+        note: '[TEST] Зроблено додаткові підходи віджимань.'
+    CompleteTrainingRequestWithoutNote:
+      summary: Завершення без примітки
+      value: {}
+    CompletedTrainingWithNote:
+      summary: Запис із часом початку 18:00 і приміткою (BDD-016)
+      value:
+        id: training-1
+        startedAt: '2026-06-30T18:00:00+03:00'
+        localStartDate: '2026-06-30'
+        executedPlan:
+          stages: *stagesExecuted
+        note: '[TEST] Зроблено додаткові підходи віджимань.'
+    CompletedTrainingWithoutNote:
+      summary: Запис без примітки — порожнє значення (AC-F-013)
+      value:
+        id: training-1
+        startedAt: '2026-06-30T18:00:00+03:00'
+        localStartDate: '2026-06-30'
+        executedPlan:
+          stages: *stagesExecuted
+        note: null
+    CompletedTrainingListTwo:
+      summary: Історія, новіші зверху (AC-F-014)
+      value:
+        items:
+          - {id: training-2, startedAt: '2026-07-01T09:00:00+03:00'}
+          - {id: training-1, startedAt: '2026-06-30T18:00:00+03:00'}
+    CompletedTrainingListEmpty:
+      summary: Порожня історія (BDD-020)
+      value:
+        items: []
+
+    AnalyticsJune2026:
+      summary: Період 1–30 червня 2026 (BDD-018) — 2 тренування, частота E1 = 2
+      value:
+        period: {from: '2026-06-01', to: '2026-06-30'}
+        completedTrainingCount: 2
+        dailyCounts:
+          - {date: '2026-06-01', count: 1}
+          - {date: '2026-06-02', count: 0}
+          - {date: '2026-06-03', count: 0}
+          - {date: '2026-06-04', count: 0}
+          - {date: '2026-06-05', count: 0}
+          - {date: '2026-06-06', count: 0}
+          - {date: '2026-06-07', count: 0}
+          - {date: '2026-06-08', count: 0}
+          - {date: '2026-06-09', count: 0}
+          - {date: '2026-06-10', count: 0}
+          - {date: '2026-06-11', count: 0}
+          - {date: '2026-06-12', count: 0}
+          - {date: '2026-06-13', count: 0}
+          - {date: '2026-06-14', count: 0}
+          - {date: '2026-06-15', count: 0}
+          - {date: '2026-06-16', count: 0}
+          - {date: '2026-06-17', count: 0}
+          - {date: '2026-06-18', count: 0}
+          - {date: '2026-06-19', count: 0}
+          - {date: '2026-06-20', count: 0}
+          - {date: '2026-06-21', count: 0}
+          - {date: '2026-06-22', count: 0}
+          - {date: '2026-06-23', count: 0}
+          - {date: '2026-06-24', count: 0}
+          - {date: '2026-06-25', count: 0}
+          - {date: '2026-06-26', count: 0}
+          - {date: '2026-06-27', count: 0}
+          - {date: '2026-06-28', count: 0}
+          - {date: '2026-06-29', count: 0}
+          - {date: '2026-06-30', count: 1}
+        exerciseFrequencies:
+          - {exerciseId: ex-1, exerciseName: '[TEST] Бій з тінню', trainingCount: 2}
+    AnalyticsNoData:
+      summary: Немає завершених тренувань (BDD-020)
+      value:
+        period: {from: '2026-06-29', to: '2026-06-30'}
+        completedTrainingCount: 0
+        dailyCounts:
+          - {date: '2026-06-29', count: 0}
+          - {date: '2026-06-30', count: 0}
+        exerciseFrequencies: []
+
+    ErrorBadRequest:
+      summary: Некоректний JSON
+      value:
+        code: BAD_REQUEST
+        details:
+          - {field: body, constraint: INVALID_JSON}
+    ErrorNotFound:
+      summary: Ресурс не існує
+      value:
+        code: NOT_FOUND
+    ErrorNoCurrentSession:
+      summary: Поточного заняття немає
+      value:
+        code: NO_CURRENT_SESSION
+    ErrorStorageWriteFailed:
+      summary: Запис не завершено
+      value:
+        code: STORAGE_WRITE_FAILED
+    ErrorUnknownDictionaryValue:
+      summary: Невідоме значення фільтра
+      value:
+        code: UNKNOWN_DICTIONARY_VALUE
+        details:
+          - {field: level, constraint: DICTIONARY_VALUE}
+    ErrorExerciseValidation:
+      summary: Мінімум перевищує максимум (BDD-003)
+      value:
+        code: VALIDATION_FAILED
+        details:
+          - {field: 'variants[0].rounds.min', constraint: MIN_LE_MAX}
+    ErrorInitialExerciseReadOnly:
+      summary: Початкова вправа лише для читання
+      value:
+        code: INITIAL_EXERCISE_READ_ONLY
+    ErrorGenerationValidation:
+      summary: Нульова цільова тривалість (BDD-006)
+      value:
+        code: VALIDATION_FAILED
+        details:
+          - {field: targetDuration, constraint: TOTAL_GREATER_THAN_ZERO}
+    ErrorGenerationImpossibleNoCandidates:
+      summary: Немає вправ для заминки (BDD-011)
+      value:
+        code: PLAN_GENERATION_IMPOSSIBLE
+        reasons:
+          - {code: NO_CANDIDATES_FOR_STAGE, stage: cool-down}
+    ErrorGenerationImpossibleMaxVolume:
+      summary: Максимального обсягу недостатньо (BDD-012)
+      value:
+        code: PLAN_GENERATION_IMPOSSIBLE
+        reasons:
+          - {code: MAX_VOLUME_BELOW_LOWER_BOUND}
+    ErrorGenerationImpossibleMinVolume:
+      summary: Мінімальний обсяг перевищує 1,1 × D (D-10)
+      value:
+        code: PLAN_GENERATION_IMPOSSIBLE
+        reasons:
+          - {code: MIN_VOLUME_ABOVE_UPPER_BOUND}
+    ErrorGenerationFailed:
+      summary: Технічна помилка генератора
+      value:
+        code: GENERATION_FAILED
+    ErrorGenerationSearchLimit:
+      summary: Технічний ліміт пошуку 3 с (D-13, D-25)
+      value:
+        code: GENERATION_SEARCH_LIMIT_REACHED
+        limitSeconds: 3
+    ErrorPlanNotFound:
+      summary: Збереженого плану немає
+      value:
+        code: PLAN_NOT_FOUND
+    ErrorExerciseNotFound:
+      summary: Вправи немає
+      value:
+        code: EXERCISE_NOT_FOUND
+    ErrorVariantNotFound:
+      summary: Варіант не належить вправі
+      value:
+        code: VARIANT_NOT_FOUND
+    ErrorExerciseDeprecated:
+      summary: Застарілу вправу додати не можна (D-06)
+      value:
+        code: EXERCISE_DEPRECATED
+    ErrorItemOutOfRange:
+      summary: 6 раундів при максимумі 5 (BDD-032)
+      value:
+        code: VALIDATION_FAILED
+        details:
+          - {field: parameters.rounds, constraint: WITHIN_VARIANT_RANGE}
+    ErrorItemRepetitionTime:
+      summary: Передано repetitionTimeSeconds (D-08)
+      value:
+        code: VALIDATION_FAILED
+        details:
+          - {field: parameters.repetitionTimeSeconds, constraint: NOT_EDITABLE}
+    ErrorOpenPlanAlreadySaved:
+      summary: Відкритий план уже збережено
+      value:
+        code: OPEN_PLAN_ALREADY_SAVED
+    ErrorOpenPlanSourceMismatch:
+      summary: Відкритий план не походить із planId
+      value:
+        code: OPEN_PLAN_SOURCE_MISMATCH
+    ErrorOpenPlanNotFound:
+      summary: Відкритого плану немає
+      value:
+        code: OPEN_PLAN_NOT_FOUND
+    ErrorPlanEmpty:
+      summary: План порожній (BDD-033)
+      value:
+        code: PLAN_EMPTY
+    ErrorSessionAlreadyActive:
+      summary: Поточне заняття вже існує (BDD-025)
+      value:
+        code: SESSION_ALREADY_ACTIVE
+    ErrorExecutedItemValidation:
+      summary: Нуль підходів (D-19)
+      value:
+        code: VALIDATION_FAILED
+        details:
+          - {field: parameters.sets, constraint: MINIMUM}
+    ErrorExecutedPlanEmpty:
+      summary: Порожній виконаний план (BDD-028)
+      value:
+        code: EXECUTED_PLAN_EMPTY
+    ErrorInvalidPeriodFromAfterTo:
+      summary: Початок після кінця (BDD-030)
+      value:
+        code: INVALID_PERIOD
+        details:
+          - {field: from, constraint: NOT_AFTER_TO}
+    ErrorInvalidPeriodOnlyOne:
+      summary: Задано лише одну дату (ADD-002 D-35)
+      value:
+        code: INVALID_PERIOD
+        details:
+          - {field: to, constraint: REQUIRED_WITH_FROM}
+    ErrorEndDateInFuture:
+      summary: Кінцева дата пізніше сьогоднішньої (D-21)
+      value:
+        code: END_DATE_IN_FUTURE
+        details:
+          - {field: to, constraint: NOT_AFTER_TODAY}
