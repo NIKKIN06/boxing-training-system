@@ -2,7 +2,7 @@
 
 | Поле | Значення |
 |---|---|
-| Статус | **Чернетка** (не затверджено людиною; сценарії ще не виконувалися — крок 13) |
+| Статус | **Чернетка** (не затверджено людиною; сценарії виконано проти mock 26.10.2026 — розділ 5) |
 | Дата | 26.10.2026 |
 | Підготував | Кодинговий агент (Claude Code, модель `claude-opus-5-5`) |
 | Джерела | `spec/openapi.yaml` (операції, `x-req-ids`, `x-trace`, назви прикладів відповідей); `docs/api/resource-model.md` |
@@ -11,7 +11,7 @@
 
 | Поле | Значення |
 |---|---|
-| Інструмент | Stoplight Prism CLI, мажорна версія 5 (`@stoplight/prism-cli@5`). Точну версію в стартовому виводі не наведено; її можна уточнити командою `npx @stoplight/prism-cli@5 --version` |
+| Інструмент | Stoplight Prism CLI 5.16.0 (`@stoplight/prism-cli@5`; версію повідомив власник, у стартовому виводі її немає) |
 | Специфікація | `spec/openapi.yaml` |
 | Адреса | `http://127.0.0.1:4010` (єдиний `servers` у специфікації, ADD-002 D-28) |
 | Хто запускав | Власник репозиторію, у власному терміналі |
@@ -65,6 +65,8 @@ npx -y --registry=https://registry.npmjs.org/ @stoplight/prism-cli@5 mock spec/o
 - **Вибір відповіді — заголовок `Prefer`.** `Prefer: code=<статус>` вибирає відповідь із цим кодом стану; `example=<назва>` вибирає іменований приклад (назва — ключ у `examples` відповіді). Без `Prefer` Prism повертає першу успішну відповідь і перший приклад.
 - **Перевірка запиту відбувається до вибору відповіді.** Якщо запит порушує схему, Prism відхиляє його незалежно від `Prefer`. Тому в усіх сценаріях із `Prefer` запит відповідає схемі, а негативні сценарії з порушенням схеми (розділ 3.2) надсилаються без `Prefer`.
 - **Тексти помилок** у відповідях відсутні за контрактом (REQ-NF-005): перевіряються лише статус і `code`.
+- **Тіло відповіді на невалідний запит не описує фактичного порушення** (виявлено на кроці 13, NEG-32…34). Prism 5.16.0 повертає `422` з першим іменованим прикладом відповіді `422` цієї операції, тобто тіло формату `Error` зі специфікації. Фактичне порушення схеми Prism передає лише в заголовку `sl-violations`. Наприклад, для `hours: -1` і для відсутнього `level` тіло однакове: `details[0]` = `targetDuration` / `TOTAL_GREATER_THAN_ZERO` (приклад для 0 год 0 хв). Статус і `code` відповідають контракту, а `details[]` — ні. Реальна система має заповнювати `details[]` за фактичним порушенням; mock цього не перевіряє.
+- **Без `example=` mock повертає перший приклад коду стану** (POS-17). Тому відповідь на перенесення елемента має склад етапів із прикладу `roundsChanged`, а не з перенесення.
 
 ## 2. Позитивні сценарії (крок 11)
 
@@ -521,3 +523,102 @@ curl -i -s -X PATCH 'http://127.0.0.1:4010/current-session/executed-plan/items/i
 
 - позитивних сценаріїв — 36, покрито всі 27 операцій;
 - негативних сценаріїв — 34 (31 за кодами `Error` і 3 з порушенням схеми); покрито всі 22 коди `Error.code` і всі 3 причини `PLAN_GENERATION_IMPOSSIBLE`.
+
+## 5. Результати перевірки mock (крок 13)
+
+| Поле | Значення |
+|---|---|
+| Дата | 26.10.2026 |
+| Mock | Stoplight Prism CLI 5.16.0, `http://127.0.0.1:4010`, специфікація `spec/openapi.yaml` (запустив власник) |
+| Виконав | Кодинговий агент (Claude Code, модель `claude-opus-5-5`). Скрипт виконав усі 70 команд curl з розділів 2 і 3 без змін і розібрав статус, `Content-Type` і `code` з тіла |
+| Додаткова перевірка | Тіло кожної відповіді порівняно з іменованим прикладом специфікації: для запитів з `example=` — із цим прикладом, без нього — з першим прикладом коду стану |
+
+### 5.1. Таблиця результатів
+
+| ID | Очікуваний статус | Фактичний статус | Очікуваний code | Фактичний code | Збіг |
+|---|---|---|---|---|---|
+| POS-01 | 200 | 200 | — | — | так |
+| POS-02 | 200 | 200 | — | — | так |
+| POS-03 | 201 | 201 | — | — | так |
+| POS-04 | 200 | 200 | — | — | так |
+| POS-05 | 200 | 200 | — | — | так |
+| POS-06 | 200 | 200 | — | — | так |
+| POS-07 | 200 | 200 | — | — | так |
+| POS-08 | 200 | 200 | — | — | так |
+| POS-09 | 201 | 201 | — | — | так |
+| POS-10 | 201 | 201 | — | — | так |
+| POS-11 | 200 | 200 | — | — | так |
+| POS-12 | 200 | 200 | — | — | так |
+| POS-13 | 200 | 200 | — | — | так |
+| POS-14 | 201 | 201 | — | — | так |
+| POS-15 | 200 | 200 | — | — | так |
+| POS-16 | 200 | 200 | — | — | так |
+| POS-17 | 200 | 200 | — | — | так |
+| POS-18 | 200 | 200 | — | — | так |
+| POS-19 | 200 | 200 | — | — | так |
+| POS-20 | 200 | 200 | — | — | так |
+| POS-21 | 201 | 201 | — | — | так |
+| POS-22 | 200 | 200 | — | — | так |
+| POS-23 | 200 | 200 | — | — | так |
+| POS-24 | 204 | 204 | — | — | так |
+| POS-25 | 201 | 201 | — | — | так |
+| POS-26 | 200 | 200 | — | — | так |
+| POS-27 | 200 | 200 | — | — | так |
+| POS-28 | 200 | 200 | — | — | так |
+| POS-29 | 204 | 204 | — | — | так |
+| POS-30 | 201 | 201 | — | — | так |
+| POS-31 | 201 | 201 | — | — | так |
+| POS-32 | 200 | 200 | — | — | так |
+| POS-33 | 200 | 200 | — | — | так |
+| POS-34 | 200 | 200 | — | — | так |
+| POS-35 | 200 | 200 | — | — | так |
+| POS-36 | 200 | 200 | — | — | так |
+| NEG-01 | 400 | 400 | BAD_REQUEST | BAD_REQUEST | так |
+| NEG-02 | 404 | 404 | NOT_FOUND | NOT_FOUND | так |
+| NEG-03 | 422 | 422 | VALIDATION_FAILED | VALIDATION_FAILED | так |
+| NEG-04 | 422 | 422 | VALIDATION_FAILED | VALIDATION_FAILED | так |
+| NEG-05 | 422 | 422 | UNKNOWN_DICTIONARY_VALUE | UNKNOWN_DICTIONARY_VALUE | так |
+| NEG-06 | 403 | 403 | INITIAL_EXERCISE_READ_ONLY | INITIAL_EXERCISE_READ_ONLY | так |
+| NEG-07 | 500 | 500 | STORAGE_WRITE_FAILED | STORAGE_WRITE_FAILED | так |
+| NEG-08 | 422 | 422 | PLAN_GENERATION_IMPOSSIBLE | PLAN_GENERATION_IMPOSSIBLE | так |
+| NEG-09 | 422 | 422 | PLAN_GENERATION_IMPOSSIBLE | PLAN_GENERATION_IMPOSSIBLE | так |
+| NEG-10 | 422 | 422 | PLAN_GENERATION_IMPOSSIBLE | PLAN_GENERATION_IMPOSSIBLE | так |
+| NEG-11 | 500 | 500 | GENERATION_FAILED | GENERATION_FAILED | так |
+| NEG-12 | 503 | 503 | GENERATION_SEARCH_LIMIT_REACHED | GENERATION_SEARCH_LIMIT_REACHED | так |
+| NEG-13 | 422 | 422 | PLAN_NOT_FOUND | PLAN_NOT_FOUND | так |
+| NEG-14 | 422 | 422 | EXERCISE_NOT_FOUND | EXERCISE_NOT_FOUND | так |
+| NEG-15 | 422 | 422 | VARIANT_NOT_FOUND | VARIANT_NOT_FOUND | так |
+| NEG-16 | 422 | 422 | EXERCISE_DEPRECATED | EXERCISE_DEPRECATED | так |
+| NEG-17 | 422 | 422 | VALIDATION_FAILED | VALIDATION_FAILED | так |
+| NEG-18 | 422 | 422 | VALIDATION_FAILED | VALIDATION_FAILED | так |
+| NEG-19 | 409 | 409 | OPEN_PLAN_ALREADY_SAVED | OPEN_PLAN_ALREADY_SAVED | так |
+| NEG-20 | 422 | 422 | OPEN_PLAN_NOT_FOUND | OPEN_PLAN_NOT_FOUND | так |
+| NEG-21 | 422 | 422 | PLAN_EMPTY | PLAN_EMPTY | так |
+| NEG-22 | 409 | 409 | OPEN_PLAN_SOURCE_MISMATCH | OPEN_PLAN_SOURCE_MISMATCH | так |
+| NEG-23 | 409 | 409 | SESSION_ALREADY_ACTIVE | SESSION_ALREADY_ACTIVE | так |
+| NEG-24 | 404 | 404 | NO_CURRENT_SESSION | NO_CURRENT_SESSION | так |
+| NEG-25 | 409 | 409 | NO_CURRENT_SESSION | NO_CURRENT_SESSION | так |
+| NEG-26 | 422 | 422 | EXECUTED_PLAN_EMPTY | EXECUTED_PLAN_EMPTY | так |
+| NEG-27 | 422 | 422 | INVALID_PERIOD | INVALID_PERIOD | так |
+| NEG-28 | 422 | 422 | INVALID_PERIOD | INVALID_PERIOD | так |
+| NEG-29 | 422 | 422 | END_DATE_IN_FUTURE | END_DATE_IN_FUTURE | так |
+| NEG-30 | 404 | 404 | NOT_FOUND | NOT_FOUND | так |
+| NEG-31 | 404 | 404 | NO_CURRENT_SESSION | NO_CURRENT_SESSION | так |
+| NEG-32 | 422 | 422 | VALIDATION_FAILED | VALIDATION_FAILED | так |
+| NEG-33 | 422 | 422 | VALIDATION_FAILED | VALIDATION_FAILED | так |
+| NEG-34 | 422 | 422 | VALIDATION_FAILED | VALIDATION_FAILED | так |
+
+### 5.2. Відповіді на запити з порушенням схеми (NEG-32…34)
+
+| ID | Фактичне порушення | Фактичний статус | Content-Type | Заголовок `sl-violations` (від Prism) | Тіло (структура `Error`) |
+|---|---|---|---|---|---|
+| NEG-32 | `targetDuration.hours: -1` (`minimum: 0`) | 422 | `application/json` | `code: minimum`, `location: request.body.targetDuration.hours`, «Request body property targetDuration.hours must be >= 0» | `code: VALIDATION_FAILED`, `details[0]`: `field: targetDuration`, `constraint: TOTAL_GREATER_THAN_ZERO` — перший приклад `validationFailed`, а не фактичне порушення |
+| NEG-33 | немає `level` (`required`) | 422 | `application/json` | `code: required`, `location: request.body`, «Request body must have required property 'level'» | те саме тіло, що в NEG-32 — перший приклад `validationFailed` |
+| NEG-34 | `parameters.sets: 0` (`minimum: 1`) | 422 | `application/json` | `code: minimum`, `location: request.body.parameters.sets`, «Request body property parameters.sets must be >= 1» | `code: VALIDATION_FAILED`, `details[0]`: `field: parameters.sets`, `constraint: MINIMUM` — єдиний приклад `zeroSets`, що випадково відповідає порушенню |
+
+### 5.3. Підсумок
+
+- **Позитивні сценарії: 36 із 36 збіглися.**
+- **Негативні сценарії: 34 із 34 збіглися** за статусом і `code`.
+- Тіла всіх 68 відповідей із тілом за JSON збігаються з відповідними прикладами `spec/openapi.yaml`. Відповіді POS-24 і POS-29 (`204`) тіла не мають, як і визначено контрактом.
+- **Розбіжностей зі специфікацією не виявлено**, тому помилок у специфікації немає. Дві особливості mock (тіло на невалідний запит не описує порушення; без `example=` береться перший приклад) описано в розділі «Обмеження mock». Вони не впливають на збіг статусів і кодів.
