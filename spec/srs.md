@@ -6,7 +6,7 @@
 | Скорочена назва | Boxing Training System |
 | Тип документа | Software Requirements Specification — SRS |
 | Версія | 1.1 |
-| Статус | Редакція 1.1 із внесеними адендумами ADD-001 і ADD-002; очікує SPEC-GATE v1.1 (T-59) |
+| Статус | Затверджено людиною 12.11.2026 (SPEC-GATE v1.1 GO) |
 | Адендуми | `spec/addenda/ADD-001.md` (D-01…D-27), `spec/addenda/ADD-002.md` (D-28…D-35) |
 | Методологія | Specification-Driven Development |
 | Цільова платформа MVP | Android |
