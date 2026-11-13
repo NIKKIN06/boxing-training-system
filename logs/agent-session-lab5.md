@@ -1098,3 +1098,25 @@
 2. Для непередбаченого винятку в лог іде `error.toString()`. Збій читання SQLite (`SqliteException` / `DriftRemoteException`) містив би SQL-оператор і параметри, як у знахідці групи 3. Записи шляхом відсіювання тут не застосовано.
 
 **Повний діалог:** не збережено агентом
+
+**Коміт:** `e5a7406` feat: [agent] T-47 analytics (`git log --oneline -1`).
+
+## Етап 15. TG-012: тест гілки D-06 «відсутня в новій версії → застаріла» — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. Рішення 4 групи 4: фікстура tests/fixtures/catalogs/catalog-v2-ex1-missing.json — версія test-2 без ex-1 (решта як test-1); тест з ID «BDD-035 D-06 AC-F-001»: після встановлення цієї версії getExercise ex-1 → `deprecated: true`, listExercises її не показує; наявні тести не змінювати.
+2. Довести змістовність: тимчасово вимкнути гілку в src/ → тест падає (вивід — logs/app/control-red-d06-<дата>.log), повернути код → тест проходить; у src/ після кроку змін немає.
+3. TG-012 у logs/test-gate.md («доповнення після GO»), без зміни остаточного рішення. Коміт `test: [agent] BDD-035 D-06 deprecation of missing exercise (TG-012)`.
+
+**Пропозиція агента та дії:**
+- Фікстуру виведено скриптом Python із src/assets/catalog/test-catalog.json (без ex-1, `catalogVersion: test-2`, власний `source`), записано інструментом Write; звірка скриптом: довідники й 7 вправ (ex-2, ex-3, ex-4, ex-6, ex-7, ex-8, ex-9) дорівнюють test-1 без ex-1.
+- Тест — новий файл tests/test/exercises/catalog_missing_exercise_test.dart (наявні файли тестів не змінено): старт на test-1 (ex-1 `deprecated: false`), перезапуск на тій самій БД з новою версією (як у catalog_version_test.dart), getExercise ex-1 → `deprecated: true`, listExercises без ex-1. Джерела: ADD-001 D-06, AC-F-001 пп. 5–6, BDD-035, контракт getExercise / listExercises.
+- Тест із робочою реалізацією: 1 з 1 `success`.
+- Доказ змістовності: у `installCatalog` (src/lib/src/data/drift_repositories.dart) умову позначення застарілих тимчасово вимкнено (`false && …`). Запуск `dart test test/exercises/catalog_missing_exercise_test.dart --no-color --reporter compact --file-reporter expanded:../logs/app/control-red-d06-20261113.log` → код виходу 1; причина — `Expected: true, Actual: <false>` (рядок 33, `card['deprecated']`), не помилка компіляції; лог застосунку цього запуску (scratchpad): `catalog installed version=test-2 previous=test-1 … initial=7 markedDeprecated=[]`.
+- Код повернуто інструментом редагування; `git diff --quiet e5a7406 -- src` → без відмінностей. Повторний запуск тесту — 1 з 1 `success`; лог застосунку: `markedDeprecated=[ex-1]`.
+- Повний набір: `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-tg012-20261113.log dart test --reporter compact --file-reporter json:../logs/app/control-green-tg012-20261113.jsonl` → код виходу 0; 326 тестів (325 + новий), 326 `success`, регресій 0. Лог: INFO 2401, WARNING 140, ERROR 4 (ті самі змодельовані збої запису); даних користувача й абсолютних шляхів немає.
+- `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!».
+- logs/test-gate.md: у реєстр додано рядок TG-012 і примітку «TG-012 додано 13.11.2026 після GO; «Остаточне рішення» не змінюється». Розділ «Остаточне рішення» не змінено.
+- Коміт: CLAUDE.md дозволяє агентові комітити лише src/, tests/, docs/, logs/app/, logs/agent-session-lab5.md; logs/test-gate.md до переліку не входить, тому його зміну проіндексовано окремо не буде — рішення про коміт цього файлу передано людині.
+
+**Повний діалог:** не збережено агентом
