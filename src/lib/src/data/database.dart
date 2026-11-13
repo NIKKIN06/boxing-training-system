@@ -72,6 +72,11 @@ class TrainingPlans extends Table {
   /// JSON of three stages with item copies (SRS §4.5).
   TextColumn get stagesJson => text()();
 
+  /// JSON of the warnings at the moment of saving (AC-F-010, BDD-014): they
+  /// are not recomputed from the catalog, so a catalog update does not
+  /// rewrite a saved plan (AC-F-011, D-06).
+  TextColumn get warningsJson => text()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }

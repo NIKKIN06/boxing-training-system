@@ -237,25 +237,126 @@ final class RequestDecoder {
   }
 
   /// `OpenSavedPlanRequest.sourcePlanId`.
-  String sourcePlanId(String body) =>
-      throw UnimplementedError('decode OpenSavedPlanRequest');
+  String sourcePlanId(String body) => _requiredString(body, 'sourcePlanId');
 
-  /// `OpenPlanPatchRequest.name`.
-  String planName(String body) =>
-      throw UnimplementedError('decode OpenPlanPatchRequest');
-
-  PlanItemCreate planItemCreate(String body) =>
-      throw UnimplementedError('decode PlanItemCreateRequest');
-
-  PlanItemReplace planItemReplace(String body) =>
-      throw UnimplementedError('decode PlanItemReplaceRequest');
-
-  PlanItemPatch planItemPatch(String body) =>
-      throw UnimplementedError('decode PlanItemPatchRequest');
+  /// `OpenPlanPatchRequest.name`; an empty string is allowed (D-16).
+  String planName(String body) => _requiredString(body, 'name');
 
   /// `SavePlanRequest.openPlanId` / `StartSessionRequest.openPlanId`.
-  String openPlanId(String body) =>
-      throw UnimplementedError('decode openPlanId request');
+  String openPlanId(String body) => _requiredString(body, 'openPlanId');
+
+  /// A body with one required string field. Its absence is answered with
+  /// 400 BAD_REQUEST: the 422 responses of these operations are reserved
+  /// for other codes (OPEN_PLAN_NOT_FOUND, PLAN_EMPTY, PLAN_NOT_FOUND), and
+  /// renameOpenPlan declares no 422 (stage 7, decision on question 7: only
+  /// statuses and codes declared for the operation).
+  static String _requiredString(String body, String key) {
+    final r = _BodyReader(body);
+    return r.object(r.root, '', (o) {
+      if (!o.containsKey(key)) throw const DomainError(ErrorCode.badRequest);
+      return r.string(o, key);
+    })!;
+  }
+
+  /// Body `PlanItemCreateRequest` (AC-F-010, D-08, D-33).
+  PlanItemCreate planItemCreate(String body) {
+    final r = _BodyReader(body);
+    final item = r.object(r.root, '', (o) {
+      final exerciseId = r.string(o, 'exerciseId');
+      final variantId = r.string(o, 'variantId');
+      final stage = r.enumValue(o, 'stage', Stage.values);
+      final (_, position) = r.optionalInteger(o, 'position');
+      r.atLeast(position, 0, 'position');
+      final parameters = r.field(o, 'parameters', (v, p) => _itemParameters(r, v, p));
+      if (exerciseId == null ||
+          variantId == null ||
+          stage == null ||
+          parameters == null) {
+        return null;
+      }
+      return PlanItemCreate(
+        exerciseId: exerciseId,
+        variantId: variantId,
+        stage: stage,
+        position: position,
+        parameters: parameters,
+      );
+    });
+    r.throwIfInvalid();
+    return item!;
+  }
+
+  /// Body `PlanItemReplaceRequest` (AC-F-010, D-08, D-33).
+  PlanItemReplace planItemReplace(String body) {
+    final r = _BodyReader(body);
+    final item = r.object(r.root, '', (o) {
+      final exerciseId = r.string(o, 'exerciseId');
+      final variantId = r.string(o, 'variantId');
+      final parameters = r.field(o, 'parameters', (v, p) => _itemParameters(r, v, p));
+      if (exerciseId == null || variantId == null || parameters == null) {
+        return null;
+      }
+      return PlanItemReplace(
+        exerciseId: exerciseId,
+        variantId: variantId,
+        parameters: parameters,
+      );
+    });
+    r.throwIfInvalid();
+    return item!;
+  }
+
+  /// Body `PlanItemPatchRequest`: at least one of `parameters`, `stage`,
+  /// `position` (`minProperties: 1`; an empty body → 422).
+  PlanItemPatch planItemPatch(String body) {
+    final r = _BodyReader(body);
+    final patch = r.object(r.root, '', (o) {
+      if (!o.containsKey('parameters') &&
+          !o.containsKey('stage') &&
+          !o.containsKey('position')) {
+        r.issue('body', Constraint.minProperties);
+        return null;
+      }
+      final parameters = o.containsKey('parameters')
+          ? r.field(o, 'parameters', (v, p) => _itemParameters(r, v, p))
+          : null;
+      final stage = o.containsKey('stage')
+          ? r.enumValue(o, 'stage', Stage.values)
+          : null;
+      final (_, position) = r.optionalInteger(o, 'position');
+      r.atLeast(position, 0, 'position');
+      return PlanItemPatch(
+        parameters: parameters,
+        stage: stage,
+        position: position,
+      );
+    });
+    r.throwIfInvalid();
+    return patch!;
+  }
+
+  /// `PlanItemParametersInput`: integers of the known fields;
+  /// `repetitionTimeSeconds` is not accepted (D-08, NOT_EDITABLE). The mode
+  /// and the variant limits are checked by the service.
+  static ParametersInput? _itemParameters(
+    _BodyReader r,
+    Object? value,
+    String path,
+  ) {
+    return r.object(value, path, (m) {
+      if (m.containsKey('repetitionTimeSeconds')) {
+        r.issue('$path.repetitionTimeSeconds', Constraint.notEditable);
+      }
+      int? read(String key) => r.optionalInteger(m, key, parent: path).$2;
+      return ParametersInput(
+        rounds: read('rounds'),
+        intervalSeconds: read('intervalSeconds'),
+        sets: read('sets'),
+        repetitions: read('repetitions'),
+        restSeconds: read('restSeconds'),
+      );
+    });
+  }
 
   /// `ExecutedPlanItemPatchRequest.parameters`.
   ParametersInput executedItemParameters(String body) =>
@@ -305,19 +406,35 @@ final class ResponseEncoder {
     location: '/open-plans/${Uri.encodeComponent(plan.id)}',
   );
 
-  Response openPlanItemCreated(OpenPlan plan) =>
-      throw UnimplementedError('encode OpenPlan after addOpenPlanItem (201)');
+  /// `Location` — the created item (stage 7, decision on question 9).
+  Response openPlanItemCreated(OpenPlan plan, String itemId) => jsonResponse(
+    201,
+    openPlanToJson(plan),
+    location:
+        '/open-plans/${Uri.encodeComponent(plan.id)}'
+        '/items/${Uri.encodeComponent(itemId)}',
+  );
 
   Response openPlan(OpenPlan plan) => jsonResponse(200, openPlanToJson(plan));
 
-  Response trainingPlanList(List<SavedPlanSummary> items) =>
-      throw UnimplementedError('encode TrainingPlanList');
+  Response trainingPlanList(List<SavedPlanSummary> items) => jsonResponse(200, {
+    'items': [
+      for (final p in items)
+        {
+          'id': p.id,
+          'name': p.name,
+          'modifiedAt': dateTimeToJson(p.modifiedAt),
+        },
+    ],
+  });
 
-  Response savedPlanCreated(SavedPlan plan) =>
-      throw UnimplementedError('encode SavedPlan (201)');
+  Response savedPlanCreated(SavedPlan plan) => jsonResponse(
+    201,
+    savedPlanToJson(plan),
+    location: '/training-plans/${Uri.encodeComponent(plan.id)}',
+  );
 
-  Response savedPlan(SavedPlan plan) =>
-      throw UnimplementedError('encode SavedPlan');
+  Response savedPlan(SavedPlan plan) => jsonResponse(200, savedPlanToJson(plan));
 
   Response currentSessionCreated(CurrentSession session) =>
       throw UnimplementedError('encode CurrentSession (201)');
@@ -338,7 +455,7 @@ final class ResponseEncoder {
       throw UnimplementedError('encode Analytics');
 
   /// 204 No Content.
-  Response noContent() => throw UnimplementedError('encode 204');
+  Response noContent() => Response(204);
 }
 
 /// A JSON response; [location] is the URI of a created resource (201).
@@ -359,7 +476,14 @@ int? errorStatus(ErrorCode code) => switch (code) {
   ErrorCode.notFound => 404,
   ErrorCode.validationFailed ||
   ErrorCode.unknownDictionaryValue ||
-  ErrorCode.planGenerationImpossible => 422,
+  ErrorCode.planGenerationImpossible ||
+  ErrorCode.exerciseNotFound ||
+  ErrorCode.variantNotFound ||
+  ErrorCode.exerciseDeprecated ||
+  ErrorCode.planNotFound ||
+  ErrorCode.openPlanNotFound ||
+  ErrorCode.planEmpty => 422,
+  ErrorCode.openPlanAlreadySaved || ErrorCode.openPlanSourceMismatch => 409,
   ErrorCode.storageWriteFailed || ErrorCode.generationFailed => 500,
   ErrorCode.generationSearchLimitReached => 503,
   _ => null,
@@ -456,6 +580,20 @@ final class _BodyReader {
     if (!present) return null;
     return read(value, _path(parent, key));
   }
+
+  /// An optional integer; `present` tells whether the key was given.
+  (bool, int?) optionalInteger(JsonMap o, String key, {String parent = ''}) {
+    final (present, value) = _field(o, key, parent, false);
+    if (!present) return (false, null);
+    return (true, _integer(value, _path(parent, key)));
+  }
+
+  /// Schema `minimum`: reports [value] below [minimum] under [path].
+  void atLeast(int? value, int minimum, String path) {
+    if (value != null && value < minimum) _issue(path, Constraint.minimum);
+  }
+
+  void issue(String field, String constraint) => _issue(field, constraint);
 
   int? integer(JsonMap o, String key, {String parent = ''}) {
     final (present, value) = _field(o, key, parent, true);

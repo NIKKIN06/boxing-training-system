@@ -86,3 +86,123 @@ bool isEligible(
     (stage != Stage.main || e.emphases.contains(p.emphasis)) &&
     // Rule 6, D-06.
     !e.deprecated;
+
+/// T-41, AC-F-010: attributes of the source generation parameters (D-14)
+/// that an item does not match — the same rules 2–5 as §5.1; the emphasis is
+/// compared only in the main part (stage 7, decision on question 4).
+List<WarningAttribute> filterMismatches(
+  Exercise e,
+  Variant v,
+  Stage stage,
+  GenerationParameters p,
+) => [
+  if (!e.allowedLevels.contains(p.level)) WarningAttribute.level,
+  if (!e.allowedIntensities.contains(p.intensity)) WarningAttribute.intensity,
+  if (!v.fields.equipment.every(p.availableEquipment.contains))
+    WarningAttribute.availableEquipment,
+  if (stage == Stage.main && !e.emphases.contains(p.emphasis))
+    WarningAttribute.emphasis,
+];
+
+/// T-41, AC-F-010, SRS §5.3, D-08, BDD-032: parameters of a plan item of
+/// variant [v]. Only the fields of the variant mode apply; a missing field
+/// keeps its value from [current] (updateOpenPlanItem) or is required
+/// (addOpenPlanItem, replaceOpenPlanItem); every value lies within
+/// `[min; max]` of the variant; `e` is the variant's fixed value.
+/// Returns the parameters, or the violations under `parameters.<field>`.
+(PlanItemParameters?, List<ErrorDetail>) resolveItemParameters(
+  Variant v,
+  ParametersInput input, {
+  PlanItemParameters? current,
+}) {
+  final details = <ErrorDetail>[];
+  void foreign(String field, int? value) {
+    if (value != null) {
+      details.add(
+        ErrorDetail(
+          field: 'parameters.$field',
+          constraint: Constraint.additionalProperties,
+        ),
+      );
+    }
+  }
+
+  int? value(String field, int? given, int? old, int minimum, ParameterRange r) {
+    final x = given ?? old;
+    final path = 'parameters.$field';
+    if (x == null) {
+      details.add(ErrorDetail(field: path, constraint: Constraint.required));
+    } else if (x < minimum) {
+      details.add(ErrorDetail(field: path, constraint: Constraint.minimum));
+    } else if (x < r.min || x > r.max) {
+      details.add(
+        ErrorDetail(field: path, constraint: Constraint.withinVariantRange),
+      );
+    }
+    return x;
+  }
+
+  switch (v.fields) {
+    case final TimeVariantFields f:
+      foreign('sets', input.sets);
+      foreign('repetitions', input.repetitions);
+      final old = current is TimeParameters ? current : null;
+      final n = value('rounds', input.rounds, old?.rounds, 1, f.rounds);
+      final t = value(
+        'intervalSeconds',
+        input.intervalSeconds,
+        old?.intervalSeconds,
+        1,
+        f.intervalSeconds,
+      );
+      final r = value(
+        'restSeconds',
+        input.restSeconds,
+        old?.restSeconds,
+        0,
+        f.restSeconds,
+      );
+      if (details.isNotEmpty) return (null, details);
+      return (
+        TimeParameters(rounds: n!, intervalSeconds: t!, restSeconds: r!),
+        details,
+      );
+    case final RepetitionsVariantFields f:
+      foreign('rounds', input.rounds);
+      foreign('intervalSeconds', input.intervalSeconds);
+      final old = current is RepetitionsParameters ? current : null;
+      final n = value('sets', input.sets, old?.sets, 1, f.sets);
+      final p = value(
+        'repetitions',
+        input.repetitions,
+        old?.repetitions,
+        1,
+        f.repetitions,
+      );
+      final r = value(
+        'restSeconds',
+        input.restSeconds,
+        old?.restSeconds,
+        0,
+        f.restSeconds,
+      );
+      if (details.isNotEmpty) return (null, details);
+      return (
+        RepetitionsParameters(
+          sets: n!,
+          repetitions: p!,
+          restSeconds: r!,
+          repetitionTimeSeconds: f.repetitionTimeSeconds,
+        ),
+        details,
+      );
+  }
+}
+
+/// D-16, D-32: «План від ДД.ММ.РРРР ГГ:ХХ» with the local date and time of
+/// the save.
+String defaultPlanName(DateTime localTime) {
+  String two(int v) => v.toString().padLeft(2, '0');
+  return 'План від ${two(localTime.day)}.${two(localTime.month)}.'
+      '${localTime.year} ${two(localTime.hour)}:${two(localTime.minute)}';
+}

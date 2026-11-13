@@ -16,8 +16,19 @@ abstract final class Constraint {
   static const String minimum = 'MINIMUM';
   static const String totalGreaterThanZero = 'TOTAL_GREATER_THAN_ZERO';
 
-  /// Schema keyword `maximum` (group 2: minutes of the target duration > 59).
+  /// Schema keyword `maximum` (group 2: minutes of the target duration > 59;
+  /// group 3: a position outside the stage).
   static const String maximum = 'MAXIMUM';
+
+  /// From the contract examples (BDD-032, D-08).
+  static const String withinVariantRange = 'WITHIN_VARIANT_RANGE';
+  static const String notEditable = 'NOT_EDITABLE';
+
+  /// Schema keywords (group 3): a field of the other mode of the variant
+  /// (`additionalProperties: false` of `TimeParameters` /
+  /// `RepetitionsParameters`); an empty `PlanItemPatchRequest` (`minProperties: 1`).
+  static const String additionalProperties = 'ADDITIONAL_PROPERTIES';
+  static const String minProperties = 'MIN_PROPERTIES';
   static const String dictionaryValue = 'DICTIONARY_VALUE';
   static const String invalidJson = 'INVALID_JSON';
   static const String required = 'REQUIRED';

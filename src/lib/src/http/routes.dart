@@ -130,9 +130,11 @@ Router buildRouter(
   });
   route('POST', '/open-plans/<openPlanId>/items', 'addOpenPlanItem', (r) async {
     final item = decode.planItemCreate(await r.readAsString());
-    return encode.openPlanItemCreated(
-      await s.openPlans.addOpenPlanItem(p(r, 'openPlanId'), item),
+    final (plan, itemId) = await s.openPlans.addOpenPlanItem(
+      p(r, 'openPlanId'),
+      item,
     );
+    return encode.openPlanItemCreated(plan, itemId);
   });
   route(
     'PUT',

@@ -1192,6 +1192,17 @@ class $TrainingPlansTable extends TrainingPlans
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _warningsJsonMeta = const VerificationMeta(
+    'warningsJson',
+  );
+  @override
+  late final GeneratedColumn<String> warningsJson = GeneratedColumn<String>(
+    'warnings_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1199,6 +1210,7 @@ class $TrainingPlansTable extends TrainingPlans
     modifiedAt,
     generationParametersJson,
     stagesJson,
+    warningsJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1252,6 +1264,17 @@ class $TrainingPlansTable extends TrainingPlans
     } else if (isInserting) {
       context.missing(_stagesJsonMeta);
     }
+    if (data.containsKey('warnings_json')) {
+      context.handle(
+        _warningsJsonMeta,
+        warningsJson.isAcceptableOrUnknown(
+          data['warnings_json']!,
+          _warningsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_warningsJsonMeta);
+    }
     return context;
   }
 
@@ -1281,6 +1304,10 @@ class $TrainingPlansTable extends TrainingPlans
         DriftSqlType.string,
         data['${effectivePrefix}stages_json'],
       )!,
+      warningsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}warnings_json'],
+      )!,
     );
   }
 
@@ -1302,12 +1329,18 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
 
   /// JSON of three stages with item copies (SRS §4.5).
   final String stagesJson;
+
+  /// JSON of the warnings at the moment of saving (AC-F-010, BDD-014): they
+  /// are not recomputed from the catalog, so a catalog update does not
+  /// rewrite a saved plan (AC-F-011, D-06).
+  final String warningsJson;
   const TrainingPlanRow({
     required this.id,
     required this.name,
     required this.modifiedAt,
     required this.generationParametersJson,
     required this.stagesJson,
+    required this.warningsJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1319,6 +1352,7 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
       generationParametersJson,
     );
     map['stages_json'] = Variable<String>(stagesJson);
+    map['warnings_json'] = Variable<String>(warningsJson);
     return map;
   }
 
@@ -1329,6 +1363,7 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
       modifiedAt: Value(modifiedAt),
       generationParametersJson: Value(generationParametersJson),
       stagesJson: Value(stagesJson),
+      warningsJson: Value(warningsJson),
     );
   }
 
@@ -1345,6 +1380,7 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
         json['generationParametersJson'],
       ),
       stagesJson: serializer.fromJson<String>(json['stagesJson']),
+      warningsJson: serializer.fromJson<String>(json['warningsJson']),
     );
   }
   @override
@@ -1358,6 +1394,7 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
         generationParametersJson,
       ),
       'stagesJson': serializer.toJson<String>(stagesJson),
+      'warningsJson': serializer.toJson<String>(warningsJson),
     };
   }
 
@@ -1367,6 +1404,7 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
     DateTime? modifiedAt,
     String? generationParametersJson,
     String? stagesJson,
+    String? warningsJson,
   }) => TrainingPlanRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -1374,6 +1412,7 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
     generationParametersJson:
         generationParametersJson ?? this.generationParametersJson,
     stagesJson: stagesJson ?? this.stagesJson,
+    warningsJson: warningsJson ?? this.warningsJson,
   );
   TrainingPlanRow copyWithCompanion(TrainingPlansCompanion data) {
     return TrainingPlanRow(
@@ -1388,6 +1427,9 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
       stagesJson: data.stagesJson.present
           ? data.stagesJson.value
           : this.stagesJson,
+      warningsJson: data.warningsJson.present
+          ? data.warningsJson.value
+          : this.warningsJson,
     );
   }
 
@@ -1398,14 +1440,21 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
           ..write('name: $name, ')
           ..write('modifiedAt: $modifiedAt, ')
           ..write('generationParametersJson: $generationParametersJson, ')
-          ..write('stagesJson: $stagesJson')
+          ..write('stagesJson: $stagesJson, ')
+          ..write('warningsJson: $warningsJson')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, modifiedAt, generationParametersJson, stagesJson);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    modifiedAt,
+    generationParametersJson,
+    stagesJson,
+    warningsJson,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1414,7 +1463,8 @@ class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
           other.name == this.name &&
           other.modifiedAt == this.modifiedAt &&
           other.generationParametersJson == this.generationParametersJson &&
-          other.stagesJson == this.stagesJson);
+          other.stagesJson == this.stagesJson &&
+          other.warningsJson == this.warningsJson);
 }
 
 class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
@@ -1423,6 +1473,7 @@ class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
   final Value<DateTime> modifiedAt;
   final Value<String> generationParametersJson;
   final Value<String> stagesJson;
+  final Value<String> warningsJson;
   final Value<int> rowid;
   const TrainingPlansCompanion({
     this.id = const Value.absent(),
@@ -1430,6 +1481,7 @@ class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
     this.modifiedAt = const Value.absent(),
     this.generationParametersJson = const Value.absent(),
     this.stagesJson = const Value.absent(),
+    this.warningsJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TrainingPlansCompanion.insert({
@@ -1438,18 +1490,21 @@ class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
     required DateTime modifiedAt,
     required String generationParametersJson,
     required String stagesJson,
+    required String warningsJson,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
        modifiedAt = Value(modifiedAt),
        generationParametersJson = Value(generationParametersJson),
-       stagesJson = Value(stagesJson);
+       stagesJson = Value(stagesJson),
+       warningsJson = Value(warningsJson);
   static Insertable<TrainingPlanRow> custom({
     Expression<String>? id,
     Expression<String>? name,
     Expression<DateTime>? modifiedAt,
     Expression<String>? generationParametersJson,
     Expression<String>? stagesJson,
+    Expression<String>? warningsJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1459,6 +1514,7 @@ class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
       if (generationParametersJson != null)
         'generation_parameters_json': generationParametersJson,
       if (stagesJson != null) 'stages_json': stagesJson,
+      if (warningsJson != null) 'warnings_json': warningsJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1469,6 +1525,7 @@ class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
     Value<DateTime>? modifiedAt,
     Value<String>? generationParametersJson,
     Value<String>? stagesJson,
+    Value<String>? warningsJson,
     Value<int>? rowid,
   }) {
     return TrainingPlansCompanion(
@@ -1478,6 +1535,7 @@ class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
       generationParametersJson:
           generationParametersJson ?? this.generationParametersJson,
       stagesJson: stagesJson ?? this.stagesJson,
+      warningsJson: warningsJson ?? this.warningsJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1502,6 +1560,9 @@ class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
     if (stagesJson.present) {
       map['stages_json'] = Variable<String>(stagesJson.value);
     }
+    if (warningsJson.present) {
+      map['warnings_json'] = Variable<String>(warningsJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1516,6 +1577,7 @@ class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
           ..write('modifiedAt: $modifiedAt, ')
           ..write('generationParametersJson: $generationParametersJson, ')
           ..write('stagesJson: $stagesJson, ')
+          ..write('warningsJson: $warningsJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2492,6 +2554,7 @@ typedef $$TrainingPlansTableCreateCompanionBuilder =
       required DateTime modifiedAt,
       required String generationParametersJson,
       required String stagesJson,
+      required String warningsJson,
       Value<int> rowid,
     });
 typedef $$TrainingPlansTableUpdateCompanionBuilder =
@@ -2501,6 +2564,7 @@ typedef $$TrainingPlansTableUpdateCompanionBuilder =
       Value<DateTime> modifiedAt,
       Value<String> generationParametersJson,
       Value<String> stagesJson,
+      Value<String> warningsJson,
       Value<int> rowid,
     });
 
@@ -2535,6 +2599,11 @@ class $$TrainingPlansTableFilterComposer
 
   ColumnFilters<String> get stagesJson => $composableBuilder(
     column: $table.stagesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get warningsJson => $composableBuilder(
+    column: $table.warningsJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2572,6 +2641,11 @@ class $$TrainingPlansTableOrderingComposer
     column: $table.stagesJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get warningsJson => $composableBuilder(
+    column: $table.warningsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TrainingPlansTableAnnotationComposer
@@ -2601,6 +2675,11 @@ class $$TrainingPlansTableAnnotationComposer
 
   GeneratedColumn<String> get stagesJson => $composableBuilder(
     column: $table.stagesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get warningsJson => $composableBuilder(
+    column: $table.warningsJson,
     builder: (column) => column,
   );
 }
@@ -2641,6 +2720,7 @@ class $$TrainingPlansTableTableManager
                 Value<DateTime> modifiedAt = const Value.absent(),
                 Value<String> generationParametersJson = const Value.absent(),
                 Value<String> stagesJson = const Value.absent(),
+                Value<String> warningsJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TrainingPlansCompanion(
                 id: id,
@@ -2648,6 +2728,7 @@ class $$TrainingPlansTableTableManager
                 modifiedAt: modifiedAt,
                 generationParametersJson: generationParametersJson,
                 stagesJson: stagesJson,
+                warningsJson: warningsJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2657,6 +2738,7 @@ class $$TrainingPlansTableTableManager
                 required DateTime modifiedAt,
                 required String generationParametersJson,
                 required String stagesJson,
+                required String warningsJson,
                 Value<int> rowid = const Value.absent(),
               }) => TrainingPlansCompanion.insert(
                 id: id,
@@ -2664,6 +2746,7 @@ class $$TrainingPlansTableTableManager
                 modifiedAt: modifiedAt,
                 generationParametersJson: generationParametersJson,
                 stagesJson: stagesJson,
+                warningsJson: warningsJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

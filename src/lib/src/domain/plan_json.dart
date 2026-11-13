@@ -1,9 +1,95 @@
 /// Wire form of plans (schemas `GenerationParameters`, `PlanItem`,
-/// `PlanStage`, `PlanWarning`, `Plan`, `OpenPlan` of spec/openapi.yaml).
+/// `PlanStage`, `PlanWarning`, `Plan`, `OpenPlan`, `SavedPlan` of
+/// spec/openapi.yaml). Decoding is for trusted stored copies only; a
+/// malformed value throws.
 library;
 
+import 'enums.dart';
 import 'exercise_json.dart';
 import 'plan.dart';
+
+/// `date-time` with an explicit offset: the moment in UTC.
+String dateTimeToJson(DateTime t) => t.toUtc().toIso8601String();
+
+JsonMap savedPlanToJson(SavedPlan p) => {
+  'id': p.id,
+  'modifiedAt': dateTimeToJson(p.modifiedAt),
+  ...planContentToJson(p.content),
+};
+
+T _wire<T extends WireEnum>(List<T> values, Object? raw) {
+  final value = raw is String ? fromWire(values, raw) : null;
+  if (value == null) throw FormatException('Unknown value', raw);
+  return value;
+}
+
+GenerationParameters generationParametersFromJson(Object? raw) {
+  final m = raw! as JsonMap;
+  final t = m['targetDuration']! as JsonMap;
+  return GenerationParameters(
+    targetDuration: TargetDuration(
+      hours: t['hours']! as int,
+      minutes: t['minutes']! as int,
+    ),
+    level: m['level']! as String,
+    emphasis: m['emphasis']! as String,
+    availableEquipment: [
+      for (final e in m['availableEquipment']! as List<Object?>) e! as String,
+    ],
+    intensity: m['intensity']! as String,
+  );
+}
+
+PlanItemParameters itemParametersFromJson(Object? raw) {
+  final m = raw! as JsonMap;
+  if (m.containsKey('rounds')) {
+    return TimeParameters(
+      rounds: m['rounds']! as int,
+      intervalSeconds: m['intervalSeconds']! as int,
+      restSeconds: m['restSeconds']! as int,
+    );
+  }
+  return RepetitionsParameters(
+    sets: m['sets']! as int,
+    repetitions: m['repetitions']! as int,
+    restSeconds: m['restSeconds']! as int,
+    repetitionTimeSeconds: m['repetitionTimeSeconds']! as int,
+  );
+}
+
+PlanItem planItemFromJson(Object? raw) {
+  final m = raw! as JsonMap;
+  return PlanItem(
+    id: m['id']! as String,
+    exerciseId: m['exerciseId']! as String,
+    exerciseName: m['exerciseName']! as String,
+    variant: variantFromJson(m['variant']),
+    stage: _wire(Stage.values, m['stage']),
+    position: m['position']! as int,
+    parameters: itemParametersFromJson(m['parameters']),
+    estimatedDurationSeconds: m['estimatedDurationSeconds']! as int,
+  );
+}
+
+List<PlanStage> stagesFromJson(Object? raw) => [
+  for (final s in (raw! as List<Object?>).cast<JsonMap>())
+    PlanStage(
+      stage: _wire(Stage.values, s['stage']),
+      items: [for (final i in s['items']! as List<Object?>) planItemFromJson(i)],
+    ),
+];
+
+List<PlanWarning> warningsFromJson(Object? raw) => [
+  for (final w in (raw! as List<Object?>).cast<JsonMap>())
+    PlanWarning(
+      code: _wire(PlanWarningCode.values, w['code']),
+      stage: w['stage'] == null ? null : _wire(Stage.values, w['stage']),
+      itemId: w['itemId'] as String?,
+      attribute: w['attribute'] == null
+          ? null
+          : _wire(WarningAttribute.values, w['attribute']),
+    ),
+];
 
 JsonMap generationParametersToJson(GenerationParameters p) => {
   'targetDuration': {

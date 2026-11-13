@@ -3,19 +3,23 @@
 /// A write is reported as successful only after SQLite has completed it; a
 /// multi-row write runs in one transaction. A failed write is logged at ERROR
 /// with the stack trace and surfaces as [StorageWriteException].
-/// T-31 (group 1): exercises and catalog metadata. Saved plans and completed
-/// trainings — later groups; their methods still throw [UnimplementedError].
+/// T-31 (group 1): exercises and catalog metadata; T-42 (group 3): saved
+/// plans. Completed trainings — later group; their methods still throw
+/// [UnimplementedError].
 library;
 
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:logging/logging.dart';
+import 'package:sqlite3/sqlite3.dart' show SqliteException;
 
 import '../domain/enums.dart';
 import '../domain/exercise.dart';
 import '../domain/exercise_json.dart';
 import '../domain/plan.dart';
+import '../domain/plan_json.dart';
+import '../domain/plan_rules.dart';
 import '../domain/training.dart';
 import '../logging/app_logging.dart';
 import '../ports/repositories.dart';
@@ -24,14 +28,32 @@ import 'database.dart';
 final Logger _log = Logger(LogNames.storage);
 
 /// Runs a write of [operation]; any failure becomes [StorageWriteException].
+/// The log gets the stack trace and only the SQLite code and explanation:
+/// the text of [SqliteException] includes the statement parameters, i.e.
+/// names and other user field contents (REQ-NF-004; stage 1, decision 3).
 Future<T> _write<T>(String operation, Future<T> Function() body) async {
   try {
     return await body();
   } on Exception catch (error, stackTrace) {
-    _log.severe('write failed operation=$operation', error, stackTrace);
+    _log.severe(
+      'write failed operation=$operation',
+      _safeDescription(error),
+      stackTrace,
+    );
     throw StorageWriteException(operation, error);
   }
 }
+
+/// Any other exception — only its type: with `NativeDatabase.createInBackground`
+/// the SQLite error arrives wrapped in `DriftRemoteException`, whose text is
+/// the full SQLite text, and its class is exported only by the experimental
+/// `package:drift/remote.dart`.
+String _safeDescription(Object error) => switch (error) {
+  SqliteException() =>
+    'SqliteException(${error.extendedResultCode}): ${error.message}'
+        '${error.explanation == null ? '' : ', ${error.explanation}'}',
+  _ => error.runtimeType.toString(),
+};
 
 /// Key of the installed catalog version in `catalog_meta`.
 const String catalogVersionKey = 'catalogVersion';
@@ -171,25 +193,81 @@ final class DriftTrainingPlanRepository implements TrainingPlanRepository {
 
   final AppDatabase db;
 
+  /// D-16: newer first by `modifiedAt` (REV-009); the order of equal values
+  /// is not defined.
   @override
-  Future<List<SavedPlanSummary>> findAllSummaries() =>
-      throw UnimplementedError('TrainingPlanRepository.findAllSummaries');
+  Future<List<SavedPlanSummary>> findAllSummaries() async {
+    final rows = await db.select(db.trainingPlans).get();
+    final items = [
+      for (final r in rows)
+        SavedPlanSummary(id: r.id, name: r.name, modifiedAt: r.modifiedAt),
+    ]..sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
+    return items;
+  }
 
   @override
-  Future<SavedPlan?> findById(String id) =>
-      throw UnimplementedError('TrainingPlanRepository.findById');
+  Future<SavedPlan?> findById(String id) async {
+    final row = await (db.select(
+      db.trainingPlans,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _fromRow(row);
+  }
 
   @override
-  Future<void> insert(SavedPlan plan) =>
-      throw UnimplementedError('TrainingPlanRepository.insert');
+  Future<void> insert(SavedPlan plan) => _write(
+    'trainingPlan.insert',
+    () => db.into(db.trainingPlans).insert(_toCompanion(plan)),
+  );
 
   @override
   Future<void> update(SavedPlan plan) =>
-      throw UnimplementedError('TrainingPlanRepository.update');
+      _write('trainingPlan.update', () async {
+        final count = await (db.update(
+          db.trainingPlans,
+        )..where((t) => t.id.equals(plan.id))).write(_toCompanion(plan));
+        if (count != 1) {
+          throw StateError('training plan ${plan.id}: $count rows updated');
+        }
+      });
 
   @override
-  Future<void> delete(String id) =>
-      throw UnimplementedError('TrainingPlanRepository.delete');
+  Future<void> delete(String id) => _write(
+    'trainingPlan.delete',
+    () => (db.delete(db.trainingPlans)..where((t) => t.id.equals(id))).go(),
+  );
+
+  static TrainingPlansCompanion _toCompanion(SavedPlan p) =>
+      TrainingPlansCompanion.insert(
+        id: p.id,
+        name: p.content.name!,
+        modifiedAt: p.modifiedAt.toUtc(),
+        generationParametersJson: jsonEncode(
+          generationParametersToJson(p.content.generationParameters),
+        ),
+        stagesJson: jsonEncode(planContentToJson(p.content)['stages']),
+        warningsJson: jsonEncode(planContentToJson(p.content)['warnings']),
+      );
+
+  static SavedPlan _fromRow(TrainingPlanRow r) {
+    final params = generationParametersFromJson(
+      jsonDecode(r.generationParametersJson),
+    );
+    final stages = stagesFromJson(jsonDecode(r.stagesJson));
+    final target = targetDurationSeconds(params.targetDuration);
+    return SavedPlan(
+      id: r.id,
+      modifiedAt: r.modifiedAt,
+      content: PlanContent(
+        name: r.name,
+        generationParameters: params,
+        targetDurationSeconds: target,
+        durationTolerance: durationTolerance(target),
+        stages: stages,
+        estimatedDurationSeconds: planDurationSeconds(stages),
+        warnings: warningsFromJson(jsonDecode(r.warningsJson)),
+      ),
+    );
+  }
 }
 
 final class DriftCompletedTrainingRepository

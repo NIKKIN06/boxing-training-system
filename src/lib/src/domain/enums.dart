@@ -112,24 +112,26 @@ enum ErrorCode {
 }
 
 /// Non-blocking plan warning code (AC-F-010; schema `PlanWarning.code`).
-enum PlanWarningCode {
+enum PlanWarningCode implements WireEnum {
   durationOutOfTolerance('DURATION_OUT_OF_TOLERANCE'),
   stageEmpty('STAGE_EMPTY'),
   filterMismatch('FILTER_MISMATCH'),
   stageNotInExercise('STAGE_NOT_IN_EXERCISE');
 
   const PlanWarningCode(this.wire);
+  @override
   final String wire;
 }
 
 /// Generation parameter that a plan item does not match (schema `PlanWarning.attribute`).
-enum WarningAttribute {
+enum WarningAttribute implements WireEnum {
   level('level'),
   intensity('intensity'),
   availableEquipment('availableEquipment'),
   emphasis('emphasis');
 
   const WarningAttribute(this.wire);
+  @override
   final String wire;
 }
 
