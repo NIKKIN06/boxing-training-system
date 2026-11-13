@@ -6,7 +6,6 @@
 ///   where an integer is expected, a value outside an enumeration;
 /// - 422 UNKNOWN_DICTIONARY_VALUE — a filter value outside an enumeration.
 /// Domain rules (ranges, links, non-empty names) are checked by the services.
-/// Operations of later groups still throw [UnimplementedError].
 library;
 
 import 'dart:convert';
@@ -382,10 +381,29 @@ final class RequestDecoder {
     return r.object(r.root, '', (o) => r.string(o, 'note', required: false));
   }
 
-  /// Query parameters `from` / `to` of `getAnalytics` (ADD-002 D-35).
+  /// Query parameters `from` / `to` of `getAnalytics` (ADD-002 D-35),
+  /// `format: date`. A value that is not a valid `YYYY-MM-DD` date → 400
+  /// BAD_REQUEST (stage 7, decision on question 7: a status declared for the
+  /// operation). The rules of the period are checked by the service.
   ({LocalDate? from, LocalDate? to}) analyticsPeriod(
     Map<String, List<String>> query,
-  ) => throw UnimplementedError('decode analytics period');
+  ) {
+    LocalDate? date(String name) {
+      final values = query[name];
+      if (values == null || values.isEmpty) return null;
+      final raw = values.first;
+      final m = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$').firstMatch(raw);
+      if (m == null) throw const DomainError(ErrorCode.badRequest);
+      final d = LocalDate(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
+      final check = DateTime.utc(d.year, d.month, d.day);
+      if (check.month != d.month || check.day != d.day) {
+        throw const DomainError(ErrorCode.badRequest);
+      }
+      return d;
+    }
+
+    return (from: date('from'), to: date('to'));
+  }
 }
 
 /// Success responses with status codes and `Location` headers of the contract.
@@ -479,8 +497,25 @@ final class ResponseEncoder {
         ],
       });
 
-  Response analytics(Analytics analytics) =>
-      throw UnimplementedError('encode Analytics');
+  Response analytics(Analytics a) => jsonResponse(200, {
+    'period': {
+      'from': localDateToJson(a.period.from),
+      'to': localDateToJson(a.period.to),
+    },
+    'completedTrainingCount': a.completedTrainingCount,
+    'dailyCounts': [
+      for (final d in a.dailyCounts)
+        {'date': localDateToJson(d.date), 'count': d.count},
+    ],
+    'exerciseFrequencies': [
+      for (final f in a.exerciseFrequencies)
+        {
+          'exerciseId': f.exerciseId,
+          'exerciseName': f.exerciseName,
+          'trainingCount': f.trainingCount,
+        },
+    ],
+  });
 
   /// 204 No Content.
   Response noContent() => Response(204);
@@ -497,12 +532,14 @@ Response jsonResponse(int status, Object? body, {String? location}) => Response(
 );
 
 /// HTTP status of an error code of [operationId] as declared in
-/// spec/openapi.yaml; `null` for codes of later groups. NO_CURRENT_SESSION
-/// is 409 for completeTraining (`NoCurrentSessionConflict`) and 404 elsewhere.
-int? errorStatus(ErrorCode code, String operationId) => switch (code) {
+/// spec/openapi.yaml for every code of `Error.code`. NO_CURRENT_SESSION is
+/// 409 for completeTraining (`NoCurrentSessionConflict`) and 404 elsewhere.
+int errorStatus(ErrorCode code, String operationId) => switch (code) {
   ErrorCode.noCurrentSession => operationId == 'completeTraining' ? 409 : 404,
   ErrorCode.sessionAlreadyActive => 409,
-  ErrorCode.executedPlanEmpty => 422,
+  ErrorCode.executedPlanEmpty ||
+  ErrorCode.invalidPeriod ||
+  ErrorCode.endDateInFuture => 422,
   ErrorCode.badRequest => 400,
   ErrorCode.initialExerciseReadOnly => 403,
   ErrorCode.notFound => 404,
@@ -518,7 +555,6 @@ int? errorStatus(ErrorCode code, String operationId) => switch (code) {
   ErrorCode.openPlanAlreadySaved || ErrorCode.openPlanSourceMismatch => 409,
   ErrorCode.storageWriteFailed || ErrorCode.generationFailed => 500,
   ErrorCode.generationSearchLimitReached => 503,
-  _ => null,
 };
 
 /// Body of the `Error` schema.

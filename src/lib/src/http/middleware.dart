@@ -30,26 +30,16 @@ Handler operation(String operationId, Handler inner) {
     Response response;
     try {
       response = await inner(request);
-    } on DomainError catch (error, stackTrace) {
+    } on DomainError catch (error) {
       final status = errorStatus(error.code, operationId);
-      if (status == null) {
-        _httpLog.severe(
-          'no status for error code operationId=$operationId '
-          'code=${error.code.wire}',
-          error,
-          stackTrace,
-        );
-        response = Response(500);
-      } else {
-        final details = [
-          for (final d in error.details) '${d.field}:${d.constraint}',
-        ];
-        _httpLog.warning(
-          'domain error operationId=$operationId code=${error.code.wire} '
-          'status=$status details=[${details.join(',')}]',
-        );
-        response = jsonResponse(status, errorBody(error));
-      }
+      final details = [
+        for (final d in error.details) '${d.field}:${d.constraint}',
+      ];
+      _httpLog.warning(
+        'domain error operationId=$operationId code=${error.code.wire} '
+        'status=$status details=[${details.join(',')}]',
+      );
+      response = jsonResponse(status, errorBody(error));
     } on UnimplementedError catch (error) {
       _httpLog.warning(
         'not implemented operationId=$operationId stub="${error.message}"',

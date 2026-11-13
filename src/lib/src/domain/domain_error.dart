@@ -24,6 +24,11 @@ abstract final class Constraint {
   static const String withinVariantRange = 'WITHIN_VARIANT_RANGE';
   static const String notEditable = 'NOT_EDITABLE';
 
+  /// From the contract examples (BDD-030, BDD-048; D-21, D-35).
+  static const String notAfterTo = 'NOT_AFTER_TO';
+  static const String requiredWithFrom = 'REQUIRED_WITH_FROM';
+  static const String notAfterToday = 'NOT_AFTER_TODAY';
+
   /// Schema keywords (group 3): a field of the other mode of the variant
   /// (`additionalProperties: false` of `TimeParameters` /
   /// `RepetitionsParameters`); an empty `PlanItemPatchRequest` (`minProperties: 1`).

@@ -4,8 +4,8 @@
 /// multi-row write runs in one transaction. A failed write is logged at ERROR
 /// with the stack trace and surfaces as [StorageWriteException].
 /// T-31 (group 1): exercises and catalog metadata; T-42 (group 3): saved
-/// plans; T-45, T-46 (group 4): completed trainings. The selection by local
-/// date for analytics — group 5; it still throws [UnimplementedError].
+/// plans; T-45, T-46 (group 4): completed trainings; T-47 (group 5): the
+/// selection by local start date for analytics.
 library;
 
 import 'dart:convert';
@@ -304,13 +304,23 @@ final class DriftCompletedTrainingRepository
         note: r.note,
       );
 
+  /// Records whose local start date lies in `[from; to]`, bounds included
+  /// (AC-F-015). `YYYY-MM-DD` text compares in calendar order.
   @override
   Future<List<CompletedTraining>> findByLocalStartDate(
     LocalDate from,
     LocalDate to,
-  ) => throw UnimplementedError(
-    'CompletedTrainingRepository.findByLocalStartDate',
-  );
+  ) async {
+    final rows =
+        await (db.select(db.completedTrainings)..where(
+              (t) => t.localStartDate.isBetweenValues(
+                localDateToJson(from),
+                localDateToJson(to),
+              ),
+            ))
+            .get();
+    return rows.map(_fromRow).toList();
+  }
 
   /// One INSERT: the record is written in full or not at all (AC-NF-003).
   @override

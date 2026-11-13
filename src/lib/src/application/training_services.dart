@@ -1,10 +1,11 @@
 /// Current session, completed trainings and analytics (REQ-F-012…REQ-F-016).
-/// Group 4: current session, completion, history (T-44, T-45, T-46).
-/// Analytics — group 5; it still throws [UnimplementedError].
+/// Group 4: current session, completion, history (T-44, T-45, T-46);
+/// group 5: analytics (T-47).
 library;
 
 import 'package:logging/logging.dart';
 
+import '../domain/analytics_rules.dart';
 import '../domain/domain_error.dart';
 import '../domain/enums.dart';
 import '../domain/plan.dart';
@@ -237,7 +238,21 @@ final class AnalyticsService {
   final CompletedTrainingRepository trainings;
   final Clock clock;
 
-  /// operationId `getAnalytics`; [from] and [to] are both set or both absent.
-  Future<Analytics> getAnalytics({LocalDate? from, LocalDate? to}) =>
-      throw UnimplementedError('getAnalytics');
+  /// operationId `getAnalytics` (T-47): only completed trainings are counted
+  /// (the current session is not, BDD-019); the day is the local start date.
+  Future<Analytics> getAnalytics({LocalDate? from, LocalDate? to}) async {
+    final period = resolvePeriod(from, to, localDateOf(clock.now()));
+    final records = await trainings.findByLocalStartDate(
+      period.from,
+      period.to,
+    );
+    final analytics = computeAnalytics(period, records);
+    _log.info(
+      'analytics computed from=${localDateToJson(period.from)} '
+      'to=${localDateToJson(period.to)} '
+      'trainings=${analytics.completedTrainingCount} '
+      'exercises=${analytics.exerciseFrequencies.length}',
+    );
+    return analytics;
+  }
 }

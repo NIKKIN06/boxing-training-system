@@ -1045,3 +1045,56 @@
 4. Гілку D-06 «відсутня в новій версії → застаріла» покрити тестом (вимога ЛР-5: для кожної реалізованої вимоги — тест) окремим кроком після групи 5: фікстура tests/fixtures/catalogs/catalog-v2-ex1-missing.json (test-2 без ex-1), тест «BDD-035 D-06 AC-F-001», доказ змістовності (тимчасово вимкнена гілка → тест падає, лог logs/app/control-red-d06-<дата>.log; код повернуто), TG-012 у logs/test-gate.md без зміни остаточного рішення, коміт `test: [agent] BDD-035 D-06 deprecation of missing exercise (TG-012)`.
 
 **Повний діалог:** не збережено агентом
+
+**Коміт:** `72eb9fb` feat: [agent] T-44, T-45, T-46 current session, completion and history (`git log --oneline -1`).
+
+## Етап 14. Реалізація, група 5: T-47 (аналітика, API-частина) — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. Та сама процедура й правила. T-47: getAnalytics — період за замовчуванням (сьогодні й 29 попередніх днів), межі включно, INVALID_PERIOD, END_DATE_IN_FUTURE (D-21, D-22, D-35); день — локальна дата старту; частота — кількість тренувань із вправою.
+2. Після групи 5 окремо: чи проходять усі 7 тестів BDD-035 і всі 325 тестів.
+3. Коміт `feat: [agent] T-47 analytics` після показу `git diff --cached --stat`.
+
+**Пропозиція агента та дії:**
+- Тести групи — analytics/analytics_test.dart (15, T-27 → T-47) і тести інших файлів, що викликають getAnalytics: session_start_test.dart (BDD-046), session_finish_test.dart (BDD-026), operation_coverage_test.dart («never 501» для getAnalytics).
+- Червоний запуск до змін (src/ = коміт `72eb9fb`): `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-red-g5-20261113.log dart test test/analytics/analytics_test.dart test/current_session/ test/contract/operation_coverage_test.dart --reporter compact --file-reporter json:../logs/app/control-red-g5-20261113.jsonl` → код виходу 1; `python3 -I tool/red_check.py …` → код виходу 0: 4 набори, 78 тестів; 18 `failure`, у кожного перша помилка — «getAnalytics: status 501 is not declared»; інших причин і «Failed to load» — 0; пройшли 60 — тести груп 1–4 у цих файлах. Лог: INFO 643, WARNING 64, ERROR 0; 290 запитів, з них 18 — 501.
+- Реалізація (лише src/; схема Drift не змінювалась):
+  - `domain/analytics_rules.dart` (новий): `resolvePeriod` — обидві дати відсутні → `to` = сьогодні (локальна дата за підставленим годинником), `from` = `to` − 29 днів (AC-F-015); лише одна дата → 422 INVALID_PERIOD (D-35; `to: REQUIRED_WITH_FROM` з прикладу контракту, для відсутньої `from` — `from: REQUIRED`); `from` > `to` → INVALID_PERIOD (`from: NOT_AFTER_TO`); `to` > сьогодні → END_DATE_IN_FUTURE (`to: NOT_AFTER_TODAY`, D-21); довжина не обмежена; `computeAnalytics` — `dailyCounts` для кожного дня періоду, зокрема 0 (D-22); сума дорівнює `completedTrainingCount`; день — локальна дата старту; частота — кількість тренувань, у яких вправа (за `exerciseId`) трапляється хоча б раз, незалежно від кількості включень і варіантів (AC-F-016); назва — з копії в найновішому тренуванні періоду (D-22);
+  - сервіс `AnalyticsService.getAnalytics` — лише завершені тренування (поточне заняття не враховується, BDD-019); логує період і кількості;
+  - репозиторій: `findByLocalStartDate` — `local_start_date BETWEEN from AND to` (текст `YYYY-MM-DD`, межі включно);
+  - HTTP: декодер `from` / `to` (`format: date`; некоректна дата → 400 BAD_REQUEST — питання 7 етапу 7), кодувальник `Analytics`; статуси INVALID_PERIOD, END_DATE_IN_FUTURE — 422;
+  - `errorStatus` тепер покриває всі 22 коди `Error.code`, тому гілку «код без статусу → 500» видалено з `middleware.dart`; заглушок `UnimplementedError` у src/ не лишилося (обробка 501 у middleware лишилась без змін).
+
+**Запуски після реалізації (13.11.2026):**
+- Тести групи (4 файли): 78 з 78 `success`.
+- Повний набір — він же контрольний запуск: `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-g5-20261113.log dart test --reporter compact --file-reporter json:../logs/app/control-green-g5-20261113.jsonl` → код виходу 0, «+325: All tests passed!». Звірка `green_check.py` з logs/app/control-green-g4-20261113.jsonl: 325 тестів, 325 `success`, «Failed to load» — 0; нові — 18 (analytics — 15, BDD-026, BDD-046, «never 501» getAnalytics); регресій — 0.
+- Окремо за запитом: **усі 325 тестів проходять**; **усі 7 тестів BDD-035** (catalog_version_test.dart) проходять — з групи 4.
+- `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!»; `git diff --quiet 5962e33 -- tests spec` → без відмінностей.
+
+**Аналіз логу logs/app/control-green-g5-20261113.log (скрипт `log_check.py`, поза репозиторієм):**
+- 2537 записів, INFO — 2393, WARNING — 140, ERROR — 4; 156 рядків — кадри стеку записів ERROR.
+- ERROR — 4, ті самі очікувані збої запису, що в групі 4 (AC-NF-003, BDD-021; лише `DriftRemoteException` і стек).
+- 971 запит; жодного 501; `not implemented` — 0. getAnalytics: 200 — 17, 422 — 4 (`INVALID_PERIOD from:NOT_AFTER_TO`, `INVALID_PERIOD to:REQUIRED_WITH_FROM`, `INVALID_PERIOD from:REQUIRED`, `END_DATE_IN_FUTURE to:NOT_AFTER_TODAY`).
+- WARNING — 140, усі `domain error` з кодами контракту.
+- Логер `trainings`: `analytics computed from=… to=… trainings=… exercises=…` — 17.
+- Тривалість запитів 0–338 мс (найдовший — перший запит процесу).
+- Даних користувача й абсолютних шляхів немає (пошук етапу 10 і `/Users/` — збігів 0).
+- Висновок: усі операції реалізовано; ERROR лише для змодельованих збоїв запису без вмісту полів; WARNING — очікувані відмови з кодами контракту.
+
+**Питання до специфікації (передано людині):**
+1. Задано лише `to` → 422 INVALID_PERIOD з `from: REQUIRED` (ключове слово схеми; аналога REQUIRED_WITH_FROM для `from` у контракті немає; тест перевіряє лише код).
+2. Некоректна дата в query (`2026-13-01`, не `YYYY-MM-DD`) → 400 BAD_REQUEST (питання 7 етапу 7, «Відкладено»). Не тестується.
+3. Якщо одночасно `from` > `to` і `to` > сьогодні, повертається INVALID_PERIOD (перевірка порядку дат іде першою). Контракт порядку не визначає; не тестується.
+4. Порядок `exerciseFrequencies` — порядок першої появи вправи в тренуваннях періоду від старіших до новіших (контракт: «порядок не визначається»).
+
+**Наступний крок (рішення 4 групи 4):** тест гілки D-06 «відсутня в новій версії → застаріла» (TG-012) — після коміту групи 5.
+
+**Рішення людини щодо групи 5 (13.11.2026):** питання 1–4 — прийнято, «Відкладено»: специфікація не визначає, використано коди контракту. Перед комітом підтвердити, що після видалення гілки «код без статусу → 500» непередбачений виняток записується як ERROR зі стеком (рішення 3 етапу 1).
+
+**Підтвердження (13.11.2026):** гілка `catch (error, stackTrace)` в `operation()` (src/lib/src/http/middleware.dart) і `requestLogging()` не змінювались; видалено лише перевірку `status == null`, яка стала недосяжною. Перевірка запуском: скрипт поза репозиторієм (scratchpad, `dart --packages=.dart_tool/package_config.json unhandled_probe.dart`) склав `requestLogging()` + `operation('probeOperation', …)` з обробником, що кидає `StateError`. Вивід: `ERROR http: unhandled exception operationId=probeOperation`, `error: Bad state: probe failure`, `stack:` з кадрами `middleware.dart:32` і `:68`; далі `INFO http: request … status=500`. src/ і tests/ не змінювались, тому повний набір не повторювався.
+
+**Спостереження під час перевірки (передано людині, не змінювалось):**
+1. Непередбачений виняток дає 500 без тіла, а контракт описує модель `Error` для всіх 4xx / 5xx (рішення 4 групи 1 стосувалося ініціалізації каталогу). Код 500 у контракті є лише GENERATION_FAILED (generatePlan) і STORAGE_WRITE_FAILED (операції запису).
+2. Для непередбаченого винятку в лог іде `error.toString()`. Збій читання SQLite (`SqliteException` / `DriftRemoteException`) містив би SQL-оператор і параметри, як у знахідці групи 3. Записи шляхом відсіювання тут не застосовано.
+
+**Повний діалог:** не збережено агентом
