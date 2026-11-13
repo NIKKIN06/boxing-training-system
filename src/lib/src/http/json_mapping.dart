@@ -19,6 +19,7 @@ import '../domain/enums.dart';
 import '../domain/exercise.dart';
 import '../domain/exercise_json.dart';
 import '../domain/plan.dart';
+import '../domain/plan_json.dart';
 import '../domain/training.dart';
 
 /// Request query and body decoding.
@@ -199,8 +200,41 @@ final class RequestDecoder {
     return name;
   }
 
-  GenerationParameters generationParameters(String body) =>
-      throw UnimplementedError('decode PlanGenerationRequest');
+  /// Body `PlanGenerationRequest` (REQ-F-005, ADD-002 D-31). Values of the
+  /// dictionaries are not checked here (stage 7, question 6: deferred).
+  GenerationParameters generationParameters(String body) {
+    final r = _BodyReader(body);
+    final params = r.object(r.root, '', (o) {
+      final duration = r.field(o, 'targetDuration', (value, path) {
+        return r.object(value, path, (t) {
+          final hours = r.integer(t, 'hours', parent: path);
+          final minutes = r.integer(t, 'minutes', parent: path);
+          if (hours == null || minutes == null) return null;
+          return TargetDuration(hours: hours, minutes: minutes);
+        });
+      });
+      final level = r.string(o, 'level');
+      final emphasis = r.string(o, 'emphasis');
+      final equipment = r.list(o, 'availableEquipment', r.stringItem);
+      final intensity = r.string(o, 'intensity');
+      if (duration == null ||
+          level == null ||
+          emphasis == null ||
+          equipment == null ||
+          intensity == null) {
+        return null;
+      }
+      return GenerationParameters(
+        targetDuration: duration,
+        level: level,
+        emphasis: emphasis,
+        availableEquipment: equipment.nonNulls.toList(),
+        intensity: intensity,
+      );
+    });
+    r.throwIfInvalid();
+    return params!;
+  }
 
   /// `OpenSavedPlanRequest.sourcePlanId`.
   String sourcePlanId(String body) =>
@@ -265,14 +299,16 @@ final class ResponseEncoder {
   Response dictionary(Dictionary dictionary) =>
       jsonResponse(200, dictionaryToJson(dictionary));
 
-  Response openPlanCreated(OpenPlan plan) =>
-      throw UnimplementedError('encode OpenPlan (201)');
+  Response openPlanCreated(OpenPlan plan) => jsonResponse(
+    201,
+    openPlanToJson(plan),
+    location: '/open-plans/${Uri.encodeComponent(plan.id)}',
+  );
 
   Response openPlanItemCreated(OpenPlan plan) =>
       throw UnimplementedError('encode OpenPlan after addOpenPlanItem (201)');
 
-  Response openPlan(OpenPlan plan) =>
-      throw UnimplementedError('encode OpenPlan');
+  Response openPlan(OpenPlan plan) => jsonResponse(200, openPlanToJson(plan));
 
   Response trainingPlanList(List<SavedPlanSummary> items) =>
       throw UnimplementedError('encode TrainingPlanList');
@@ -321,8 +357,11 @@ int? errorStatus(ErrorCode code) => switch (code) {
   ErrorCode.badRequest => 400,
   ErrorCode.initialExerciseReadOnly => 403,
   ErrorCode.notFound => 404,
-  ErrorCode.validationFailed || ErrorCode.unknownDictionaryValue => 422,
-  ErrorCode.storageWriteFailed => 500,
+  ErrorCode.validationFailed ||
+  ErrorCode.unknownDictionaryValue ||
+  ErrorCode.planGenerationImpossible => 422,
+  ErrorCode.storageWriteFailed || ErrorCode.generationFailed => 500,
+  ErrorCode.generationSearchLimitReached => 503,
   _ => null,
 };
 
@@ -404,6 +443,18 @@ final class _BodyReader {
     if (!present || (value == null && !required)) return null;
     if (value is! String) _wrongType();
     return value;
+  }
+
+  /// A required field of any shape, read by [read] with its path.
+  T? field<T>(
+    JsonMap o,
+    String key,
+    T? Function(Object? value, String path) read, {
+    String parent = '',
+  }) {
+    final (present, value) = _field(o, key, parent, true);
+    if (!present) return null;
+    return read(value, _path(parent, key));
   }
 
   int? integer(JsonMap o, String key, {String parent = ''}) {

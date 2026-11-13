@@ -6,14 +6,18 @@ import 'enums.dart';
 /// Values of `ErrorDetail.constraint`.
 ///
 /// From the examples of spec/openapi.yaml: [minLeMax], [minimum],
-/// [dictionaryValue], [invalidJson]. For violations without an identifier in
-/// the contract — the name of the violated schema keyword (human decision
-/// 13.11.2026, lab 5 stage 10): [required], [minLength], [minItems],
-/// [integer], [https]. A recommended value outside `[min; max]` is reported as
+/// [totalGreaterThanZero], [dictionaryValue], [invalidJson]. For violations
+/// without an identifier in the contract — the name of the violated schema
+/// keyword (human decision 13.11.2026, lab 5 stage 10): [required],
+/// [minLength], [minItems], [integer], [https], [maximum]. A recommended value outside `[min; max]` is reported as
 /// [minLeMax] (chain `min ≤ recommended ≤ max` of `CountRange`).
 abstract final class Constraint {
   static const String minLeMax = 'MIN_LE_MAX';
   static const String minimum = 'MINIMUM';
+  static const String totalGreaterThanZero = 'TOTAL_GREATER_THAN_ZERO';
+
+  /// Schema keyword `maximum` (group 2: minutes of the target duration > 59).
+  static const String maximum = 'MAXIMUM';
   static const String dictionaryValue = 'DICTIONARY_VALUE';
   static const String invalidJson = 'INVALID_JSON';
   static const String required = 'REQUIRED';

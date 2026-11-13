@@ -1,6 +1,6 @@
 /// In-memory stores: open plans and the current session live only while the
 /// server process runs (ADD-002 D-29; stage 1, decision 4).
-/// T-10 skeleton: signatures only, every method throws [UnimplementedError].
+/// The current session store — later group; it still throws [UnimplementedError].
 library;
 
 import '../domain/plan.dart';
@@ -8,12 +8,13 @@ import '../domain/training.dart';
 import '../ports/repositories.dart';
 
 final class InMemoryOpenPlanStore implements OpenPlanStore {
-  @override
-  OpenPlan? findById(String id) =>
-      throw UnimplementedError('OpenPlanStore.findById');
+  final Map<String, OpenPlan> _plans = {};
 
   @override
-  void put(OpenPlan plan) => throw UnimplementedError('OpenPlanStore.put');
+  OpenPlan? findById(String id) => _plans[id];
+
+  @override
+  void put(OpenPlan plan) => _plans[plan.id] = plan;
 }
 
 final class InMemoryCurrentSessionStore implements CurrentSessionStore {

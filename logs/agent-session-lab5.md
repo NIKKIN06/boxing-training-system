@@ -847,3 +847,69 @@
 - `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!»; `git diff --quiet 5962e33 -- tests spec` → без відмінностей.
 
 **Повний діалог:** не збережено агентом
+
+**Коміт:** `5c70ba4` feat: [agent] T-30, T-31, T-32, T-33 exercises, storage, catalog and dictionaries (`git log --oneline -1`).
+
+## Етап 11. Реалізація, група 2: T-36, T-37, T-38, T-39 (формування плану, API-частина) — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. Та сама процедура й правила, що для групи 1 (етап 10). Тікети: T-36 (параметри формування й конвертація в секунди, AC-F-005), T-37 (розрахунок тривалості §5.4, AC-F-007), T-38 (правила відбору §5.1, AC-F-006, D-06, D-09), T-39 (генератор: структура §5.2, допуск ±10 %, коригування обсягу D-10, неможливість §5.7, ліміт пошуку 3 с D-13 / D-25 через підставлений годинник, відтворюваність за зерном D-11). Операції: generatePlan, getOpenPlan (відкритий план лише в пам'яті, рішення 4 етапу 1).
+2. Тести, що потребують операцій групи 3, лишаються червоними з причиною 501. Окремо підтвердити, що тести BDD-035 щодо застарілих вправ у generatePlan проходять (питання 5 групи 1).
+3. Коміт `feat: [agent] T-36, T-37, T-38, T-39 plan generation` після показу `git diff --cached --stat`.
+
+**Пропозиція агента та дії:**
+- Тести групи — 4 файли plan_generations/ за тікетами T-17 → T-36, T-18 → T-37, T-19 → T-38, T-20 → T-39 (decomposition.md): generation_parameters_test.dart (18), duration_test.dart (11), selection_structure_test.dart (21), tolerance_impossibility_test.dart (25).
+- Червоний запуск до змін (src/ = коміт `5c70ba4`): `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-red-g2-20261113.log dart test test/plan_generations/ --reporter compact --file-reporter json:../logs/app/control-red-g2-20261113.jsonl` → код виходу 1; `python3 -I tool/red_check.py ../logs/app/control-red-g2-20261113.jsonl` → код виходу 0: 4 набори, 75 тестів, 75 `failure`, перша й єдина помилка кожного — «generatePlan: status 501 is not declared»; інших причин і «Failed to load» — 0. Лог: 314 записів, INFO 239, WARNING 75, ERROR 0; 75 запитів, усі 501.
+- Реалізація (лише src/lib/; схема Drift не змінювалась):
+  - моделі й правила (`domain/`):
+    - `plan_rules.dart` (новий): T-37 — тривалість елемента за §5.4 (`n × t + (n − 1) × r`, `n × p × e + (n − 1) × r`) і плану (сума); T-36 — `D = h × 3600 + m × 60` (§5.5), допуск `[⌈0,9 × D⌉; ⌊1,1 × D⌋]` включно (§5.6), перевірка параметрів до пошуку (години ≥ 0, хвилини 0…59, `D > 0`; BDD-006); T-38 — придатність варіанта за правилами 1–6 §5.1 (акцент — лише для основної частини; порожній перелік обладнання — лише варіанти без обладнання; застарілі не підбираються, D-06);
+    - `plan_json.dart` (новий) — wire-форма `GenerationParameters`, `PlanItem`, `PlanStage`, `PlanWarning`, `Plan`, `OpenPlan`;
+    - `domain_error.dart` — `Constraint.totalGreaterThanZero` (з прикладу контракту) і `Constraint.maximum` (MAXIMUM, ключове слово схеми — див. питання 1);
+  - генератор (`application/plan_generator.dart`, новий), T-39:
+    1. кандидати — варіанти, придатні за §5.1 хоча б для одного етапу;
+    2. доведена неможливість до пошуку: етап без кандидатів → `NO_CANDIDATES_FOR_STAGE` зі `stage`; сума по етапах найменших мінімальних обсягів > `1,1 × D` → `MIN_VOLUME_ABOVE_UPPER_BOUND` (D-10); максимальний обсяг усіх кандидатів, кожного один раз, < `0,9 × D` → `MAX_VOLUME_BELOW_LOWER_BOUND`. Тривалість за §5.4 не спадає за жодним параметром, тому межі — значення за всіма мінімумами й максимумами;
+    3. пошук: перебір вибірок «по одному різному варіанту на етап» у порядку, перемішаному підставленим джерелом випадковості (D-11); перед кожною вибіркою читається підставлений годинник, і якщо від початку минуло не менше 3,000 с — 503 `GENERATION_SEARCH_LIMIT_REACHED`, `limitSeconds: 3` (D-13, D-25);
+    4. для вибірки: спершу рекомендовані значення; якщо сума поза допуском — точний розрахунок досяжних сум (множини цілих діапазонів тривалостей кожного варіанта в межах `[min; max]`) і вибір найближчої до рекомендованої суми в допуску; для кожного елемента — тривалість, найближча до рекомендованої, і параметри, найближчі до рекомендованих (D-10). Якщо вибірки самої не досить, решта кандидатів може бути додана — кожен не більше одного разу (§5.2, D-33), в етап, вибраний випадково серед допустимих для варіанта;
+    5. усі вибірки відхилено → 422 `PLAN_GENERATION_IMPOSSIBLE` без `reasons` (повний перебір — доказ; `reasons` у контракті необов'язкові);
+    6. інший виняток генератора → ERROR зі стеком і 500 `GENERATION_FAILED` (AC-F-009 п. 5);
+  - сервіси (`application/plan_services.dart`): `generatePlan` — перевірка параметрів (422 VALIDATION_FAILED до пошуку), генерація, ID елементів і відкритого плану, позиції з 0, `name: null`, `sourcePlanId: null` (D-30, D-32), `warnings: []` (план у допуску й відповідає фільтрам за побудовою; перерахунок попереджень — група 3), збереження в пам'яті; у разі будь-якої помилки відкритий план не створюється. `getOpenPlan` — 404 NOT_FOUND для невідомого (зокрема після перезапуску, D-30);
+  - сховище (`data/memory_stores.dart`): `InMemoryOpenPlanStore` — словник у пам'яті процесу;
+  - HTTP (`http/json_mapping.dart`): декодер `PlanGenerationRequest` (400 — неправильний JSON-тип, напр. години рядком; 422 — відсутнє поле, неціле число); кодувальники `OpenPlan` (201 з `Location: /open-plans/{id}`, 200); статуси кодів PLAN_GENERATION_IMPOSSIBLE — 422, GENERATION_FAILED — 500, GENERATION_SEARCH_LIMIT_REACHED — 503;
+  - логування: логер `plans` — `plan generated openPlanId=… targetSeconds=… totalSeconds=… items=w/m/c checkedSelections=…`, `plan not generated targetSeconds=… code=… reasons=[…]`; значення параметрів (рівень, акцент тощо) не логуються.
+
+**Запуски після реалізації (13.11.2026):**
+- Тести групи: `dart test test/plan_generations/` → 69 `success`, 6 `failure`. Ці 6 — групи T-18 у duration_test.dart (`addOpenPlanItem: durations of AC-F-007` — 3, `updateOpenPlanItem: exact seconds` — 3): перша помилка — 501 на addOpenPlanItem (3) і updateOpenPlanItem (3), передумови й дії групи 3. Інших причин — 0.
+- Повний набір — він же контрольний запуск: `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-g2-20261113.log dart test --reporter compact --file-reporter json:../logs/app/control-green-g2-20261113.jsonl` → код виходу 1. Звірка `green_check.py` (поза репозиторієм; множина реалізованих операцій розширена на generatePlan, getOpenPlan) з logs/app/control-green-g1-20261113.jsonl:
+  - 16 наборів, 325 тестів, «Failed to load» — 0;
+  - пройшли 157 = 86 (група 1) + 69 (група 2) + 2 тести AC-NF-006 «never 501» для generatePlan і getOpenPlan;
+  - 168 `failure` — у кожного перша помилка «<operationId>: status 501 is not declared», жодна з цих операцій не реалізована; інших причин — 0; регресій відносно групи 1 — 0;
+  - перша операція з 501: addOpenPlanItem — 75, saveNewTrainingPlan — 23, replaceOpenPlanItem і startCurrentSession — по 12, getAnalytics — 8, deleteOpenPlanItem — 6, renameOpenPlan і updateOpenPlanItem — по 5, ще 12 операцій — по 1–3.
+- BDD-035 (питання 5 групи 1): усі 7 тестів catalog_version_test.dart, зокрема `BDD-035 D-06 AC-F-006 generatePlan: the generator does not propose E1`, **лишаються червоними**: їхній спільний setUp викликає addOpenPlanItem (перша помилка — 501 на addOpenPlanItem), далі saveNewTrainingPlan, startCurrentSession, completeTraining — групи 3–5. Підтвердити їх у групі 2 неможливо. Правило 6 §5.1 (D-06) у генераторі в групі 2 перевіряють тести, що проходять: `AC-F-006 D-06 D-11 generatePlan: seed … — every variant satisfies the rules; no decoy …` (×5, фікстура selection-rules, `decoy-deprecated`) і перевірка правила 6 в `expectSelectionRules` на постачальному каталозі із застарілою ex-9 (`AC-F-006 AC-F-008 D-11 generatePlan: seed …` — 5 зерен × 2 тривалості = 10 тестів). Позначення застарілих під час встановлення нової версії (D-06, питання 5 групи 1) досі не перевірено тестами.
+- `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!»; `git diff --quiet 5962e33 -- tests spec` → без відмінностей.
+
+**Аналіз логу logs/app/control-green-g2-20261113.log (скрипт `log_check.py`, поза репозиторієм):**
+- 1730 записів, нерозібраних 0; INFO — 1515, WARNING — 215, ERROR — 0; записів зі стеком — 0.
+- 544 запити. generatePlan: 201 — 188, 400 — 2, 422 — 16, 503 — 1; getOpenPlan: 200 — 4, 404 — 2. Операції групи 1 — ті самі статуси, що на етапі 10, лише createExercise 201 — 37 замість 35: у двох тестах manual_editing_test.dart (рядки 306, 436) generatePlan тепер проходить, і виконання доходить до створення вправи перед 501 на replaceOpenPlanItem. Решта 20 операцій — лише 501 (168 запитів).
+- WARNING: 168 — `not implemented` (по одному на запит із 501); 47 — `domain error`. Для generatePlan: VALIDATION_FAILED — 10 (`targetDuration:TOTAL_GREATER_THAN_ZERO`, `targetDuration.hours:MINIMUM`, `targetDuration.minutes:MINIMUM`, `targetDuration.minutes:MAXIMUM`, `targetDuration.hours:INTEGER`, по одному REQUIRED для п'яти полів), BAD_REQUEST — 2 (`body:INVALID_JSON` і неправильний тип), PLAN_GENERATION_IMPOSSIBLE — 6, GENERATION_SEARCH_LIMIT_REACHED — 1.
+- Логер `plans`: `plan generated` — 188 (ціль 60 с — 1, 2700 с — 6, 3540 с — 1, 3600 с — 163, 5400 с — 17); `checkedSelections=1` у всіх 188 — перша ж вибірка давала план; склад 1/1/1 — 179, 2/1/1 — 9 (додано другий варіант розминки, коли однієї вибірки не досить). `plan not generated`: NO_CANDIDATES_FOR_STAGE:cool-down — 1 (BDD-011), MAX_VOLUME_BELOW_LOWER_BOUND — 2 (BDD-012, BDD-010 3239 с), MIN_VOLUME_ABOVE_UPPER_BOUND — 2 (BDD-039, BDD-010 3961 с), без reasons після повного перебору — 1 (BDD-040, 2,999 с), GENERATION_SEARCH_LIMIT_REACHED — 1 (BDD-040, 3,000 с).
+- Тривалість запитів 0–366 мс; найдовший — перший запит процесу (компіляція, відкриття БД, встановлення каталогу); найдовші generatePlan — 72, 77, 86 мс.
+- Даних користувача немає (той самий пошук, що на етапі 10, — збігів 0).
+- Висновок: помилок і винятків немає; WARNING — заглушки інших груп і очікувані відмови з кодами контракту; дані користувача не логуються.
+
+**Питання до специфікації (передано людині):**
+1. Новий ідентифікатор `constraint` MAXIMUM (хвилини > 59, `maximum: 59` схеми `TargetDuration`) — за правилом «ключове слово схеми» рішення 1 групи 1; тест перевіряє лише `field`. Перелік рішення 1 групи 1 доповнено: MAXIMUM, а також TOTAL_GREATER_THAN_ZERO з прикладу контракту.
+2. BDD-035 для generatePlan у групі 2 не підтверджено — setUp потребує операцій груп 3–5 (див. вище). Підтвердження — після групи 5.
+3. Неможливість, доведена повним перебором (жодна комбінація параметрів не потрапляє в допуск, а межі обсягу цього не показують, як у BDD-040), повертається без `reasons`: для цього випадку коду `ImpossibilityReason` у контракті немає.
+4. Значення довідників у тілі generatePlan не перевіряються (питання 6 етапу 7, «Відкладено»): невідомий рівень дає 422 PLAN_GENERATION_IMPOSSIBLE з `NO_CANDIDATES_FOR_STAGE` для всіх етапів.
+5. Додаткові варіанти (коли однієї вибірки «по одному на етап» не досить) потрапляють в етап, вибраний випадково серед допустимих для варіанта; частки етапів не нормуються (D-12, плейсхолдер).
+6. Годинник читається перед кожною вибіркою; розрахунок однієї вибірки не переривається. Для каталогу `[TEST]` найдовший generatePlan — 86 мс; для великого реального каталогу (T-63) час однієї вибірки не оцінено (норматив продуктивності — CON-008, не змінюється).
+
+**Рішення людини щодо групи 2 (13.11.2026):**
+1. MAXIMUM і TOTAL_GREATER_THAN_ZERO — прийнято (правило «ключове слово схеми»). Перелік `constraint` реалізації: MIN_LE_MAX, MINIMUM, TOTAL_GREATER_THAN_ZERO, DICTIONARY_VALUE, INVALID_JSON (з прикладів контракту); REQUIRED, MIN_LENGTH, MIN_ITEMS, INTEGER, HTTPS, MAXIMUM (ключові слова схеми).
+2. Неможливість, доведена повним перебором, без `reasons` — прийнято, «Відкладено»; enum контракту не змінювати.
+3. Значення довідників у тілі generatePlan — рішення щодо питання 6 етапу 7 («Відкладено»).
+4. Розподіл додаткових варіантів без нормування часток — прийнято, «Відкладено» (частки етапів специфікацією не визначено).
+5. Читання годинника між вибірками — прийнято; оцінка на реальному каталозі поза ЛР-5.
+6. BDD-035 перевіряється після групи 5.
+
+**Повний діалог:** не збережено агентом
