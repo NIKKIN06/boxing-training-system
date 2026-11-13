@@ -31,6 +31,7 @@ final class RandomIdGenerator implements IdGenerator {
 
   static const Map<EntityKind, String> prefixes = {
     EntityKind.customExercise: 'custom',
+    EntityKind.variant: 'var',
     EntityKind.openPlan: 'open',
     EntityKind.planItem: 'item',
     EntityKind.trainingPlan: 'plan',

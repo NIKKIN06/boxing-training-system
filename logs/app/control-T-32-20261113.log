@@ -1,0 +1,19 @@
+2026-11-13T19:06:34.817981Z INFO server: starting pid=95720 logFile=../logs/app/control-T-32-20261113.log
+2026-11-13T19:06:34.830425Z INFO app: app composed operations=27 database=memory catalog=assets/catalog/missing.json
+2026-11-13T19:06:34.832554Z ERROR app: catalog initialization failed
+  error: PathNotFoundException: Cannot open file, path = 'assets/catalog/missing.json' (OS Error: No such file or directory, errno = 2)
+  stack:
+#0      _checkForErrorResponse (dart:io/common.dart:58:9)
+#1      _File.open.<anonymous closure> (dart:io/file_impl.dart:438:7)
+<asynchronous suspension>
+#2      _File.readAsBytes.<anonymous closure> (dart:io/file_impl.dart:645:24)
+<asynchronous suspension>
+#3      _File.readAsString (dart:io/file_impl.dart:712:18)
+<asynchronous suspension>
+#4      JsonFileCatalogSource.load (package:boxing_api/src/data/json_catalog_source.dart:23:32)
+<asynchronous suspension>
+#5      CatalogService.initialize (package:boxing_api/src/application/catalog_service.dart:36:18)
+<asynchronous suspension>
+#6      main (file:///Users/nikitan/Downloads/University/%D0%9F%D0%86%D0%A1/code/boxing-training-system/src/bin/server.dart:49:5)
+<asynchronous suspension>
+2026-11-13T19:06:34.833073Z ERROR server: startup aborted reason=catalog-initialization-failed

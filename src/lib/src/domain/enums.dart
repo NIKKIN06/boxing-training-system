@@ -2,56 +2,74 @@
 /// its wire representation from the contract.
 library;
 
+/// A value with a wire representation of the contract.
+abstract interface class WireEnum {
+  String get wire;
+}
+
+/// The value of [values] whose wire representation is [wire], or `null`.
+T? fromWire<T extends WireEnum>(List<T> values, String wire) {
+  for (final value in values) {
+    if (value.wire == wire) return value;
+  }
+  return null;
+}
+
 /// Training stage; fixed order warm-up, main, cool-down (SRS §3, §5.2; schema `Stage`).
-enum Stage {
+enum Stage implements WireEnum {
   warmUp('warm-up'),
   main('main'),
   coolDown('cool-down');
 
   const Stage(this.wire);
+  @override
   final String wire;
 }
 
 /// Exercise type (SRS §3; schema `ExerciseType`).
-enum ExerciseType {
+enum ExerciseType implements WireEnum {
   simple('simple'),
   singlePunch('single-punch'),
   combination('combination');
 
   const ExerciseType(this.wire);
+  @override
   final String wire;
 }
 
 /// Exercise origin (SRS §4.3.1; schema `Origin`).
-enum Origin {
+enum Origin implements WireEnum {
   initial('initial'),
   custom('custom');
 
   const Origin(this.wire);
+  @override
   final String wire;
 }
 
 /// Load character, one value per exercise (SRS §3, ADD-002 D-34; schema `LoadCharacter`).
-enum LoadCharacter {
+enum LoadCharacter implements WireEnum {
   generalPhysical('general-physical'),
   specialPhysical('special-physical'),
   notApplicable('not-applicable');
 
   const LoadCharacter(this.wire);
+  @override
   final String wire;
 }
 
 /// Execution mode of a variant (SRS §4.3.2; schema `Mode`).
-enum ExecutionMode {
+enum ExecutionMode implements WireEnum {
   time('time'),
   repetitions('repetitions');
 
   const ExecutionMode(this.wire);
+  @override
   final String wire;
 }
 
 /// Shared dictionary name (SRS §4.4; schema `DictionaryName`).
-enum DictionaryName {
+enum DictionaryName implements WireEnum {
   trainingLevels('training-levels'),
   intensities('intensities'),
   emphases('emphases'),
@@ -59,6 +77,7 @@ enum DictionaryName {
   executionMeans('execution-means');
 
   const DictionaryName(this.wire);
+  @override
   final String wire;
 }
 

@@ -768,3 +768,82 @@
 3. Верхніх меж параметрів варіанта власної вправи (наприклад, найбільша кількість раундів чи інтервал) SRS §5.3 не задає; тестовано лише найменші допустимі значення.
 
 **Повний діалог:** не збережено агентом
+
+## Етап 10. Реалізація, група 1: T-30, T-31, T-32, T-33 (API-частина) — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. ЛР-5, крок 2 — реалізація за TDD після GO на TEST-GATE (logs/test-gate.md, коміт `5962e33`). Гілка impl/lab5. Змінювати лише src/; tests/ і spec/openapi.yaml не змінювати; лише поведінка, потрібна для тестів групи; для випадків, які специфікація не визначає (рішення 5–7 етапу 7), — лише статуси й коди контракту; логування за рішенням 3 етапу 1.
+2. Група 1: T-31 (сховище Drift, атомарні транзакції), T-32 (ініціалізація каталогу за D-06), T-30 (вправи, варіанти, валідація), T-33 (довідники, фільтрація). Операції: createExercise, updateExercise, getExercise, listExercises, getDictionary.
+3. Порядок: червоний запуск тестів групи → реалізація → тести групи й повний набір → контрольний запуск із логом logs/app/control-green-g1-<дата>.log і його аналіз → `dart analyze --fatal-infos` → цей етап журналу → коміт після показу `git diff --cached --stat`.
+
+**Пропозиція агента та дії:**
+- Тести групи — 4 файли за тікетами T-11 → T-30, T-12 → T-31, T-13 → T-32, T-14 → T-33 (колонка залежностей docs/plan/decomposition.md): exercises/exercise_validation_test.dart (41), exercises/catalog_initialization_test.dart (6), exercises/catalog_filter_test.dart (31), storage/storage_test.dart (8). exercises/catalog_version_test.dart (BDD-035) потребує generatePlan, saveNewTrainingPlan, completeTraining у setUp — поза групою 1.
+- Червоний запуск до змін (src/ без змін, коміт `5962e33`): `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-red-g1-20261113.log dart test <4 файли> --reporter compact --file-reporter json:../logs/app/control-red-g1-20261113.jsonl` → код виходу 1; `python3 -I tool/red_check.py ../logs/app/control-red-g1-20261113.jsonl` → код виходу 0: 4 набори, 86 тестів, 86 `failure`, у кожного перша помилка — `TestFailure` «status 501 is not declared»; інших причин і «Failed to load» — 0. Перша операція з 501: createExercise — 41, listExercises — 28, generatePlan — 6 (storage_test), getDictionary і getExercise — по 5, updateExercise — 1. Лог: 260 записів, INFO 174, WARNING 86, ERROR 0; 86 запитів, усі 501.
+- Перед реалізацією агент передав людині два питання (див. рішення нижче): значення `ErrorDetail.constraint` для порушень, яких немає в прикладах контракту, і як трактувати тести T-12, що потребують операцій поза групою.
+- Реалізація (лише src/lib/; схема Drift не змінювалась, `build_runner` не запускався):
+  - моделі й валідація (`domain/`):
+    - `exercise_json.dart` (новий) — wire-форма `Exercise`, `Variant`, `Dictionary` для довірених даних (ресурс каталогу, збережені копії) і відповідей;
+    - `exercise_validation.dart` (новий) — правила AC-F-002, AC-F-004, SRS §5.3, D-08: непорожні назва й опис, хоча б один варіант, кожне значення ≥ 1 (раунди, підходи, повторення, інтервал, `e`) або ≥ 0 (відпочинок), `min ≤ max`, `min ≤ recommended ≤ max`, посилання — абсолютний `https://` URI;
+    - `domain_error.dart` — константи `Constraint` (рішення людини нижче); `enums.dart` — інтерфейс `WireEnum` і `fromWire` для розбору перелічувань контракту;
+  - порти: `StorageWriteException`; у `ExerciseRepository` — `installedCatalogVersion`, `installCatalog`; `EntityKind.variant` (ID `var-<32 hex>`, D-33);
+  - репозиторії (`data/`), T-31: `DriftExerciseRepository` — читання, вставка, оновлення; `installCatalog` — одна транзакція `db.transaction`; будь-який збій запису → ERROR зі стеком і `StorageWriteException` (сервіс → 500 STORAGE_WRITE_FAILED, AC-NF-003). Репозиторії планів і завершених тренувань — заглушки (рішення людини нижче). `JsonFileCatalogSource` читає ресурс T-57 (SHA-256 `f29ec074…9839` збігається з TG-007);
+  - сервіси (`application/catalog_service.dart`):
+    - T-32 `initialize`: завантажує ресурс; якщо встановлена версія (`catalog_meta.catalogVersion`) збігається — нічого не пише (повторний запуск без дублікатів, AC-F-001, також умова змодельованого збою запису, питання 11 етапу 7); інакше одна транзакція: початкові вправи замінюються за ID, власні не зачіпаються, початкові, відсутні в новій версії, не видаляються, а позначаються застарілими (D-06);
+    - T-30 `createExercise`: ID, `origin = custom`, `deprecated = false` встановлює система (D-05); `updateExercise`: 404 → 403 для початкової, зокрема застарілої (D-05) → 422 → запис; варіант зі своїм id зберігає його, без id (або з id, якого у вправи немає) — новий id, відсутній у тілі — вилучається (D-33); `getExercise` повертає й застарілу (D-06);
+    - T-33 `listExercises`: «АБО» в межах ознаки, «І» між ознаками (D-09); з фільтром `loadCharacter` вправи `not-applicable` не повертаються (D-34, REV-004); засіб виконання й обладнання задовольняє один варіант (AC-F-003); застарілі не повертаються (D-06); значення фільтрів довідників перевіряються за довідниками → 422 UNKNOWN_DICTIONARY_VALUE (NEG-05); `getDictionary` — довідник із ресурсу;
+  - маршрути й відображення (`http/`): декодер `ExerciseFilter`, `ExerciseInput`, `DictionaryName` за `info.description` контракту (некоректний JSON → 400 з `body: INVALID_JSON`; неправильний JSON-тип → 400; відсутнє обов'язкове поле, неціле число, значення поза перелічуванням → 422 VALIDATION_FAILED); кодувальники `ExerciseList`, `Exercise` (201 з `Location: /exercises/{id}`), `Dictionary`; модель `Error`; `middleware.dart` — `DomainError` → статус контракту й тіло `Error`, WARNING з кодом і шляхами полів `details` (без значень). Статуси задано лише для кодів групи (400, 403, 404, 422, 500); код без статусу → 500 і ERROR;
+  - конфігурація (`composition_root.dart`): ініціалізація каталогу стартує під час композиції; кожен запит чекає на її завершення; збій ініціалізації — ERROR зі стеком; `App.close` закриває БД після ініціалізації;
+  - логування: нові логери `catalog` (встановлення / актуальність версії, створення й редагування вправи з ID і кількістю варіантів, кількість у переліку) і `storage` (збій запису).
+
+**Рішення людини (13.11.2026), отримані до реалізації:**
+1. `ErrorDetail.constraint`: наявні ідентифікатори контракту — MIN_LE_MAX (зокрема `recommended` поза `[min; max]` — ланцюг `min ≤ recommended ≤ max` схеми `CountRange`), MINIMUM, DICTIONARY_VALUE (значення поза довідником чи перелічуванням), INVALID_JSON; для порушень без ідентифікатора в контракті — назва ключового слова схеми: REQUIRED, MIN_LENGTH, MIN_ITEMS, INTEGER, HTTPS. Записати в «Питання до специфікації».
+2. Група 1 — тести, що викликають лише 5 операцій групи. storage_test.dart (T-12) лишається червоним через 501 інших операцій; T-31 у групі 1 — схема й атомарні транзакції для вправ і метаданих каталогу, решта репозиторіїв — з відповідними групами.
+
+**Запуски після реалізації (13.11.2026):**
+- Тести групи: `dart test test/exercises/exercise_validation_test.dart test/exercises/catalog_initialization_test.dart test/exercises/catalog_filter_test.dart` → «+78: All tests passed!» (41 + 6 + 31). storage_test.dart (8) — червоний, перша операція з 501 — generatePlan (6) і saveNewTrainingPlan / completeTraining через передумови (рішення 2).
+- Повний набір — він же контрольний запуск: `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-g1-20261113.log dart test --reporter compact --file-reporter json:../logs/app/control-green-g1-20261113.jsonl` (concurrency 1 з tests/dart_test.yaml) → код виходу 1. Звірка скриптом `green_check.py` (Python, поза репозиторієм) з logs/app/control-red-20261113b.jsonl (останній затверджений червоний запуск):
+  - 16 наборів, 325 тестів (ті самі 325), «Failed to load» — 0;
+  - пройшли 86 = 78 тестів групи + 5 тестів AC-NF-006 «never 501» для listExercises, createExercise, getExercise, updateExercise, getDictionary + 3 статичні мета-тести (виняток TG-010);
+  - 239 `failure` — у кожного перша помилка «<operationId>: status 501 is not declared», і жодна з цих операцій не належить групі 1; інших причин падіння — 0; регресій (пройшов у червоному, падає тепер) — 0;
+  - перша операція з 501 серед решти: generatePlan — 198, getAnalytics — 8, listCompletedTrainings — 3, ще 19 операцій — по 1–2.
+- `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!».
+- `git diff --quiet 5962e33 -- tests spec` → без відмінностей: тести, затверджені на TEST-GATE, і spec/ не змінено.
+
+**Аналіз логу logs/app/control-green-g1-20261113.log (скрипт `log_check.py`, поза репозиторієм):**
+- 1431 запис, нерозібраних 0; INFO — 1166, WARNING — 265, ERROR — 0; записів зі стеком — 0.
+- 400 запитів; операції групи: createExercise 201 — 35, 400 — 2, 422 — 14; getExercise 200 — 35, 404 — 2; updateExercise 200 — 9, 403 — 2, 404 — 2, 422 — 2; listExercises 200 — 50, 422 — 2; getDictionary 200 — 6. Решта 22 операції — лише 501 (239 запитів).
+- WARNING: 239 — `not implemented` (заглушки операцій інших груп, по одному на запит з 501); 26 — `domain error` (по одному на кожну відповідь 4xx операцій групи) з кодом і `details` лише як шлях:constraint, наприклад `variants[0].rounds.min:MIN_LE_MAX`, `name:REQUIRED`, `level:DICTIONARY_VALUE`, `body:INVALID_JSON`. Значень полів у них немає.
+- Каталог: `catalog installed version=test-1 previous=- … initial=8 markedDeprecated=[]` — 310 (кожна нова БД); фікстури — 25 (версії `fixture-*`); `catalog up to date version=test-1` — 5 (перезапуски в тестах T-13 і D-05): повторний запуск нічого не пише. Позначення застарілих за D-06 у цьому запуску не виконувалось: тести BDD-035 (catalog_version_test.dart) зупиняються на generatePlan до перезапуску з новою версією.
+- Тривалість запитів 0–362 мс (у повторному запуску після доопрацювання — 0–354 мс); найдовший — перший запит процесу (компіляція JIT, відкриття БД, встановлення каталогу), ще 18 запитів — 10–99 мс, решта < 10 мс.
+- Даних користувача немає: скрипт шукав назви, описи, імена авторів і посилання з ресурсу каталогу та фікстур, назви з тіл тестів, `[TEST]`, `https://`, `http://`, `ftp://`, `example.com`, значення query `level-unknown`, `stretching` — збігів 0 (REQ-NF-004, рішення 3 етапу 1).
+- Висновок: помилок і винятків немає; WARNING — лише очікувані заглушки інших груп і помилки валідації з кодами контракту; дані користувача не логуються.
+
+**Питання до специфікації (передано людині):**
+1. Ідентифікатори `constraint` REQUIRED, MIN_LENGTH, MIN_ITEMS, INTEGER, HTTPS і MIN_LE_MAX для `recommended` введено рішенням людини, у spec/openapi.yaml їх немає (є лише в прикладах MIN_LE_MAX, MINIMUM, DICTIONARY_VALUE, INVALID_JSON). Чи вносити перелік у контракт — вирішує людина; агент spec/ не змінював.
+2. `updateExercise`: варіант з id, якого у вправи немає, або повторений id контракт не визначає. Реалізовано як новий варіант із новим id (без нових кодів). Не тестується.
+3. Значення довідників у тілі `createExercise` / `updateExercise` не перевіряються (питання 6 етапу 7, «Відкладено»): власна вправа може містити ID поза довідниками. Перевірки на це немає й у тестах.
+4. Неправильний JSON-тип поля → 400 BAD_REQUEST без `details` (поле `details` необов'язкове; ідентифікатора для цього порушення в контракті немає). Значення поза перелічуванням у тілі (`type`, `mode`, `allowedStages[i]`, `loadCharacter`) → 422 VALIDATION_FAILED, `constraint: DICTIONARY_VALUE`. Не тестується.
+5. `getDictionary` з назвою поза перелічуванням → 404 NOT_FOUND (єдина помилка, оголошена для операції; питання 7 етапу 7). Не тестується.
+6. Якщо ініціалізація каталогу не вдалася (ресурс відсутній чи пошкоджений, збій запису під час встановлення нової версії), кожен запит отримує 500 без тіла; для операцій читання 500 у контракті не оголошено. Не тестується.
+7. Позначення застарілих за D-06 (початкова вправа, відсутня в новій версії) у групі 1 тестами не перевірено: фікстура catalog-v2 містить ті самі 8 ID, а тести BDD-035 зупиняються на generatePlan. Перевірка — разом із групою формування плану.
+
+**Рішення людини щодо групи 1 (13.11.2026):**
+1. Ідентифікатори constraint у контракт не вносяться: `ErrorDetail.constraint` — `type: string` без `enum`. Перелік, що використовує реалізація (`Constraint` у src/lib/src/domain/domain_error.dart):
+   - з прикладів контракту: MIN_LE_MAX (`min > max`; також `recommended` поза `[min; max]`), MINIMUM (значення менше за `minimum` схеми), DICTIONARY_VALUE (значення поза довідником чи перелічуванням — фільтри `listExercises` і перелічування в тілі вправи), INVALID_JSON (`field: body`, некоректний JSON);
+   - за ключовим словом схеми: REQUIRED (відсутнє обов'язкове поле), MIN_LENGTH (порожні `name`, `description`), MIN_ITEMS (порожній `variants`), INTEGER (неціле число там, де очікується ціле), HTTPS (`videoUrl`, `authorPageUrl` не є абсолютним `https://` URI).
+2. Невідомий або повторений id варіанта в `updateExercise` → новий варіант із новим id — прийнято, статус «Відкладено».
+3. Значення довідників у тілі `createExercise` / `updateExercise` — як рішення щодо питання 6 етапу 7 («Відкладено», не перевіряються).
+4. 500 без тіла порушує контракт (модель `Error` для всіх 4xx / 5xx) — виправити: якщо ініціалізація каталогу не вдалася — ERROR зі стеком у лозі, сервер не стартує (ненульовий код виходу), запити не обслуговуються; після зміни повторити повний набір тестів і `dart analyze`.
+5. Перевірка позначення застарілих за D-06 — у групі 2.
+6. Червоний лог control-red-g1 лишається в коміті як доказ кроку «спершу падає».
+
+**Доопрацювання за рішенням 4 (13.11.2026, та сама модель):**
+- `App.initialized` (composition_root.dart) — завершення ініціалізації каталогу; збій, як і раніше, записує buildApp (ERROR зі стеком, логер `app`).
+- bin/server.dart: `shelf_io.serve` викликається лише після `await app.initialized`. Якщо ініціалізація не вдалася — ERROR `startup aborted reason=catalog-initialization-failed`, закриття БД і логів, `exitCode = 1`, порт не відкривається. Якщо не вдався сам `serve` — також закриває БД.
+- Обробник у процесі (тести) і далі чекає на ініціалізацію перед кожним запитом; через сервер запити до успішної ініціалізації не надходять.
+- Перевірка збою: `dart run bin/server.dart --db=:memory: --catalog=assets/catalog/missing.json --log-file=control-T-32-20261113.log` → код виходу 1. Лог logs/app/control-T-32-20261113.log — 4 записи: `starting`, `app composed`, ERROR `catalog initialization failed` (`PathNotFoundException` зі стеком), ERROR `startup aborted …`; запису `listening` немає; `lsof -iTCP:8080 -sTCP:LISTEN` — порожньо. У стеку є абсолютний шлях до bin/server.dart (зокрема ім'я домашнього каталогу) — так Dart формує стек; даних користувача застосунку немає.
+- Перевірка нормального старту (лог у scratchpad, поза репозиторієм): `--db=:memory: --port=8091`, один запит getDictionary → 200, SIGINT → код виходу 0; порядок записів: `catalog installed version=test-1` → `listening` → запит → `stopping` → `stopped`.
+- Повторний повний набір (той самий контрольний запуск, файли logs/app/control-green-g1-20261113.log і .jsonl перезаписано): 325 тестів, 86 `success`, 239 `failure` — усі через 501 операцій поза групою 1; інших причин, регресій і «Failed to load» — 0 (`green_check.py`). Лог: 1431 запис, INFO 1166, WARNING 265 (239 `not implemented`, 26 `domain error`), ERROR 0, даних користувача немає — цифри аналізу вище не змінились, крім тривалості.
+- `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!»; `git diff --quiet 5962e33 -- tests spec` → без відмінностей.
+
+**Повний діалог:** не збережено агентом

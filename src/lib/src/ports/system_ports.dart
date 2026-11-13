@@ -17,6 +17,9 @@ abstract interface class RandomSource {
 enum EntityKind {
   /// Custom exercise; ids use the `custom-` prefix (T-57, human decision 3).
   customExercise,
+
+  /// Variant of a custom exercise; stable within the exercise (ADD-002 D-33).
+  variant,
   openPlan,
   planItem,
   trainingPlan,

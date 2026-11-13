@@ -33,12 +33,35 @@ Future<void> main(List<String> args) async {
   log.info('starting pid=$pid logFile=${fileSink.file!.path}');
 
   final App app;
-  final HttpServer server;
   try {
     app = buildApp(config);
+  } catch (error, stackTrace) {
+    log.severe('startup failed', error, stackTrace);
+    await consoleSink.close();
+    await fileSink.close();
+    exitCode = 1;
+    return;
+  }
+
+  // T-32: requests are served only after the catalog is initialized; the
+  // failure itself is logged at ERROR with the stack trace by buildApp.
+  try {
+    await app.initialized;
+  } on Object {
+    log.severe('startup aborted reason=catalog-initialization-failed');
+    await app.close();
+    await consoleSink.close();
+    await fileSink.close();
+    exitCode = 1;
+    return;
+  }
+
+  final HttpServer server;
+  try {
     server = await shelf_io.serve(app.handler, AppConfig.host, config.port);
   } catch (error, stackTrace) {
     log.severe('startup failed', error, stackTrace);
+    await app.close();
     await consoleSink.close();
     await fileSink.close();
     exitCode = 1;

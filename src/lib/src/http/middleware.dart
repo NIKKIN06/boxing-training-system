@@ -4,7 +4,9 @@ library;
 import 'package:logging/logging.dart';
 import 'package:shelf/shelf.dart';
 
+import '../domain/domain_error.dart';
 import '../logging/app_logging.dart';
+import 'json_mapping.dart';
 
 /// Response context key carrying the operationId to the request logger.
 const String operationIdContextKey = 'boxing_api.operationId';
@@ -15,6 +17,8 @@ const String unmatchedOperationId = '-';
 final Logger _httpLog = Logger(LogNames.http);
 
 /// Runs [inner] as the operation [operationId] and maps exceptions:
+/// - [DomainError] → its contract status and an `Error` body, WARNING with the
+///   code and the field paths of `details` (never field values);
 /// - [UnimplementedError] (T-10 stub) → 501 without a body, WARNING;
 /// - any other exception → 500 without a body, ERROR with stack trace.
 ///
@@ -26,6 +30,26 @@ Handler operation(String operationId, Handler inner) {
     Response response;
     try {
       response = await inner(request);
+    } on DomainError catch (error, stackTrace) {
+      final status = errorStatus(error.code);
+      if (status == null) {
+        _httpLog.severe(
+          'no status for error code operationId=$operationId '
+          'code=${error.code.wire}',
+          error,
+          stackTrace,
+        );
+        response = Response(500);
+      } else {
+        final details = [
+          for (final d in error.details) '${d.field}:${d.constraint}',
+        ];
+        _httpLog.warning(
+          'domain error operationId=$operationId code=${error.code.wire} '
+          'status=$status details=[${details.join(',')}]',
+        );
+        response = jsonResponse(status, errorBody(error));
+      }
     } on UnimplementedError catch (error) {
       _httpLog.warning(
         'not implemented operationId=$operationId stub="${error.message}"',

@@ -2,6 +2,7 @@
 /// clock, random source and id generator are substituted (stage 1, decision 5).
 library;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart' show QueryExecutor;
@@ -25,12 +26,37 @@ import 'ports/system_ports.dart';
 
 /// Composed application: an HTTP handler and its resources.
 final class App {
-  App._(this.handler, this._database);
+  App._(this.handler, this._database, this._initialized);
 
   final Handler handler;
   final AppDatabase _database;
+  final Future<void> _initialized;
 
-  Future<void> close() => _database.close();
+  /// Completes when the catalog initialization (T-32) has finished; fails
+  /// with its error (already logged at ERROR with the stack trace). The
+  /// server starts listening only after it completes (human decision
+  /// 13.11.2026, group 1, item 4).
+  Future<void> get initialized => _initialized;
+
+  /// Closes the database after the catalog initialization has finished.
+  Future<void> close() async {
+    try {
+      await _initialized;
+    } on Object {
+      // Already logged at ERROR by buildApp.
+    }
+    await _database.close();
+  }
+}
+
+/// Holds every request of an in-process handler until the catalog
+/// initialization (T-32) has finished. The server does not serve requests
+/// when the initialization failed (bin/server.dart).
+Middleware _afterInitialization(Future<void> initialized) {
+  return (inner) => (request) async {
+    await initialized;
+    return inner(request);
+  };
 }
 
 /// Builds the application. Tests pass their own [clock], [random] and [ids]
@@ -62,12 +88,22 @@ App buildApp(
   final openPlans = InMemoryOpenPlanStore();
   final session = InMemoryCurrentSessionStore();
 
-  final services = Services(
-    catalog: CatalogService(
-      exercises: exercises,
-      catalogSource: JsonFileCatalogSource(config.catalogPath),
-      ids: usedIds,
+  final catalog = CatalogService(
+    exercises: exercises,
+    catalogSource: JsonFileCatalogSource(config.catalogPath),
+    ids: usedIds,
+  );
+  final initialized = catalog.initialize();
+  unawaited(
+    initialized.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stackTrace) =>
+          log.severe('catalog initialization failed', error, stackTrace),
     ),
+  );
+
+  final services = Services(
+    catalog: catalog,
     generation: PlanGenerationService(
       exercises: exercises,
       openPlans: openPlans,
@@ -105,6 +141,7 @@ App buildApp(
 
   final handler = const Pipeline()
       .addMiddleware(requestLogging())
+      .addMiddleware(_afterInitialization(initialized))
       .addHandler(buildRouter(services).call);
 
   log.info(
@@ -112,5 +149,5 @@ App buildApp(
     'database=${config.isInMemoryDatabase ? 'memory' : config.databasePath} '
     'catalog=${config.catalogPath}',
   );
-  return App._(handler, database);
+  return App._(handler, database, initialized);
 }
