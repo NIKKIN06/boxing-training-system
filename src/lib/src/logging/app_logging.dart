@@ -11,6 +11,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
+import 'package:sqlite3/sqlite3.dart' show SqliteException;
 
 /// Logger names used by the components.
 abstract final class LogNames {
@@ -22,6 +23,20 @@ abstract final class LogNames {
   static const String plans = 'plans';
   static const String trainings = 'trainings';
 }
+
+/// Description of an exception for an ERROR record (REQ-NF-004; stage 1,
+/// decision 3): the type and, for SQLite, the result code and its
+/// explanation — never the text of the exception, which may contain field
+/// contents (the text of [SqliteException] includes the SQL statement and
+/// its parameters; finding of group 3). With `NativeDatabase.createInBackground`
+/// the SQLite error arrives wrapped in `DriftRemoteException`, so only its
+/// type is logged. The stack trace is logged separately.
+String safeErrorDescription(Object error) => switch (error) {
+  SqliteException() =>
+    'SqliteException(${error.extendedResultCode}): ${error.message}'
+        '${error.explanation == null ? '' : ', ${error.explanation}'}',
+  _ => error.runtimeType.toString(),
+};
 
 /// Level names used in log files: INFO / WARNING / ERROR (lab 5 rules).
 String levelName(Level level) {

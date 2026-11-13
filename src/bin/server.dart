@@ -36,7 +36,7 @@ Future<void> main(List<String> args) async {
   try {
     app = buildApp(config);
   } catch (error, stackTrace) {
-    log.severe('startup failed', error, stackTrace);
+    log.severe('startup failed', safeErrorDescription(error), stackTrace);
     await consoleSink.close();
     await fileSink.close();
     exitCode = 1;
@@ -60,7 +60,7 @@ Future<void> main(List<String> args) async {
   try {
     server = await shelf_io.serve(app.handler, AppConfig.host, config.port);
   } catch (error, stackTrace) {
-    log.severe('startup failed', error, stackTrace);
+    log.severe('startup failed', safeErrorDescription(error), stackTrace);
     await app.close();
     await consoleSink.close();
     await fileSink.close();

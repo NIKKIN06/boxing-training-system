@@ -98,7 +98,11 @@ App buildApp(
     initialized.then<void>(
       (_) {},
       onError: (Object error, StackTrace stackTrace) =>
-          log.severe('catalog initialization failed', error, stackTrace),
+          log.severe(
+            'catalog initialization failed',
+            safeErrorDescription(error),
+            stackTrace,
+          ),
     ),
   );
 

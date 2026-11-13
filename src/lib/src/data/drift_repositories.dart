@@ -12,7 +12,6 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:logging/logging.dart';
-import 'package:sqlite3/sqlite3.dart' show SqliteException;
 
 import '../domain/enums.dart';
 import '../domain/exercise.dart';
@@ -29,32 +28,20 @@ import 'database.dart';
 final Logger _log = Logger(LogNames.storage);
 
 /// Runs a write of [operation]; any failure becomes [StorageWriteException].
-/// The log gets the stack trace and only the SQLite code and explanation:
-/// the text of [SqliteException] includes the statement parameters, i.e.
-/// names and other user field contents (REQ-NF-004; stage 1, decision 3).
+/// The log gets the stack trace and only [safeErrorDescription] of the error
+/// (REQ-NF-004; stage 1, decision 3).
 Future<T> _write<T>(String operation, Future<T> Function() body) async {
   try {
     return await body();
   } on Exception catch (error, stackTrace) {
     _log.severe(
       'write failed operation=$operation',
-      _safeDescription(error),
+      safeErrorDescription(error),
       stackTrace,
     );
     throw StorageWriteException(operation, error);
   }
 }
-
-/// Any other exception — only its type: with `NativeDatabase.createInBackground`
-/// the SQLite error arrives wrapped in `DriftRemoteException`, whose text is
-/// the full SQLite text, and its class is exported only by the experimental
-/// `package:drift/remote.dart`.
-String _safeDescription(Object error) => switch (error) {
-  SqliteException() =>
-    'SqliteException(${error.extendedResultCode}): ${error.message}'
-        '${error.explanation == null ? '' : ', ${error.explanation}'}',
-  _ => error.runtimeType.toString(),
-};
 
 /// Key of the installed catalog version in `catalog_meta`.
 const String catalogVersionKey = 'catalogVersion';

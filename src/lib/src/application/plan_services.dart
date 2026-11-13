@@ -59,7 +59,11 @@ final class PlanGenerationService {
       rethrow;
     } on Object catch (error, stackTrace) {
       // A technical failure differs from impossibility (AC-F-009 p. 5).
-      _log.severe('plan generation failed targetSeconds=$target', error, stackTrace);
+      _log.severe(
+        'plan generation failed targetSeconds=$target',
+        safeErrorDescription(error),
+        stackTrace,
+      );
       throw const DomainError(ErrorCode.generationFailed);
     }
 

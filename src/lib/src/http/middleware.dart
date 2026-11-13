@@ -20,7 +20,8 @@ final Logger _httpLog = Logger(LogNames.http);
 /// - [DomainError] → its contract status and an `Error` body, WARNING with the
 ///   code and the field paths of `details` (never field values);
 /// - [UnimplementedError] (T-10 stub) → 501 without a body, WARNING;
-/// - any other exception → 500 without a body, ERROR with stack trace.
+/// - any other exception → 500 without a body, ERROR with the stack trace and
+///   [safeErrorDescription] (type and SQLite code, never the exception text).
 ///
 /// 501 is not part of spec/openapi.yaml: it marks a not yet implemented
 /// operation of the skeleton. No error `code` outside the contract is sent
@@ -48,7 +49,7 @@ Handler operation(String operationId, Handler inner) {
     } catch (error, stackTrace) {
       _httpLog.severe(
         'unhandled exception operationId=$operationId',
-        error,
+        safeErrorDescription(error),
         stackTrace,
       );
       response = Response(500);
@@ -69,7 +70,7 @@ Middleware requestLogging() {
       } catch (error, stackTrace) {
         _httpLog.severe(
           'unhandled exception outside operation',
-          error,
+          safeErrorDescription(error),
           stackTrace,
         );
         response = Response(500);

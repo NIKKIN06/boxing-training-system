@@ -1117,6 +1117,34 @@
 - Повний набір: `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-tg012-20261113.log dart test --reporter compact --file-reporter json:../logs/app/control-green-tg012-20261113.jsonl` → код виходу 0; 326 тестів (325 + новий), 326 `success`, регресій 0. Лог: INFO 2401, WARNING 140, ERROR 4 (ті самі змодельовані збої запису); даних користувача й абсолютних шляхів немає.
 - `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!».
 - logs/test-gate.md: у реєстр додано рядок TG-012 і примітку «TG-012 додано 13.11.2026 після GO; «Остаточне рішення» не змінюється». Розділ «Остаточне рішення» не змінено.
-- Коміт: CLAUDE.md дозволяє агентові комітити лише src/, tests/, docs/, logs/app/, logs/agent-session-lab5.md; logs/test-gate.md до переліку не входить, тому його зміну проіндексовано окремо не буде — рішення про коміт цього файлу передано людині.
+- Коміт: CLAUDE.md дозволяє агентові комітити лише src/, tests/, docs/, logs/app/, logs/agent-session-lab5.md; logs/test-gate.md до переліку не входить, тому його зміну не проіндексовано — рішення про коміт цього файлу передано людині.
+
+**Повний діалог:** не збережено агентом
+
+**Рішення людини (13.11.2026):** коміт TG-012 у показаному складі підтверджено; logs/test-gate.md людина комітить сама.
+
+**Коміт:** `bcf6e35` test: [agent] BDD-035 D-06 deprecation of missing exercise (TG-012) (`git log --oneline -1`).
+
+## Етап 16. Логування непередбачених винятків без вмісту полів (REQ-NF-004) — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Рішення людини щодо спостережень етапу 14 (13.11.2026):**
+1. Ризик 1 (500 без тіла для непередбаченого винятку) — не змінювати: у enum `Error.code` немає загального коду, 500 оголошено лише для операцій запису; будь-яка відповідь була б поза контрактом. Статус «Відкладено».
+2. Ризик 2 (текст винятку в лозі) — виправити: у загальному catch логувати так само, як для збою запису (тип винятку, код SQLite, якщо доступний, і стек, без тексту винятку); перевірити окремим скриптом зі `StateError` і `SqliteException`; повний набір тестів, `dart analyze`, контрольний лог control-green-logfix-<дата>.log з аналізом. Коміт `feat: [agent] sanitize unexpected exception logging (REQ-NF-004)`.
+
+**Пропозиція агента та дії:**
+- Пошук `severe(` у src/lib і src/bin: сирий виняток (`error`) передавався в лог у 6 місцях — загальний catch `operation()` і `requestLogging()` (http/middleware.dart), технічна помилка генератора (application/plan_services.dart), збій ініціалізації каталогу (composition_root.dart), два `startup failed` (bin/server.dart). У запису сховища (data/drift_repositories.dart) уже діяв безпечний опис групи 3.
+- Опис винесено в модуль логування: `safeErrorDescription` (logging/app_logging.dart) — для `SqliteException` код результату, повідомлення й пояснення SQLite (без `causingStatement` і `parametersToStatement`), для будь-якого іншого винятку — лише тип (зокрема `DriftRemoteException`, бо його текст — повний текст SQLite). Застосовано в усіх 7 місцях; локальну функцію drift_repositories.dart видалено. Відповіді клієнтові не змінювались (ризик 1).
+- Перевірка скриптом поза репозиторієм (scratchpad, `dart --packages=src/.dart_tool/package_config.json logfix_probe.dart`): `requestLogging()` + `operation(…)` з обробником, що кидає (а) `StateError('[TEST] Секретна назва плану')`, (б) `SqliteException` з `causingStatement` `SELECT * FROM "training_plans" WHERE "name" = ?` і параметром `[TEST] Спаринговий день`. Лог: `ERROR http: unhandled exception operationId=probeStateError` / `error: StateError` / `stack:` і `ERROR http: unhandled exception operationId=probeSqlite` / `error: SqliteException(11): database disk image is malformed, corrupt` / `stack:`; відповідь — 500 без тіла. Пошук у лозі `[TEST]`, `Секретна`, `Спаринговий`, `SELECT`, `training_plans`, `parameters` — збігів 0; записів зі стеком — 2.
+- Збій ініціалізації каталогу (`dart run bin/server.dart --db=:memory: --catalog=assets/catalog/missing.json`, лог у scratchpad): код виходу 1; `ERROR app: catalog initialization failed` / `error: PathNotFoundException` / `stack:`; `ERROR server: startup aborted …`. Шлях до ресурсу каталогу видно в записі `app composed … catalog=…`; текст винятку (зокрема шлях) у записі ERROR більше не з'являється — порівняно з logs/app/control-T-32-20261113.log.
+- `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!».
+- Повний набір — контрольний запуск: `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-logfix-20261113.log dart test --reporter compact --file-reporter json:../logs/app/control-green-logfix-20261113.jsonl` → код виходу 0; 326 тестів, 326 `success`; звірка з logs/app/control-green-tg012-20261113.jsonl — регресій 0. `git diff --quiet bcf6e35 -- tests spec` → без відмінностей.
+
+**Аналіз логу logs/app/control-green-logfix-20261113.log (скрипт `log_check.py`, поза репозиторієм):**
+- 2545 записів, INFO — 2401, WARNING — 140, ERROR — 4; 156 рядків — кадри стеку записів ERROR.
+- ERROR — 4, змодельовані збої запису (AC-NF-003, BDD-021): `completedTraining.insert`, `trainingPlan.insert`, `trainingPlan.update`, `trainingPlan.delete`; опис — `DriftRemoteException` і стек. `unhandled exception` — 0 (у тестах непередбачених винятків немає).
+- 974 запити, 501 — 0; WARNING — 140, усі `domain error` з кодами контракту.
+- Тривалість запитів 0–499 мс (найдовший — перший запит процесу).
+- Даних користувача й абсолютних шляхів немає (пошук етапу 10 і `/Users/` — збігів 0).
+- Висновок: записи ERROR будь-якого походження містять лише тип винятку (і код SQLite, якщо доступний) та стек; вмісту полів і SQL у лозі немає.
 
 **Повний діалог:** не збережено агентом
