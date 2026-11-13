@@ -329,7 +329,7 @@
   - Межі навантаження в нових фікстурах — тестові дані для перевірки правил, а не рекомендації (CON-005); діапазони `selection-rules` скопійовано з прикладів контракту (ex-1, ex-2, ex-4).
 - Тести (16 файлів, 296 тестів): exercises/ — 4 файли (75), plan_generations/ — 4 (72), open_plans/ — 1 (33), training_plans/ — 1 (24), storage/ — 1 (8), current_session/ — 2 (34), completed_trainings/ — 1 (6), analytics/ — 1 (15), contract/ — 1 (29). Очікувані множини фільтрів T-14 (15 випадків і 10 комбінацій) звірено скриптом `filter_check.py` за правилами AC-F-003 / D-09 — розбіжностей 0.
 - Окремий тест `contract/operation_coverage_test.dart`: (а) статично — кожен із 27 operationId викликається `send('<operationId>'` хоча б в одному тестовому файлі; (б) статично — кожен operationId має POS у docs/api/scenarios.md; (в) 27 тестів — запит із першим прикладом `requestBody` контракту, статус оголошено і не 501.
-- Звірка покриття скриптом за decomposition.md: усі BDD і AC тікетів обсягу мають тест. BDD-007 (T-20), BDD-014 (T-22), BDD-023 (T-23), BDD-017 (T-25) перевірено в тестах сусіднього тікета (вказано в таблиці). BDD-027 не має операції API: відхилення підтвердження — дія клієнта, запит не надсилається (`abortCurrentSession`: «ознаки підтвердження в API немає»).
+- Звірка покриття скриптом за decomposition.md: усі BDD і AC тікетів обсягу мають тест (повне в межах API-обсягу: форматування відображення тривалості, BDD-022 і AC-F-007 пп. 4, 6, 7, — клієнтська частина T-18 поза обсягом ЛР-5; рішення людини 13.11.2026, TEST-GATE, TG-001). BDD-007 (T-20), BDD-014 (T-22), BDD-023 (T-23), BDD-017 (T-25) перевірено в тестах сусіднього тікета (вказано в таблиці). BDD-027 не має операції API: відхилення підтвердження — дія клієнта, запит не надсилається (`abortCurrentSession`: «ознаки підтвердження в API немає»).
 - tests/test/skeleton/skeleton_smoke_test.dart видалено (`git rm`, рішення людини 13.11.2026).
 - src/ і spec/ не змінено. `dart format` не застосовано, бо форматування — це запис файлів командою shell; `dart analyze` зауважень не має.
 
@@ -598,6 +598,35 @@
 | 236 | analytics | BDD-048 NEG-29 D-21 AC-F-015 getAnalytics: on 30 June 2026 the period 1 June – 1 July → 422 END_DATE_IN_FUTURE | BDD-048, AC-F-015, NEG-29 | REQ-F-015 | `getAnalytics` | T-27 | 501: getAnalytics |
 | 237 | analytics | D-21 AC-F-015 getAnalytics: the end date equal to today is accepted; bounds are inclusive | AC-F-015 | REQ-F-015 | `getAnalytics` | T-27 | 501: generatePlan |
 | 238 | analytics | D-21 AC-F-015 getAnalytics: the length of the range is not limited | AC-F-015 | REQ-F-015 | `getAnalytics` | T-27 | 501: getAnalytics |
+| 239 | manual_editing | BDD-032 AC-F-010 addOpenPlanItem: ex-1/var-1 every parameter = min (1 round, 60 s, rest 30 s) → 201, parameters saved, duration 60 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `addOpenPlanItem` | T-22 | 501: generatePlan |
+| 240 | manual_editing | BDD-032 AC-F-010 addOpenPlanItem: ex-1/var-1 every parameter = max (5 rounds, 300 s, rest 120 s) → 201, parameters saved, duration 1980 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `addOpenPlanItem` | T-22 | 501: generatePlan |
+| 241 | manual_editing | BDD-032 AC-F-010 addOpenPlanItem: ex-3/var-1 every parameter = min (1 set, 5 repetitions, rest 0 s) → 201, parameters saved, duration 15 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `addOpenPlanItem` | T-22 | 501: generatePlan |
+| 242 | manual_editing | BDD-032 AC-F-010 addOpenPlanItem: ex-3/var-1 every parameter = max (5 sets, 20 repetitions, rest 60 s) → 201, parameters saved, duration 540 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `addOpenPlanItem` | T-22 | 501: generatePlan |
+| 243 | manual_editing | BDD-032 AC-F-010 replaceOpenPlanItem: ex-1/var-1 every parameter = min (1 round, 60 s, rest 30 s) → 200, parameters saved, duration 60 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `replaceOpenPlanItem` | T-22 | 501: generatePlan |
+| 244 | manual_editing | BDD-032 AC-F-010 replaceOpenPlanItem: ex-1/var-1 every parameter = max (5 rounds, 300 s, rest 120 s) → 200, parameters saved, duration 1980 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `replaceOpenPlanItem` | T-22 | 501: generatePlan |
+| 245 | manual_editing | BDD-032 AC-F-010 replaceOpenPlanItem: ex-3/var-1 every parameter = min (1 set, 5 repetitions, rest 0 s) → 200, parameters saved, duration 15 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `replaceOpenPlanItem` | T-22 | 501: generatePlan |
+| 246 | manual_editing | BDD-032 AC-F-010 replaceOpenPlanItem: ex-3/var-1 every parameter = max (5 sets, 20 repetitions, rest 60 s) → 200, parameters saved, duration 540 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `replaceOpenPlanItem` | T-22 | 501: generatePlan |
+| 247 | manual_editing | BDD-032 AC-F-010 updateOpenPlanItem getOpenPlan: ex-1/var-1 every parameter = min (1 round, 60 s, rest 30 s) → 200, parameters saved, duration 60 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `getOpenPlan`, `updateOpenPlanItem` | T-22 | 501: generatePlan |
+| 248 | manual_editing | BDD-032 AC-F-010 updateOpenPlanItem getOpenPlan: ex-1/var-1 every parameter = max (5 rounds, 300 s, rest 120 s) → 200, parameters saved, duration 1980 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `getOpenPlan`, `updateOpenPlanItem` | T-22 | 501: generatePlan |
+| 249 | manual_editing | BDD-032 AC-F-010 updateOpenPlanItem getOpenPlan: ex-3/var-1 every parameter = min (1 set, 5 repetitions, rest 0 s) → 200, parameters saved, duration 15 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `getOpenPlan`, `updateOpenPlanItem` | T-22 | 501: generatePlan |
+| 250 | manual_editing | BDD-032 AC-F-010 updateOpenPlanItem getOpenPlan: ex-3/var-1 every parameter = max (5 sets, 20 repetitions, rest 60 s) → 200, parameters saved, duration 540 s (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `getOpenPlan`, `updateOpenPlanItem` | T-22 | 501: generatePlan |
+| 251 | manual_editing | BDD-032 AC-F-010 updateOpenPlanItem: exactly 5 rounds (the variant maximum) for ex-1/var-1 → 200, other parameters unchanged (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `updateOpenPlanItem` | T-22 | 501: generatePlan |
+| 252 | manual_editing | BDD-032 AC-F-010 updateOpenPlanItem: exactly 1 round (the variant minimum) for ex-1/var-1 → 200, other parameters unchanged (TG-002) | BDD-032, AC-F-010 | REQ-F-010 | `updateOpenPlanItem` | T-22 | 501: generatePlan |
+| 253 | manual_editing | AC-F-010 addOpenPlanItem: position of the last element (n − 1) inserts before it, positions stay contiguous (TG-002) | AC-F-010 | REQ-F-010 | `addOpenPlanItem` | T-22 | 501: generatePlan |
+| 254 | manual_editing | AC-F-010 updateOpenPlanItem: the first element moved to the last position (n − 1) of its stage, positions stay contiguous (TG-002) | AC-F-010 | REQ-F-010 | `updateOpenPlanItem` | T-22 | 501: generatePlan |
+| 255 | exercise_validation | AC-F-002 SRS §5.3 time mode: min = max = recommended = 1 for rounds and interval, 0 for rest (smallest allowed values): createExercise getExercise → 201, saved as entered (TG-002) | AC-F-002 | REQ-F-002 | `createExercise`, `getExercise` | T-11 | 501: createExercise |
+| 256 | exercise_validation | AC-F-002 D-08 time mode: recommended = min for every parameter: createExercise getExercise → 201, saved as entered (TG-002) | AC-F-002 | REQ-F-002 | `createExercise`, `getExercise` | T-11 | 501: createExercise |
+| 257 | exercise_validation | AC-F-002 D-08 time mode: recommended = max for every parameter: createExercise getExercise → 201, saved as entered (TG-002) | AC-F-002 | REQ-F-002 | `createExercise`, `getExercise` | T-11 | 501: createExercise |
+| 258 | exercise_validation | AC-F-002 SRS §5.3 D-08 repetitions mode: min = max = recommended = 1 for sets and repetitions, 0 for rest, repetition time 1 s: createExercise getExercise → 201, saved as entered (TG-002) | AC-F-002 | REQ-F-002 | `createExercise`, `getExercise` | T-11 | 501: createExercise |
+| 259 | exercise_validation | AC-F-002 D-08 repetitions mode: recommended = min and = max: createExercise getExercise → 201, saved as entered (TG-002) | AC-F-002 | REQ-F-002 | `createExercise`, `getExercise` | T-11 | 501: createExercise |
+| 260 | exercise_validation | AC-F-002 SRS §5.3 time mode: min = max = recommended = 1 for rounds and interval, 0 for rest (smallest allowed values): updateExercise getExercise → 200, saved and returned on reopening (TG-002) | AC-F-002 | REQ-F-002 | `updateExercise`, `getExercise` | T-11 | 501: createExercise |
+| 261 | exercise_validation | AC-F-002 D-08 time mode: recommended = min for every parameter: updateExercise getExercise → 200, saved and returned on reopening (TG-002) | AC-F-002 | REQ-F-002 | `updateExercise`, `getExercise` | T-11 | 501: createExercise |
+| 262 | exercise_validation | AC-F-002 D-08 time mode: recommended = max for every parameter: updateExercise getExercise → 200, saved and returned on reopening (TG-002) | AC-F-002 | REQ-F-002 | `updateExercise`, `getExercise` | T-11 | 501: createExercise |
+| 263 | exercise_validation | AC-F-002 SRS §5.3 D-08 repetitions mode: min = max = recommended = 1 for sets and repetitions, 0 for rest, repetition time 1 s: updateExercise getExercise → 200, saved and returned on reopening (TG-002) | AC-F-002 | REQ-F-002 | `updateExercise`, `getExercise` | T-11 | 501: createExercise |
+| 264 | exercise_validation | AC-F-002 D-08 repetitions mode: recommended = min and = max: updateExercise getExercise → 200, saved and returned on reopening (TG-002) | AC-F-002 | REQ-F-002 | `updateExercise`, `getExercise` | T-11 | 501: createExercise |
+| 265 | generation_parameters | AC-F-005 generatePlan getOpenPlan: 0 h 1 min (the smallest total above zero) is accepted and converted to 60 s (tolerance 54–66 s) (TG-002) | AC-F-005 | REQ-F-005 | `generatePlan`, `getOpenPlan` | T-17 | 501: generatePlan |
+| 266 | generation_parameters | AC-F-005 generatePlan getOpenPlan: 0 h 59 min (minutes at the upper bound 59) is accepted and converted to 3540 s (tolerance 3186–3894 s) (TG-002) | AC-F-005 | REQ-F-005 | `generatePlan`, `getOpenPlan` | T-17 | 501: generatePlan |
+| 267 | generation_parameters | AC-F-005 generatePlan: 1 h 0 min (minutes at the lower bound 0) is accepted and converted to 3600 s (tolerance 3240–3960 s) (TG-002) | AC-F-005 | REQ-F-005 | `generatePlan` | T-17 | 501: generatePlan |
 | — | — | API-тесту немає: відхилення підтвердження припинення — дія клієнта, запит не надсилається | BDD-027, AC-F-013 | REQ-F-013 | — | T-25 | клієнт, поза ЛР-5 (рішення людини 13.11.2026, питання 14) |
 
 Примітка до таблиці: колонка «Червоний запуск» — операція, що першою відповіла 501 у тесті (для більшості тестів це передумова, наприклад `generatePlan`). REQ-NF-006 / AC-NF-006 покриває також простежуваність і FakeClock / SeededRandom у всіх тестах.
@@ -660,3 +689,82 @@
 - 16. Тести запускаються лише з concurrency 1 — погоджено (зафіксовано в tests/dart_test.yaml).
 - 17. Тест «never 501» перевіряє лише «статус оголошено і не 501» — погоджено.
 - Тести не змінювалися. Усі питання етапу 7 закрито (1, 2, 8, 11, 15, 18 — попереднім рішенням 13.11.2026).
+
+## Етап 8. T-29: незалежна перевірка тестів для TEST-GATE (API-частина) — 13.11.2026
+**Модель:** Claude Sonnet 5.5 (claude-sonnet-5-5), Claude Code у VS Code; нова сесія без контексту етапів 1–7 (автор тестів — Claude Opus 5.5)
+**Запити:**
+1. Незалежна перевірка тестів для T-29 TEST-GATE (лише API-частина), гілка impl/lab5; у tests/, src/, spec/ нічого не змінювати.
+2. Перевірити: умови GO T-29 з plan.md (розділ 1.1) з урахуванням обсягу ЛР-5; виведення кожного тесту зі специфікації (надмірні тести, пропуски); позитивні, негативні й граничні випадки для кожного тікета; відтворюваність червоного запуску (`dart analyze --fatal-infos`, `dart test --file-reporter json:/tmp/red-recheck.jsonl`, `python3 -I tool/red_check.py`, порівняння з logs/app/control-red-20261113.jsonl); час і випадковість лише через FakeClock / SeededRandom, без тестових ендпоінтів.
+3. Створити logs/test-gate.md як чернетку за структурою logs/api-gate.md з порожнім «Остаточним рішенням»; додати цей етап; не комітити.
+
+**Пропозиція агента та дії:**
+- Прочитано: plan.md (розділ 1.1, 6.4), журнал етапів 1–7, api-gate.md, spec-gate.md (REV-004, REV-009), SRS v1.1 (REQ-F-006…016, §5), BDD-021, 029, 030, 037, 038, 040, фрагменти spec/openapi.yaml, decomposition.md (чек-лист T-29), risks.md, high-risk-requirements.md; тести — вибірково (support/test_app.dart, json.dart, fake_clock.dart, початок operation_coverage_test.dart, група BDD-040, група відтворюваності) і за повними назвами 296 тестів із JSON-виводу. Рядок-в-рядок усі файли тестів не читано.
+- Червоний запуск (із `tests/`, лог застосунку — `/tmp/red-recheck-logs/`, у репозиторій не потрапив):
+  - `dart analyze --fatal-infos` — «No issues found!»;
+  - `dart test` — код виходу 1; `red_check.py` — код виходу 0: 16 наборів, 296 тестів, 293 `failure` (усі — `TestFailure` «status 501 is not declared»), 3 `success` (ті самі три статичні тести, що й у контрольному запуску), «Failed to load» і інших причин — 0;
+  - `diff` звітів `red_check.py` для /tmp/red-recheck.jsonl і logs/app/control-red-20261113.jsonl порожній; порівняння двох JSON-виводів скриптом — 296 і 296 тестів, розбіжностей 0.
+- Аналіз логу `/tmp/red-recheck-logs/red-recheck.log` (скрипт): 888 записів, нерозібраних 0; INFO — 595, WARNING — 293, ERROR — 0; `app composed` — 302; запитів — 293, усі 501, 27 різних operationId; стеків і винятків немає. Числа збігаються з аналізом етапу 7.
+- Скриптом: кожен із 296 тестів має ID (BDD / AC / POS / NEG / D / REV); operationId немає лише в двох статичних тестах AC-NF-006; 0 невідомих ID у назвах; для 14 тікетів обсягу всі BDD і AC з decomposition.md мають тест.
+- Час і випадковість: `DateTime.now`, `Stopwatch`, `Future.delayed`, `Timer` у tests/test — 0; `Random(` — лише `seeded_random.dart`; тестових ендпоінтів і заголовків у src/ немає (27 маршрутів). Генератор ID у тестах не підставляється (`Random.secure()` за замовчуванням) — TG-006.
+- Дата гейту 13.11.2026; план (§6.4) — 12.01.2027; відхилення −60 днів (скрипт). Стан issues узято з виводу `gh issue list --state all --limit 200 --json number,title,state`: T-02 (#3), T-05…T-10 (#6…#11), T-29 (#30), T-56 (#57), T-57 (#58) — OPEN.
+- logs/test-gate.md створено як чернетку: об'єкт перевірки, учасники, дата й відхилення, перевірка умов GO і чек-листа T-29, виведення тестів зі специфікації (надмірні й пропуски), матриця позитивних / негативних / граничних випадків, відтворення червоного запуску, час і випадковість, контроль RISK-19, реєстр TG-001…TG-011, питання до специфікації, порожнє «Остаточне рішення».
+- Блокувальних зауважень три: TG-001 (немає тестів відображення «1 год 30 хв» / «1 год 31 хв» для 5400, 5429, 5430, 3599 с — критерій готовності T-18, BDD-022), TG-003 (немає фактичних годин T-02, T-05–T-10 і дати запиту за T-56 для перерахунку календаря; значення не підставлено, RISK-21), TG-010 (три тести пройшли в червоному запуску без рішення людини про виняток). Решта — неблокувальні (TG-002 граничні допустимі значення T-11, T-17, T-22; TG-004 часткове закриття T-29 і T-15 поза обсягом; TG-005 тест збігу складу для одного зерна проти SRS рядка 633; TG-006; TG-007 залежність від `src/assets/catalog/test-catalog.json`; TG-008 закрито рішенням 13.11.2026; TG-009; TG-011).
+- tests/, src/, spec/, docs/ не змінено; коміт не створено; GO / REVISE не встановлено.
+
+**Питання до специфікації (передано людині):**
+1. SRS рядок 633 («Детермінованість формування не вимагається») проти рядка 980 («з фіксованим зерном результат відтворюваний») і AC-NF-006 («не конкретний склад»): чи може лишитися тест збігу складу для одного зерна (TG-005)?
+2. Чи входить текст відображення тривалості («Орієнтовно: 1 год 30 хв») у відповідальність REST API; контракт повертає лише `estimatedDurationSeconds` (TG-001). Зміну `spec/openapi.yaml` без вказівки людини агент не пропонує вносити.
+
+**Повний діалог:** не збережено агентом
+**Рішення людини (13.11.2026):**
+- TG-001: неблокувальне; відображення тривалості — клієнтська частина T-18 (категорія (в)), поза обсягом ЛР-5; API-частину BDD-022 покрито. Формулювання етапу 7 уточнено: «повне в межах API-обсягу».
+- TG-002: прийнято; тести додасть автор тестів в окремій сесії, рецензент перевірить лише додані тести.
+- TG-003: неблокувальне; перерахунок календаря не виконується (T-02, T-05–T-09 у ЛР-5 не виконувались, графік визначає дедлайн 15.11.2026; T-56 відкрите, трек К поза ЛР-5, дані [TEST]).
+- TG-004: прийнято як наслідок рішення про обсяг. TG-005: тест залишається (AC-F-006 — повторне формування з іншим станом випадковості; відтворюваність за зерном — AC-NF-006, D-11). TG-006: прийнято. TG-007: прийнято, SHA-256 `f29ec0745de79cb8a0d85f3bff27cb72d21d1b3c9de031de4a257f09017e9839` записано в logs/test-gate.md (`shasum -a 256`). TG-008: закрито. TG-009: неблокувальне, інспекція `src/` на верифікації. TG-010: виняток для трьох статичних мета-тестів. TG-011: виправляє людина.
+- Питання до специфікації 1 і 2 закрито: тест збігу складу лишається; текст відображення тривалості до REST API не входить.
+- Реєстр у logs/test-gate.md оновлено; «Остаточне рішення» порожнє; коміт не створено — очікується перевірка тестів TG-002.
+
+**Перевірка доданих тестів TG-002 (13.11.2026, та сама модель Claude Sonnet 5.5, та сама сесія):**
+- Перевірено лише додані тести (`git diff --cached`; зміни проіндексовані, у `git log` коміту з ними не було). У діффі лише додані рядки: наявні тести не змінено.
+- Додано 29 тестів: T-11 — 10, T-17 — 3, T-22 — 16. Межі виведено з SRS §5.3, AC-F-005, AC-F-010, §5.4–5.6, D-08, BDD-032; межі варіантів звірено з `src/assets/catalog/test-catalog.json`; для 60 с і 3540 с використано фікстуру `duration-tunable` (арифметику перевірено). Позиція `n` і верхня межа годин не тестуються, бо специфікація їх не визначає — внесено в питання до специфікації 4 і 5 у logs/test-gate.md.
+- Червоний запуск: `dart analyze --fatal-infos` чистий; 325 тестів, 322 `failure` (усі `TestFailure` 501), 3 статичні `success`; «Failed to load» і інших причин — 0; `diff` звітів `red_check.py` для /tmp/red-recheck-b.jsonl і logs/app/control-red-20261113b.jsonl порожній; 296 наявних тестів — ті самі результати, 29 нових — усі червоні. Лог `control-red-20261113b.log`: 977 записів, INFO 655, WARNING 322, ERROR 0, 322 запити зі статусом 501.
+- TG-002 у logs/test-gate.md — закрито (розділ 8). tests/, src/, spec/ агент не змінював.
+- Рішення людини (13.11.2026): TG-011 виправлено комітом `4bbc8ba` — закрито в реєстрі (`git show 4bbc8ba`: заголовок decomposition.md без «(чернетка)»). Питання до специфікації 4 (верхня межа годин) і 5 (позиція `n`): специфікація не визначає, не тестуються, статус «Відкладено». Відкритих зауважень у реєстрі немає. Коміт logs/test-gate.md і журналу відкладено до того, як автор тестів закомітить тести TG-002; файли лишаються проіндексованими, «Остаточне рішення» порожнє.
+
+## Етап 9. TG-002: позитивні граничні тести T-11, T-17, T-22 і повторний червоний запуск — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. Зауваження TEST-GATE TG-002 (logs/test-gate.md): додати позитивні граничні тести для T-11, T-17, T-22, виведені з SRS v1.1 / AC / контракту, з ID у назві. Гілка impl/lab5, змінювати лише tests/.
+2. T-11 (createExercise, updateExercise): min = max, recommended = min і = max, мінімально допустимі значення за SRS §5.3; T-17 (generatePlan): найменша й найбільша допустимі тривалості за AC-F-005 приймаються й конвертуються в секунди; T-22 (addOpenPlanItem, replaceOpenPlanItem, updateOpenPlanItem): параметри рівно min і рівно max варіанта, позиції на межах етапу (0 і остання).
+3. Межу, яку специфікація не визначає, не вигадувати — винести в питання.
+4. Червоний запуск (`dart analyze --fatal-infos`; `dart test` з логом logs/app/control-red-20261113b.log і `--file-reporter json:../logs/app/control-red-20261113b.jsonl`; `python3 -I tool/red_check.py`), аналіз логу, рядки таблиці простежуваності, цей етап журналу; коміт `test: [agent] T-11, T-17, T-22 positive boundary tests (TG-002)` після показу `git diff --cached`.
+
+**Пропозиція агента та дії:**
+- Джерела: SRS v1.1 §5.3 (додатні цілі — найменше 1; відпочинок невід'ємний — найменше 0; мін. ≤ макс.; рекомендоване в діапазоні), §5.4 (формули тривалості), §5.5 (години ≥ 0, хвилини 0…59, сума > 0, `D = h × 3600 + m × 60`), §5.6 (допуск `[0,9 × D; 1,1 × D]`, межі включно); AC-F-002 (`мін. ≤ рек. ≤ макс.`, D-08), AC-F-005, AC-F-010 («[мін., макс.]»), BDD-032; spec/openapi.yaml: `PlanItemCreateRequest.position` / `PlanItemPatchRequest.position` (`minimum: 0`), `PlanItemUnprocessable` / `PlanItemPatchInvalid` («position поза межами етапу»). Межі варіантів ex-1/var-1 і ex-3/var-1 — з `src/assets/catalog/test-catalog.json` (затверджено T-57; SHA-256 зафіксовано в TG-007).
+- Додано 29 тестів (усі з ID у назві та позначкою TG-002 у назві групи):
+  - T-11, `exercise_validation_test.dart` (+10): 5 випадків × createExercise і updateExercise — режим за часом min = max = рек. = 1 (раунди, інтервал) і 0 (відпочинок); рек. = min; рек. = max; режим за повтореннями min = max = рек. = 1 (підходи, повторення), відпочинок 0, `e` = 1 с; рек. = min і = max. Перевіряється 201 / 200 і збіг збереженого варіанта з введеним після повторного відкриття (getExercise). Для updateExercise вихідний варіант того самого режиму, `id` варіанта зберігається (D-33).
+  - T-17, `generation_parameters_test.dart` (+3): 0 год 1 хв → 60 с (допуск 54–66 с), 0 год 59 хв → 3540 с (3186–3894 с) — на фікстурі `duration-tunable` (на постачальному каталозі план на 60 с неможливий і приховав би перетворення); 1 год 0 хв (хвилини на нижній межі 0) → 3600 с (3240–3960 с) — на постачальному каталозі. Перевіряються 201, `targetDurationSeconds`, `durationTolerance`, `generationParameters`.
+  - T-22, `manual_editing_test.dart` (+16): 4 набори меж (ex-1/var-1 усі параметри = min (1, 60, 30) і = max (5, 300, 120); ex-3/var-1 = min (1, 5, 0) і = max (5, 20, 60)) × addOpenPlanItem, replaceOpenPlanItem, updateOpenPlanItem; окремо updateOpenPlanItem `rounds` = 5 і = 1 (дзеркало BDD-032); позиції: addOpenPlanItem з позицією останнього елемента (n − 1), updateOpenPlanItem — перший елемент на останню позицію (n − 1). Позицію 0 уже покривають тести № 30 і № 32 таблиці. Тривалості — за формулами §5.4 (60, 1980, 15, 540 с).
+- Затверджені тести не змінено (diff — лише додані рядки); tests/test/support/, фікстури, src/, spec/ не змінено.
+
+**Червоний запуск (13.11.2026):**
+- `cd tests && dart analyze --fatal-infos` → «No issues found!».
+- `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-red-20261113b.log dart test --reporter compact --file-reporter json:../logs/app/control-red-20261113b.jsonl` → код виходу 1 (concurrency 1 з tests/dart_test.yaml).
+- `python3 -I tool/red_check.py ../logs/app/control-red-20261113b.jsonl` → код виходу 0: 16 наборів, 325 тестів; 322 `failure`, у кожного перша помилка — `TestFailure` «<operationId>: status 501 is not declared»; інших причин 0; «Failed to load» — немає; пройшли 3 — ті самі статичні мета-тести (виняток TG-010).
+- Порівняння з logs/app/control-red-20261113.jsonl (скрипт поза репозиторієм): 296 → 325, додано 29, вилучено 0, результат попередніх тестів не змінився в жодного; усі 29 нових — `failure` з «status 501» і містять ID. Перша операція з 501: T-11 — createExercise (10; для updateExercise це передумова), T-17 — generatePlan (3), T-22 — generatePlan (16, передумова setUp). Отже, падіння доводить відсутність реалізації, але для T-22 і updateExercise до цільової операції запит у червоному запуску не доходить — так само, як у решти тестів цих файлів (етап 7).
+
+**Аналіз логу logs/app/control-red-20261113b.log (скрипт):**
+- 977 записів, нерозібраних 0; INFO — 655, WARNING — 322, ERROR — 0; стеків і винятків — 0.
+- `app composed operations=27` — 333 = 302 (етап 7) + 29 нових тестів + 2 повторні композиції в тестах T-17 на фікстурі (постачальний каталог — 312, `duration-tunable` — 6, решта фікстур без змін).
+- Запитів (INFO `http: request`) — 322, усі 501, 27 різних operationId, тривалість 0–5 мс; кожному передує WARNING `not implemented` того самого operationId (322 пари). Заглушки: `decode PlanGenerationRequest` — 187, `decode ExerciseInput` — 53, `decode ExerciseFilter` — 29, `decode analytics period` — 8.
+- Значень `[TEST]`, URL і query у лозі немає (REQ-NF-004).
+- Висновок: нові тести падають через нереалізовані операції; помилок середовища, компіляції чи завантаження немає.
+
+**Таблиця простежуваності:** додано рядки 239–267 (таблиця етапу 7; згенеровано скриптом із виводу репортера).
+
+**Питання до специфікації (передано людині):**
+1. Верхня межа годин цільової тривалості: SRS §5.5 і AC-F-005 задають лише «години — невід'ємне ціле число», контракт — `minimum: 0` без `maximum`. «Найбільшу допустиму тривалість» визначити неможливо; тестовано лише межу хвилин 59. Тест на великі години не додано.
+2. Чи є `position = n` (одразу після останнього елемента етапу, n — кількість елементів) у addOpenPlanItem і position в updateOpenPlanItem при перенесенні в інший етап «у межах етапу»? Контракт: «position поза межами етапу» → 422, «якщо відсутній — у кінець етапу», межу не уточнено. Тестовано лише 0 і n − 1.
+3. Верхніх меж параметрів варіанта власної вправи (наприклад, найбільша кількість раундів чи інтервал) SRS §5.3 не задає; тестовано лише найменші допустимі значення.
+
+**Повний діалог:** не збережено агентом
