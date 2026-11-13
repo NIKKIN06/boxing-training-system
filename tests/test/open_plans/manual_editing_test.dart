@@ -542,6 +542,166 @@ void main() {
     }
   });
 
+  group('T-22 parameters exactly at the variant limits are accepted (TG-002; '
+      'AC-F-010 «[мін., макс.]» inclusive, BDD-032)', () {
+    // Variant limits of the supplied [TEST] catalog (T-57):
+    // ex-1/var-1 (time): rounds 1–5, interval 60–300 s, rest 30–120 s;
+    // ex-3/var-1 (repetitions, e = 3 s): sets 1–5, repetitions 5–20, rest 0–60 s.
+    // Expected durations — SRS §5.4: T = n × t + (n − 1) × r, T = n × p × e + (n − 1) × r.
+    final bounds = <({String name, String exerciseId, Json parameters, int seconds})>[
+      (
+        name: 'ex-1/var-1 every parameter = min (1 round, 60 s, rest 30 s)',
+        exerciseId: 'ex-1',
+        parameters: timeParams(1, 60, 30),
+        seconds: 60,
+      ),
+      (
+        name: 'ex-1/var-1 every parameter = max (5 rounds, 300 s, rest 120 s)',
+        exerciseId: 'ex-1',
+        parameters: timeParams(5, 300, 120),
+        seconds: 5 * 300 + 4 * 120,
+      ),
+      (
+        name: 'ex-3/var-1 every parameter = min (1 set, 5 repetitions, rest 0 s)',
+        exerciseId: 'ex-3',
+        parameters: repetitionParams(1, 5, 0),
+        seconds: 1 * 5 * 3,
+      ),
+      (
+        name: 'ex-3/var-1 every parameter = max (5 sets, 20 repetitions, rest 60 s)',
+        exerciseId: 'ex-3',
+        parameters: repetitionParams(5, 20, 60),
+        seconds: 5 * 20 * 3 + 4 * 60,
+      ),
+    ];
+
+    for (final b in bounds) {
+      test('BDD-032 AC-F-010 addOpenPlanItem: ${b.name} → 201, parameters saved, '
+          'duration ${b.seconds} s', () async {
+        final res = await app.api.send(
+          'addOpenPlanItem',
+          path: {'openPlanId': openId},
+          body: {
+            'exerciseId': b.exerciseId,
+            'variantId': 'var-1',
+            'stage': 'main',
+            'parameters': b.parameters,
+          },
+        );
+        expectStatus(res, 201);
+        final item = stageItems(res.body, 'main').last;
+        expect(item['exerciseId'], b.exerciseId);
+        expect(Map.of(item['parameters'].asJson)..remove('repetitionTimeSeconds'), b.parameters);
+        expect(item['estimatedDurationSeconds'], b.seconds);
+        expect(
+          res.body['estimatedDurationSeconds'],
+          open['estimatedDurationSeconds'].asInt + b.seconds,
+        );
+      });
+    }
+
+    for (final b in bounds) {
+      test('BDD-032 AC-F-010 replaceOpenPlanItem: ${b.name} → 200, parameters '
+          'saved, duration ${b.seconds} s', () async {
+        final target = stageItems(open, 'main').first;
+        final itemId = target['id'].asString;
+        final res = await app.api.send(
+          'replaceOpenPlanItem',
+          path: {'openPlanId': openId, 'itemId': itemId},
+          body: {'exerciseId': b.exerciseId, 'variantId': 'var-1', 'parameters': b.parameters},
+        );
+        expectStatus(res, 200);
+        final item = itemById(res.body, itemId);
+        expect(item['exerciseId'], b.exerciseId);
+        expect(Map.of(item['parameters'].asJson)..remove('repetitionTimeSeconds'), b.parameters);
+        expect(item['estimatedDurationSeconds'], b.seconds);
+        expect(
+          res.body['estimatedDurationSeconds'],
+          open['estimatedDurationSeconds'].asInt -
+              target['estimatedDurationSeconds'].asInt +
+              b.seconds,
+        );
+      });
+    }
+
+    for (final b in bounds) {
+      test('BDD-032 AC-F-010 updateOpenPlanItem getOpenPlan: ${b.name} → 200, '
+          'parameters saved, duration ${b.seconds} s', () async {
+        final (_, item) = b.exerciseId == 'ex-1' ? await addShadow() : await addPushUps();
+        final itemId = item['id'].asString;
+        final after = await app.api.patchItemOk(openId, itemId, {'parameters': b.parameters});
+        final changed = itemById(after, itemId);
+        expect(Map.of(changed['parameters'].asJson)..remove('repetitionTimeSeconds'), b.parameters);
+        expect(changed['estimatedDurationSeconds'], b.seconds);
+        expect(await app.api.getOpenPlanOk(openId), after);
+      });
+    }
+
+    test('BDD-032 AC-F-010 updateOpenPlanItem: exactly 5 rounds (the variant '
+        'maximum) for ex-1/var-1 → 200, other parameters unchanged', () async {
+      final (_, item) = await addShadow();
+      final itemId = item['id'].asString;
+      final after = await app.api.patchItemOk(openId, itemId, {
+        'parameters': {'rounds': 5},
+      });
+      expect(itemById(after, itemId)['parameters'], timeParams(5, 180, 60));
+      expect(itemById(after, itemId)['estimatedDurationSeconds'], 5 * 180 + 4 * 60);
+    });
+
+    test('BDD-032 AC-F-010 updateOpenPlanItem: exactly 1 round (the variant '
+        'minimum) for ex-1/var-1 → 200, other parameters unchanged', () async {
+      final (_, item) = await addShadow();
+      final itemId = item['id'].asString;
+      final after = await app.api.patchItemOk(openId, itemId, {
+        'parameters': {'rounds': 1},
+      });
+      expect(itemById(after, itemId)['parameters'], timeParams(1, 180, 60));
+      expect(itemById(after, itemId)['estimatedDurationSeconds'], 180);
+    });
+  });
+
+  group('T-22 positions on the bounds of a stage are accepted (TG-002; '
+      'AC-F-010, spec/openapi.yaml «position поза межами етапу»)', () {
+    // Position 0 is covered by «addOpenPlanItem: position 0 inserts at the
+    // beginning» and «updateOpenPlanItem: order within a stage is changed».
+    // Here — the last position of the stage (n − 1). Whether position n
+    // (right after the last element) is inside the stage is not defined by the
+    // contract and is not tested (TG-002, question 2).
+    test('AC-F-010 addOpenPlanItem: position of the last element (n − 1) inserts '
+        'before it, positions stay contiguous', () async {
+      final mainBefore = stageItems(open, 'main');
+      final last = mainBefore.length - 1;
+      final plan = await app.api.addItemOk(
+        openId,
+        exerciseId: 'ex-1',
+        stage: 'main',
+        position: last,
+        parameters: timeParams(2, 120, 30),
+      );
+      final main = stageItems(plan, 'main');
+      expect(main, hasLength(mainBefore.length + 1));
+      expect(main[last]['exerciseId'], 'ex-1');
+      expect(main.last['id'], mainBefore.last['id']);
+      expectContiguousPositions(plan);
+    });
+
+    test('AC-F-010 updateOpenPlanItem: the first element moved to the last '
+        'position (n − 1) of its stage, positions stay contiguous', () async {
+      await addShadow();
+      final (plan, _) = await addShadow();
+      final idsBefore = stageItems(plan, 'warm-up').map((i) => i['id']).toList();
+      final firstId = idsBefore.first;
+      final moved = await app.api.patchItemOk(openId, firstId.asString, {
+        'position': idsBefore.length - 1,
+      });
+      final idsAfter = stageItems(moved, 'warm-up').map((i) => i['id']).toList();
+      expect(idsAfter, [...idsBefore.skip(1), firstId]);
+      expectContiguousPositions(moved);
+      expect(stagesOf(moved), stageOrder);
+      expect(moved['estimatedDurationSeconds'], plan['estimatedDurationSeconds']);
+    });
+  });
+
   group('T-22 deleteOpenPlanItem', () {
     test('POS-18 BDD-033 AC-F-010 deleteOpenPlanItem: emptying the warm-up gives '
         'STAGE_EMPTY for the warm-up and recalculates the total', () async {

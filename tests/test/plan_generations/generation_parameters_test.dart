@@ -129,4 +129,63 @@ void main() {
       }
     });
   });
+
+  group('T-17 generatePlan: target durations on the bounds are accepted and '
+      'converted to seconds (TG-002; AC-F-005, SRS §5.5, §5.6)', () {
+    // AC-F-005: hours ≥ 0, minutes 0…59, total > 0; D = h × 3600 + m × 60
+    // (§5.5); tolerance [0,9 × D; 1,1 × D] (§5.6). The upper bound of hours is
+    // not defined by the specification and is not tested (TG-002, question 1).
+    //
+    // 0 h 1 min (60 s) and 0 h 59 min (3540 s) are generated on the
+    // duration-tunable fixture (one round, no rest, interval from 1 s), so a
+    // plan with three non-empty stages exists for both; on the supplied
+    // catalog a 60 s plan is impossible and would hide the conversion.
+    final rows = <({int hours, int minutes, int seconds, int lower, int upper, String bound})>[
+      (
+        hours: 0,
+        minutes: 1,
+        seconds: 60,
+        lower: 54,
+        upper: 66,
+        bound: 'the smallest total above zero',
+      ),
+      (
+        hours: 0,
+        minutes: 59,
+        seconds: 3540,
+        lower: 3186,
+        upper: 3894,
+        bound: 'minutes at the upper bound 59',
+      ),
+    ];
+    for (final row in rows) {
+      test('AC-F-005 generatePlan getOpenPlan: ${row.hours} h ${row.minutes} min '
+          '(${row.bound}) is accepted and converted to ${row.seconds} s '
+          '(tolerance ${row.lower}–${row.upper} s)', () async {
+        app = await TestApp.start(catalog: fixtureCatalog('duration-tunable.json'));
+        final params = generationParams(
+          hours: row.hours,
+          minutes: row.minutes,
+          availableEquipment: const [],
+        );
+        final res = await app.api.send('generatePlan', body: params);
+        expectStatus(res, 201);
+        final plan = res.body;
+        expect(row.seconds, targetSeconds(row.hours, row.minutes));
+        expect(plan['targetDurationSeconds'], row.seconds);
+        expect(plan['durationTolerance'], {'minSeconds': row.lower, 'maxSeconds': row.upper});
+        expect(plan['generationParameters'], params);
+        expect(await app.api.getOpenPlanOk(plan['id'].asString), plan);
+      });
+    }
+
+    test('AC-F-005 generatePlan: 1 h 0 min (minutes at the lower bound 0) is '
+        'accepted and converted to 3600 s (tolerance 3240–3960 s)', () async {
+      final params = generationParams(hours: 1, minutes: 0);
+      final plan = await app.api.generateOk(params);
+      expect(plan['targetDurationSeconds'], 3600);
+      expect(plan['durationTolerance'], {'minSeconds': 3240, 'maxSeconds': 3960});
+      expect(plan['generationParameters'], params);
+    });
+  });
 }

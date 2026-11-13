@@ -440,4 +440,110 @@ void main() {
       });
     }
   });
+
+  group('T-11 createExercise / updateExercise: values equal to the bounds are '
+      'accepted (TG-002; AC-F-002, SRS §5.3, D-08)', () {
+    // SRS §5.3: rounds, sets, repetitions, interval and repetition time are
+    // positive integers (smallest allowed 1), rest is a non-negative integer
+    // (smallest allowed 0); «мінімальне значення не перевищує максимального»
+    // (min = max allowed); «рекомендоване значення перебуває в дозволеному
+    // діапазоні» (recommended = min and = max allowed, AC-F-002 «мін. ≤ рек. ≤ макс.»).
+    final timeVariant = ropeExerciseInput()['variants'].asJsonList.single;
+    final repsVariant = twoVariantExerciseInput()['variants'].asJsonList.first;
+
+    final cases = <({String name, Json variant})>[
+      (
+        name: 'SRS §5.3 time mode: min = max = recommended = 1 for rounds and '
+            'interval, 0 for rest (smallest allowed values)',
+        variant: {
+          ...timeVariant,
+          'rounds': {'min': 1, 'max': 1, 'recommended': 1},
+          'intervalSeconds': {'min': 1, 'max': 1, 'recommended': 1},
+          'restSeconds': {'min': 0, 'max': 0, 'recommended': 0},
+        },
+      ),
+      (
+        name: 'D-08 time mode: recommended = min for every parameter',
+        variant: {
+          ...timeVariant,
+          'rounds': {'min': 1, 'max': 5, 'recommended': 1},
+          'intervalSeconds': {'min': 60, 'max': 180, 'recommended': 60},
+          'restSeconds': {'min': 0, 'max': 90, 'recommended': 0},
+        },
+      ),
+      (
+        name: 'D-08 time mode: recommended = max for every parameter',
+        variant: {
+          ...timeVariant,
+          'rounds': {'min': 1, 'max': 5, 'recommended': 5},
+          'intervalSeconds': {'min': 60, 'max': 180, 'recommended': 180},
+          'restSeconds': {'min': 30, 'max': 90, 'recommended': 90},
+        },
+      ),
+      (
+        name: 'SRS §5.3 D-08 repetitions mode: min = max = recommended = 1 for '
+            'sets and repetitions, 0 for rest, repetition time 1 s',
+        variant: {
+          ...repsVariant,
+          'sets': {'min': 1, 'max': 1, 'recommended': 1},
+          'repetitions': {'min': 1, 'max': 1, 'recommended': 1},
+          'restSeconds': {'min': 0, 'max': 0, 'recommended': 0},
+          'repetitionTimeSeconds': 1,
+        },
+      ),
+      (
+        name: 'D-08 repetitions mode: recommended = min and = max',
+        variant: {
+          ...repsVariant,
+          'sets': {'min': 1, 'max': 5, 'recommended': 1},
+          'repetitions': {'min': 5, 'max': 20, 'recommended': 20},
+          'restSeconds': {'min': 0, 'max': 60, 'recommended': 60},
+        },
+      ),
+    ];
+
+    for (final c in cases) {
+      test('AC-F-002 ${c.name}: createExercise getExercise → 201, saved as '
+          'entered', () async {
+        final input = {
+          ...ropeExerciseInput(),
+          'variants': [c.variant],
+        };
+        final res = await app.api.send('createExercise', body: input);
+        expectStatus(res, 201);
+        final created = res.body;
+        expect(Map.of(created['variants'].asJsonList.single)..remove('id'), c.variant);
+        expect(await app.api.getExerciseOk(created['id'].asString), created);
+      });
+    }
+
+    for (final c in cases) {
+      test('AC-F-002 ${c.name}: updateExercise getExercise → 200, saved and '
+          'returned on reopening', () async {
+        // The saved variant has the same mode, so only its limits change.
+        final created = await app.api.createExerciseOk({
+          ...ropeExerciseInput(),
+          'variants': [c.variant['mode'] == 'time' ? timeVariant : repsVariant],
+        });
+        final id = created['id'].asString;
+        final variantId = created['variants'].asJsonList.single['id'];
+        final res = await app.api.send(
+          'updateExercise',
+          path: {'exerciseId': id},
+          body: {
+            ...inputFrom(created),
+            'variants': [
+              {...c.variant, 'id': variantId},
+            ],
+          },
+        );
+        expectStatus(res, 200);
+        final reopened = await app.api.getExerciseOk(id);
+        expect(reopened, res.body);
+        final variant = reopened['variants'].asJsonList.single;
+        expect(variant['id'], variantId);
+        expect(Map.of(variant)..remove('id'), c.variant);
+      });
+    }
+  });
 }
