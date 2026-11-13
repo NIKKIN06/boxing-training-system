@@ -31,7 +31,7 @@ Handler operation(String operationId, Handler inner) {
     try {
       response = await inner(request);
     } on DomainError catch (error, stackTrace) {
-      final status = errorStatus(error.code);
+      final status = errorStatus(error.code, operationId);
       if (status == null) {
         _httpLog.severe(
           'no status for error code operationId=$operationId '

@@ -110,10 +110,14 @@ List<WarningAttribute> filterMismatches(
 /// (addOpenPlanItem, replaceOpenPlanItem); every value lies within
 /// `[min; max]` of the variant; `e` is the variant's fixed value.
 /// Returns the parameters, or the violations under `parameters.<field>`.
+///
+/// With `withinVariant: false` — actual values of an executed plan (T-45,
+/// D-19, SRS §5.3): integers ≥ 1 (rest ≥ 0), the variant limits do not apply.
 (PlanItemParameters?, List<ErrorDetail>) resolveItemParameters(
   Variant v,
   ParametersInput input, {
   PlanItemParameters? current,
+  bool withinVariant = true,
 }) {
   final details = <ErrorDetail>[];
   void foreign(String field, int? value) {
@@ -134,7 +138,7 @@ List<WarningAttribute> filterMismatches(
       details.add(ErrorDetail(field: path, constraint: Constraint.required));
     } else if (x < minimum) {
       details.add(ErrorDetail(field: path, constraint: Constraint.minimum));
-    } else if (x < r.min || x > r.max) {
+    } else if (withinVariant && (x < r.min || x > r.max)) {
       details.add(
         ErrorDetail(field: path, constraint: Constraint.withinVariantRange),
       );

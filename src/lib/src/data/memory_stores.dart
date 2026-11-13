@@ -1,6 +1,5 @@
 /// In-memory stores: open plans and the current session live only while the
 /// server process runs (ADD-002 D-29; stage 1, decision 4).
-/// The current session store — later group; it still throws [UnimplementedError].
 library;
 
 import '../domain/plan.dart';
@@ -17,11 +16,13 @@ final class InMemoryOpenPlanStore implements OpenPlanStore {
   void put(OpenPlan plan) => _plans[plan.id] = plan;
 }
 
+/// The only current session; lost on a restart (D-18).
 final class InMemoryCurrentSessionStore implements CurrentSessionStore {
-  @override
-  CurrentSession? get() => throw UnimplementedError('CurrentSessionStore.get');
+  CurrentSession? _session;
 
   @override
-  void set(CurrentSession? session) =>
-      throw UnimplementedError('CurrentSessionStore.set');
+  CurrentSession? get() => _session;
+
+  @override
+  void set(CurrentSession? session) => _session = session;
 }

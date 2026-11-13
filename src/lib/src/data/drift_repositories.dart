@@ -4,8 +4,8 @@
 /// multi-row write runs in one transaction. A failed write is logged at ERROR
 /// with the stack trace and surfaces as [StorageWriteException].
 /// T-31 (group 1): exercises and catalog metadata; T-42 (group 3): saved
-/// plans. Completed trainings — later group; their methods still throw
-/// [UnimplementedError].
+/// plans; T-45, T-46 (group 4): completed trainings. The selection by local
+/// date for analytics — group 5; it still throws [UnimplementedError].
 library;
 
 import 'dart:convert';
@@ -21,6 +21,7 @@ import '../domain/plan.dart';
 import '../domain/plan_json.dart';
 import '../domain/plan_rules.dart';
 import '../domain/training.dart';
+import '../domain/training_json.dart';
 import '../logging/app_logging.dart';
 import '../ports/repositories.dart';
 import 'database.dart';
@@ -276,13 +277,32 @@ final class DriftCompletedTrainingRepository
 
   final AppDatabase db;
 
+  /// AC-F-014: newer `startedAt` first (not the moment of completion).
   @override
-  Future<List<CompletedTrainingSummary>> findAllSummaries() =>
-      throw UnimplementedError('CompletedTrainingRepository.findAllSummaries');
+  Future<List<CompletedTrainingSummary>> findAllSummaries() async {
+    final rows = await db.select(db.completedTrainings).get();
+    return [
+      for (final r in rows)
+        CompletedTrainingSummary(id: r.id, startedAt: r.startedAt),
+    ]..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+  }
 
   @override
-  Future<CompletedTraining?> findById(String id) =>
-      throw UnimplementedError('CompletedTrainingRepository.findById');
+  Future<CompletedTraining?> findById(String id) async {
+    final row = await (db.select(
+      db.completedTrainings,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _fromRow(row);
+  }
+
+  static CompletedTraining _fromRow(CompletedTrainingRow r) =>
+      CompletedTraining(
+        id: r.id,
+        startedAt: r.startedAt,
+        localStartDate: localDateFromJson(r.localStartDate),
+        executedPlan: executedPlanFromJson(jsonDecode(r.executedPlanJson)),
+        note: r.note,
+      );
 
   @override
   Future<List<CompletedTraining>> findByLocalStartDate(
@@ -292,7 +312,22 @@ final class DriftCompletedTrainingRepository
     'CompletedTrainingRepository.findByLocalStartDate',
   );
 
+  /// One INSERT: the record is written in full or not at all (AC-NF-003).
   @override
-  Future<void> insert(CompletedTraining training) =>
-      throw UnimplementedError('CompletedTrainingRepository.insert');
+  Future<void> insert(CompletedTraining training) => _write(
+    'completedTraining.insert',
+    () => db
+        .into(db.completedTrainings)
+        .insert(
+          CompletedTrainingsCompanion.insert(
+            id: training.id,
+            startedAt: training.startedAt.toUtc(),
+            localStartDate: localDateToJson(training.localStartDate),
+            executedPlanJson: jsonEncode(
+              executedPlanToJson(training.executedPlan),
+            ),
+            note: Value(training.note),
+          ),
+        ),
+  );
 }

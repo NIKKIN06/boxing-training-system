@@ -989,3 +989,59 @@
 8. Нічого не змінювати: тип винятку зі стеком без вмісту полів виконує рішення 3 етапу 1.
 
 **Повний діалог:** не збережено агентом
+
+**Коміт:** `ad4a0c0` feat: [agent] T-41, T-42 open plan editing and saved training plans (`git log --oneline -1`).
+
+## Етап 13. Реалізація, група 4: T-44, T-45, T-46 (поточне заняття, завершення, історія, API-частина) — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. Та сама процедура й правила, що для груп 1–3. T-44: startCurrentSession, getCurrentSession (робоча копія плану, час і локальна дата старту, SESSION_ALREADY_ACTIVE, D-17, D-18 — лише в пам'яті). T-45: updateExecutedPlanItem, deleteExecutedPlanItem, completeTraining з атомарним записом у Drift і STORAGE_WRITE_FAILED, abortCurrentSession (D-19, EXECUTED_PLAN_EMPTY, NO_CURRENT_SESSION). T-46: listCompletedTrainings (від новіших до старіших за часом старту), getCompletedTraining (копії лише для читання, D-20).
+2. Коміт `feat: [agent] T-44, T-45, T-46 current session, completion and history` — зупинитися й показати `git diff --cached --stat`.
+
+**Пропозиція агента та дії:**
+- Тести групи — 5 файлів: current_session/session_start_test.dart (10, T-24 → T-44), current_session/session_finish_test.dart (24, T-25 → T-45), completed_trainings/history_test.dart (6, T-26 → T-46), storage/storage_test.dart (8; 3 червоні після групи 3), training_plans/save_reopen_test.dart (24; 1 червоний після групи 3).
+- Червоний запуск до змін (src/ = коміт `ad4a0c0`): `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-red-g4-20261113.log dart test test/current_session/ test/completed_trainings/history_test.dart test/storage/storage_test.dart test/training_plans/save_reopen_test.dart --reporter compact --file-reporter json:../logs/app/control-red-g4-20261113.jsonl` → код виходу 1; `python3 -I tool/red_check.py …` → код виходу 0: 5 наборів, 72 тести; 43 `failure`, у кожного перша помилка — «status 501» (startCurrentSession — 35, listCompletedTrainings — 3, abortCurrentSession, completeTraining, deleteExecutedPlanItem, getCompletedTraining, getCurrentSession — по 1); інших причин і «Failed to load» — 0; пройшли 29 — тести груп 1–3 у storage_test (5) і save_reopen_test (23) та статичний D-20 history_test (1). Лог: 697 записів, INFO 631, WARNING 63, ERROR 3 (очікувані збої запису тестів AC-NF-003 групи 3, без вмісту полів); 274 запити, з них 43 — 501.
+- Реалізація (лише src/; схема Drift не змінювалась):
+  - `domain/training_json.dart` (новий) — wire-форма `ExecutedPlan`, `CurrentSession`, `CompletedTraining`; `format: date` (`YYYY-MM-DD`), локальна дата з локального часу;
+  - `domain/plan_rules.dart` — `resolveItemParameters(…, withinVariant: false)` для фактичних значень (D-19, SRS §5.3): цілі ≥ 1 (відпочинок ≥ 0), межі варіанта не застосовуються, лише поля режиму;
+  - сервіси (`application/training_services.dart`):
+    - T-44 `startCurrentSession`: 409 SESSION_ALREADY_ACTIVE, якщо заняття вже є (дані наявного не змінюються, AC-F-012 п. 4) → 422 OPEN_PLAN_NOT_FOUND → 422 PLAN_EMPTY; `startedAt` і `localStartDate` — момент обробки за підставленим годинником; виконаний план — копія етапів відкритого плану; план не зберігається (D-17); `getCurrentSession` — 404 NO_CURRENT_SESSION (після перезапуску, D-18);
+    - T-45 `updateExecutedPlanItem` (404 NO_CURRENT_SESSION → 404 NOT_FOUND → 422 VALIDATION_FAILED; тривалість елемента перераховується за §5.4), `deleteExecutedPlanItem` (повне спорожнення дозволене, BDD-028), `abortCurrentSession` (заняття закривається без запису), `completeTraining` (409 NO_CURRENT_SESSION → 422 EXECUTED_PLAN_EMPTY → запис → заняття більше не поточне; збій запису → 500 STORAGE_WRITE_FAILED, заняття лишається поточним);
+    - T-46 `listCompletedTrainings` (новіші `startedAt` зверху, не за моментом завершення), `getCompletedTraining` (404 NOT_FOUND; збережена копія, D-20);
+  - сховища: `InMemoryCurrentSessionStore` — одне заняття в пам'яті процесу; `DriftCompletedTrainingRepository` — вставка одним оператором INSERT (атомарно), читання, перелік; вибір за локальною датою (аналітика) — група 5, заглушка;
+  - HTTP: декодер `ExecutedPlanItemPatchRequest` (поле поза `parameters`, зокрема `stage`, `position` → 422 `ADDITIONAL_PROPERTIES`; `repetitionTimeSeconds` → `NOT_EDITABLE`; поле іншого режиму → `ADDITIONAL_PROPERTIES`; 0 → `MINIMUM`; неціле → `INTEGER`), декодер `CompleteTrainingRequest` (тіло необов'язкове; відсутнє тіло, `{}` чи `note: null` — без примітки; неправильний тип → 400); кодувальники `CurrentSession` (201 з `Location: /current-session`), `CompletedTraining` (201 з `Location: /completed-trainings/{id}`), `CompletedTrainingList`; статус коду залежить від операції: NO_CURRENT_SESSION — 409 для completeTraining (`NoCurrentSessionConflict`), 404 для решти; SESSION_ALREADY_ACTIVE — 409; EXECUTED_PLAN_EMPTY — 422;
+  - логування: логер `trainings` — старт (ID відкритого й вихідного плану, кількість вправ), зміна й видалення вправ виконаного плану (ID), припинення, завершення (ID запису, локальна дата, кількість вправ, `note=true|false`); текст примітки не логується.
+
+**Запуски після реалізації (13.11.2026):**
+- Тести групи (5 файлів): 70 `success`, 2 `failure` — `BDD-026 POS-29 AC-F-013 abortCurrentSession: … history, analytics for the period and the saved plan are unchanged …` і `BDD-046 D-18 CON-007 AC-F-012 … after a restart there is no current session; history and analytics are unchanged`: перша помилка — 501 на getAnalytics (група 5).
+- Повний набір — він же контрольний запуск: `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-g4-20261113.log dart test --reporter compact --file-reporter json:../logs/app/control-green-g4-20261113.jsonl` → код виходу 1. Звірка `green_check.py` (множина реалізованих операцій — групи 1–4) з logs/app/control-green-g3-20261113.jsonl:
+  - 325 тестів, «Failed to load» — 0;
+  - пройшли 307 = 251 (групи 1–3) + 56: session_finish — 23, session_start — 9, contract (`never 501`) — 8, catalog_version — 7, history — 5, storage — 3, save_reopen — 1;
+  - 18 `failure` — у кожного перша помилка 501 на getAnalytics (analytics_test.dart — 15, AC-NF-006 «never 501» для getAnalytics, BDD-026, BDD-046); інших причин — 0; регресій відносно групи 3 — 0.
+- storage_test.dart — 8 з 8; save_reopen_test.dart — 24 з 24; history_test.dart — 6 з 6.
+- BDD-035 (catalog_version_test.dart): усі 7 тестів проходять уже після групи 4 — їм потрібні лише операції груп 1–4. Встановлення версії test-2 у лозі: `catalog installed version=test-2 previous=test-1 … initial=8 markedDeprecated=[]` — 7 разів: у фікстурі ex-1 позначена застарілою в самих даних, тому гілка «початкова вправа відсутня в новій версії → застаріла» (питання 5 групи 1) тестами не виконується.
+- `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!»; `git diff --quiet 5962e33 -- tests spec` → без відмінностей.
+
+**Аналіз логу logs/app/control-green-g4-20261113.log (скрипт `log_check.py`, поза репозиторієм):**
+- 2496 записів, INFO — 2340, WARNING — 152, ERROR — 4; 156 рядків — кадри стеку чотирьох записів ERROR.
+- ERROR — 4, усі очікувані збої запису тестів AC-NF-003 / BDD-021 зі сховищем лише для читання: `completedTraining.insert` (новий, BDD-021), `trainingPlan.insert`, `trainingPlan.update`, `trainingPlan.delete`; опис — лише `DriftRemoteException` і стек; кожному відповідає WARNING `STORAGE_WRITE_FAILED status=500`.
+- 951 запит; операції групи 4: startCurrentSession 201 — 59, 409 — 1, 422 — 3; getCurrentSession 200 — 18, 404 — 5; abortCurrentSession 204 — 2, 404 — 2; updateExecutedPlanItem 200 — 3, 404 — 3, 422 — 10; deleteExecutedPlanItem 200 — 6, 404 — 3; completeTraining 201 — 33, 400 — 1, 409 — 3, 422 — 1, 500 — 1; listCompletedTrainings 200 — 14; getCompletedTraining 200 — 16, 404 — 2. getAnalytics — лише 501 (18).
+- WARNING: 18 — `not implemented` (getAnalytics); 134 — `domain error` з кодами контракту; для updateExecutedPlanItem — `parameters.rounds:MINIMUM`, `parameters.sets:MINIMUM`, `parameters.repetitions:MINIMUM`, `parameters.intervalSeconds:MINIMUM`, `parameters.restSeconds:MINIMUM`, `parameters.rounds:INTEGER`, `parameters.rounds:ADDITIONAL_PROPERTIES`, `parameters.repetitionTimeSeconds:NOT_EDITABLE`, `stage:ADDITIONAL_PROPERTIES`, `position:ADDITIONAL_PROPERTIES`.
+- Логер `trainings`: старт — 59 (з незбереженого плану — 48, зі збереженого — 11), завершення — 33 (з приміткою — 3), припинення — 2; тексту приміток немає.
+- Тривалість запитів 0–366 мс (найдовший — перший запит процесу).
+- Даних користувача й абсолютних шляхів немає (пошук етапу 10 і `/Users/` — збігів 0).
+- Висновок: ERROR лише для змодельованих збоїв запису без вмісту полів; WARNING — заглушка getAnalytics і очікувані відмови з кодами контракту.
+
+**Питання до специфікації (передано людині):**
+1. Порядок перевірок startCurrentSession: спершу SESSION_ALREADY_ACTIVE (409), потім OPEN_PLAN_NOT_FOUND / PLAN_EMPTY (422). Контракт порядку не визначає; тести перевіряють кожен випадок окремо.
+2. `ExecutedPlanItemPatchRequest`: поле поза `parameters` позначається `ADDITIONAL_PROPERTIES` під назвою самого поля (`stage`, `position`); `repetitionTimeSeconds` — `NOT_EDITABLE`, як у T-41. Тести перевіряють лише `field`.
+3. Примітка — порожній рядок `""` зберігається як `""`, а не як `null` (контракт: «відсутня або null — порожнє значення»; про `""` не сказано). Не тестується.
+4. Гілка D-06 «початкова вправа відсутня в новій версії → застаріла» (питання 5 групи 1) не виконується жодним тестом: фікстура catalog-v2 позначає ex-1 застарілою в даних. BDD-035 проходить.
+
+**Рішення людини щодо групи 4 (13.11.2026):**
+1. Спершу 409 SESSION_ALREADY_ACTIVE, потім 422 — прийнято, «Відкладено».
+2. ADDITIONAL_PROPERTIES під назвою поля — прийнято.
+3. Примітка `""` зберігається як `""` — прийнято, «Відкладено».
+4. Гілку D-06 «відсутня в новій версії → застаріла» покрити тестом (вимога ЛР-5: для кожної реалізованої вимоги — тест) окремим кроком після групи 5: фікстура tests/fixtures/catalogs/catalog-v2-ex1-missing.json (test-2 без ex-1), тест «BDD-035 D-06 AC-F-001», доказ змістовності (тимчасово вимкнена гілка → тест падає, лог logs/app/control-red-d06-<дата>.log; код повернуто), TG-012 у logs/test-gate.md без зміни остаточного рішення, коміт `test: [agent] BDD-035 D-06 deprecation of missing exercise (TG-012)`.
+
+**Повний діалог:** не збережено агентом

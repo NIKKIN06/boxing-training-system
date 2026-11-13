@@ -21,6 +21,7 @@ import '../domain/exercise_json.dart';
 import '../domain/plan.dart';
 import '../domain/plan_json.dart';
 import '../domain/training.dart';
+import '../domain/training_json.dart';
 
 /// Request query and body decoding.
 final class RequestDecoder {
@@ -358,13 +359,28 @@ final class RequestDecoder {
     });
   }
 
-  /// `ExecutedPlanItemPatchRequest.parameters`.
-  ParametersInput executedItemParameters(String body) =>
-      throw UnimplementedError('decode ExecutedPlanItemPatchRequest');
+  /// `ExecutedPlanItemPatchRequest.parameters` (D-19): fields outside the
+  /// list (`stage`, `position`, …) → 422 ADDITIONAL_PROPERTIES;
+  /// `repetitionTimeSeconds` → 422 NOT_EDITABLE (D-08).
+  ParametersInput executedItemParameters(String body) {
+    final r = _BodyReader(body);
+    final parameters = r.object(r.root, '', (o) {
+      for (final key in o.keys) {
+        if (key != 'parameters') r.issue(key, Constraint.additionalProperties);
+      }
+      return r.field(o, 'parameters', (v, p) => _itemParameters(r, v, p));
+    });
+    r.throwIfInvalid();
+    return parameters!;
+  }
 
-  /// `CompleteTrainingRequest.note`.
-  String? trainingNote(String body) =>
-      throw UnimplementedError('decode CompleteTrainingRequest');
+  /// `CompleteTrainingRequest.note`; the body is optional, an absent body,
+  /// an absent note or `null` mean no note (AC-F-013, POS-31).
+  String? trainingNote(String body) {
+    if (body.isEmpty) return null;
+    final r = _BodyReader(body);
+    return r.object(r.root, '', (o) => r.string(o, 'note', required: false));
+  }
 
   /// Query parameters `from` / `to` of `getAnalytics` (ADD-002 D-35).
   ({LocalDate? from, LocalDate? to}) analyticsPeriod(
@@ -436,20 +452,32 @@ final class ResponseEncoder {
 
   Response savedPlan(SavedPlan plan) => jsonResponse(200, savedPlanToJson(plan));
 
-  Response currentSessionCreated(CurrentSession session) =>
-      throw UnimplementedError('encode CurrentSession (201)');
+  /// `Location: /current-session` (stage 7, decision on question 9).
+  Response currentSessionCreated(CurrentSession session) => jsonResponse(
+    201,
+    currentSessionToJson(session),
+    location: '/current-session',
+  );
 
   Response currentSession(CurrentSession session) =>
-      throw UnimplementedError('encode CurrentSession');
+      jsonResponse(200, currentSessionToJson(session));
 
-  Response completedTrainingCreated(CompletedTraining training) =>
-      throw UnimplementedError('encode CompletedTraining (201)');
+  Response completedTrainingCreated(CompletedTraining training) => jsonResponse(
+    201,
+    completedTrainingToJson(training),
+    location: '/completed-trainings/${Uri.encodeComponent(training.id)}',
+  );
 
   Response completedTraining(CompletedTraining training) =>
-      throw UnimplementedError('encode CompletedTraining');
+      jsonResponse(200, completedTrainingToJson(training));
 
   Response completedTrainingList(List<CompletedTrainingSummary> items) =>
-      throw UnimplementedError('encode CompletedTrainingList');
+      jsonResponse(200, {
+        'items': [
+          for (final t in items)
+            {'id': t.id, 'startedAt': dateTimeToJson(t.startedAt)},
+        ],
+      });
 
   Response analytics(Analytics analytics) =>
       throw UnimplementedError('encode Analytics');
@@ -468,9 +496,13 @@ Response jsonResponse(int status, Object? body, {String? location}) => Response(
   },
 );
 
-/// HTTP status of an error code as declared in spec/openapi.yaml for the
-/// operations implemented so far; `null` for codes of later groups.
-int? errorStatus(ErrorCode code) => switch (code) {
+/// HTTP status of an error code of [operationId] as declared in
+/// spec/openapi.yaml; `null` for codes of later groups. NO_CURRENT_SESSION
+/// is 409 for completeTraining (`NoCurrentSessionConflict`) and 404 elsewhere.
+int? errorStatus(ErrorCode code, String operationId) => switch (code) {
+  ErrorCode.noCurrentSession => operationId == 'completeTraining' ? 409 : 404,
+  ErrorCode.sessionAlreadyActive => 409,
+  ErrorCode.executedPlanEmpty => 422,
   ErrorCode.badRequest => 400,
   ErrorCode.initialExerciseReadOnly => 403,
   ErrorCode.notFound => 404,

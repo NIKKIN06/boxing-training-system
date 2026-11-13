@@ -20,6 +20,7 @@ abstract final class LogNames {
   static const String catalog = 'catalog';
   static const String storage = 'storage';
   static const String plans = 'plans';
+  static const String trainings = 'trainings';
 }
 
 /// Level names used in log files: INFO / WARNING / ERROR (lab 5 rules).
