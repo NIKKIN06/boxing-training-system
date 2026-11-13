@@ -1,0 +1,4 @@
+# Test runner configuration (human decision 13.11.2026, lab 5 stage 7).
+# Suites run one at a time: test isolates of one process share the
+# application log file, and concurrent appends corrupt it.
+concurrency: 1
