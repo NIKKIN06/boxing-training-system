@@ -1,0 +1,74 @@
+/// Per-operation wrapper and request logging (stage 1, decision 3).
+library;
+
+import 'package:logging/logging.dart';
+import 'package:shelf/shelf.dart';
+
+import '../logging/app_logging.dart';
+
+/// Response context key carrying the operationId to the request logger.
+const String operationIdContextKey = 'boxing_api.operationId';
+
+/// operationId logged for requests that matched no route.
+const String unmatchedOperationId = '-';
+
+final Logger _httpLog = Logger(LogNames.http);
+
+/// Runs [inner] as the operation [operationId] and maps exceptions:
+/// - [UnimplementedError] (T-10 stub) → 501 without a body, WARNING;
+/// - any other exception → 500 without a body, ERROR with stack trace.
+///
+/// 501 is not part of spec/openapi.yaml: it marks a not yet implemented
+/// operation of the skeleton. No error `code` outside the contract is sent
+/// (stage 1, decision 7).
+Handler operation(String operationId, Handler inner) {
+  return (request) async {
+    Response response;
+    try {
+      response = await inner(request);
+    } on UnimplementedError catch (error) {
+      _httpLog.warning(
+        'not implemented operationId=$operationId stub="${error.message}"',
+      );
+      response = Response(501);
+    } catch (error, stackTrace) {
+      _httpLog.severe(
+        'unhandled exception operationId=$operationId',
+        error,
+        stackTrace,
+      );
+      response = Response(500);
+    }
+    return response.change(context: {operationIdContextKey: operationId});
+  };
+}
+
+/// Logs one INFO line per request: method, operationId, status, duration.
+/// Query strings and bodies are not logged (user field contents).
+Middleware requestLogging() {
+  return (inner) {
+    return (request) async {
+      final stopwatch = Stopwatch()..start();
+      Response response;
+      try {
+        response = await inner(request);
+      } catch (error, stackTrace) {
+        _httpLog.severe(
+          'unhandled exception outside operation',
+          error,
+          stackTrace,
+        );
+        response = Response(500);
+      }
+      final operationId =
+          response.context[operationIdContextKey] as String? ??
+          unmatchedOperationId;
+      _httpLog.info(
+        'request method=${request.method} operationId=$operationId '
+        'status=${response.statusCode} '
+        'durationMs=${stopwatch.elapsedMilliseconds}',
+      );
+      return response;
+    };
+  };
+}

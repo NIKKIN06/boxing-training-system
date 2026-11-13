@@ -1,0 +1,16 @@
+2026-11-13T15:06:34.720393Z INFO server: starting pid=81209 logFile=../logs/app/control-T-10-20261113.log
+2026-11-13T15:06:34.732905Z INFO app: app composed operations=27 database=memory catalog=assets/catalog/test-catalog.json
+2026-11-13T15:06:34.741732Z INFO server: listening host=127.0.0.1 port=8080
+2026-11-13T15:06:34.976065Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T15:06:34.978010Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=5
+2026-11-13T15:06:35.000947Z WARNING http: not implemented operationId=listExercises stub="decode ExerciseFilter"
+2026-11-13T15:06:35.001293Z INFO http: request method=GET operationId=listExercises status=501 durationMs=0
+2026-11-13T15:06:35.016569Z WARNING http: not implemented operationId=getDictionary stub="decode DictionaryName"
+2026-11-13T15:06:35.016845Z INFO http: request method=GET operationId=getDictionary status=501 durationMs=0
+2026-11-13T15:06:35.036478Z WARNING http: not implemented operationId=generatePlan stub="decode PlanGenerationRequest"
+2026-11-13T15:06:35.036785Z INFO http: request method=POST operationId=generatePlan status=501 durationMs=4
+2026-11-13T15:06:35.052555Z WARNING http: not implemented operationId=abortCurrentSession stub="abortCurrentSession"
+2026-11-13T15:06:35.052879Z INFO http: request method=DELETE operationId=abortCurrentSession status=501 durationMs=0
+2026-11-13T15:06:35.068335Z INFO http: request method=GET operationId=- status=404 durationMs=0
+2026-11-13T15:06:35.145778Z INFO server: stopping signal=SIGINT
+2026-11-13T15:06:35.147515Z INFO server: stopped

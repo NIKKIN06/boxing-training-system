@@ -194,3 +194,111 @@
 4. REV-005…REV-008, REV-010…REV-013 — неблокувальні, «Відкладено»; v1.1 не змінюється.
 5. Нумерацію «етап 4» прийнято.
 6. Коміт `docs: [agent] add SPEC-GATE v1.1 review draft` — після показу `git diff --cached`.
+
+## Етап 5. T-57 (обсяг API ЛР-5): склад довідників і каталогу [TEST] — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. За SRS v1.1 §4.4 і перелічуваннями spec/openapi.yaml запропонувати склад спільних довідників і плейсхолдер-каталогу [TEST] (D-01, D-26, D-27, CON-005). Каталог має бути мінімально достатнім для BDD про каталог, фільтрацію, формування й редагування плану. Показати таблицею й чекати погодження до створення файлів.
+
+**Пропозиція агента та дії:**
+- ID значень довідників і вправи ex-1…ex-4, ex-9 взято з `components/examples` spec/openapi.yaml, які пройшли API-GATE. Межі нових вправ ex-6…ex-8 скопійовано з наборів меж цих прикладів (Shadow, Bag, Rope). Нових значень навантаження агент не вводив (CON-005).
+- Довідники:
+  - training-levels — level-beginner, level-intermediate, level-advanced (нове);
+  - intensities — intensity-low, -medium, -high;
+  - emphases — emphasis-technique, emphasis-endurance;
+  - equipment — equipment-bag, equipment-rope, equipment-pads (нове);
+  - execution-means — means-no-equipment, means-apparatus, means-pads (нове), means-pairs (нове).
+- Каталог:
+  - 7 незастарілих початкових вправ — ex-1, ex-2, ex-3, ex-4, ex-6, ex-7, ex-8;
+  - застаріла ex-9;
+  - ID ex-5 не використано, бо в контракті він належить прикладу власної вправи.
+- Покриття:
+  - BDD-004 — ex-6: два варіанти, лапи без мішка і мішок без лап;
+  - BDD-037 — A = ex-3 (ЗФП), B = ex-6 (СФП), C = ex-4 (не застосовна); ex-3 — єдина ЗФП-вправа;
+  - BDD-032 — ex-1, не більше 5 раундів;
+  - BDD-023 — ex-2, лише main;
+  - BDD-034 — будь-яка початкова вправа;
+  - D-06 — ex-9.
+- Скрипт `catalog_check.py` (Python, поза репозиторієм) порахував тривалості варіантів за SRS §5.4 і кандидатів за §5.1:
+  - для параметрів beg / med / technique / [bag] є кандидати на всіх трьох етапах, ціль 3600 с досяжна;
+  - для beg / high / technique / [bag] кандидатів для заминки немає (BDD-011).
+- Для BDD-007, 012, 035, 038, 039, 040 базового каталогу недостатньо. Агент запропонував окремі каталоги-фікстури.
+- Примітка щодо D-26 і D-28: правило D-26 «релізна збірка не містить вправ [TEST]» на API ЛР-5 не поширюється. За D-28 API запускається лише локально (127.0.0.1) для розробки, тестів і валідації та не входить у релізну Android-збірку. Каталог [TEST] — ресурс постачання API, а не релізний контент.
+- Файлів на цьому етапі не створено.
+
+**Повний діалог:** не збережено агентом
+**Рішення людини (12.11.2026):**
+1. Нові значення level-advanced, equipment-pads, means-pads, means-pairs і вправи ex-6…ex-8 погоджено.
+2. Назви вправ — як у прикладах контракту, з префіксом [TEST].
+3. ID власних вправ — префікс `custom-`. Генератор підставляється в composition root, без додаткових пакетів.
+4. Окремі каталоги-фікстури для BDD-007, 012, 035, 038, 039, 040 погоджено: tests/fixtures/catalogs/, шлях передається через параметр composition root, файли створюються на кроці тестів.
+5. Засівання каталогу за D-06 — це бізнес-логіка T-32 (BDD-001, BDD-031), її перевіряють тести, тому в T-10 вона не реалізується. У T-10 — лише файл src/assets/catalog/test-catalog.json і шлях до нього в конфігурації composition root.
+6. Примітку щодо D-26 і D-28 записати в журнал (зроблено вище).
+
+## Етап 6. T-10 (API-частина): каркас проєкту із заглушками й логуванням — 13.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. Створити каркас API за структурою з етапу 1:
+   - Dart-пакет у src/, тестовий пакет у tests/; точні версії, pubspec.lock комітиться (CON-003);
+   - Drift-схема і згенерований код;
+   - компоненти domain / ports / application / data / http;
+   - 27 маршрутів за operationId; сервіси — лише сигнатури з `UnimplementedError` → 501;
+   - логування за рішенням 3 етапу 1, файли в logs/app/;
+   - bin/server.dart лише на 127.0.0.1, порт конфігурується, за замовчуванням не 4010;
+   - дані [TEST] як ресурс постачання.
+   Бізнес-логіки не писати.
+2. Готовність: `dart analyze --fatal-infos` без зауважень; димовий тест (обробник створюється, кожен із 27 маршрутів повертає 501, у лог-файлі є записи старту й запиту); аналіз логу після запуску з фрагментом.
+3. Запропонувати, чи комітити logs/app/.
+
+**Пропозиція агента та дії:**
+- Середовище: Dart SDK 3.14.0 (stable), встановлено людиною. `dart pub get` розв'язав точні версії етапу 1 в обох пакетах. pubspec.lock створено в src/ і tests/.
+- src/ (пакет `boxing_api`):
+  - `domain/` — перелічування контракту з wire-значеннями (зокрема 22 коди `Error.code`) і незмінні класи даних за схемами spec/openapi.yaml; `DomainError`. Логіки немає.
+  - `ports/` — `Clock`, `RandomSource`, `IdGenerator`; порти сховищ (`ExerciseRepository`, `TrainingPlanRepository`, `CompletedTrainingRepository`, `CatalogSource`, `OpenPlanStore`, `CurrentSessionStore`).
+  - `application/` — 7 сервісів з методом на кожен operationId; усі методи кидають `UnimplementedError`.
+  - `data/`:
+    - Drift-схема `database.dart` з таблицями `exercises`, `catalog_meta`, `training_plans`, `completed_trainings`; вкладені структури зберігаються JSON-копіями (SRS §4.5); дата-час зберігається текстом (build.yaml);
+    - `database.g.dart` згенеровано командою `dart run build_runner build`;
+    - репозиторії, сховища в пам'яті та `JsonFileCatalogSource` — заглушки;
+    - системні реалізації портів: `SystemClock`, `SystemRandomSource`, `RandomIdGenerator` (`<префікс>-<32 hex>`, для власних вправ — `custom-`, без додаткових пакетів).
+  - `http/`:
+    - `routes.dart` — 27 маршрутів shelf_router, по одному на operationId;
+    - `json_mapping.dart` — `RequestDecoder` / `ResponseEncoder`, заглушки;
+    - `middleware.dart` — обгортка операції (`UnimplementedError` → 501 без тіла, WARNING; інший виняток → 500 без тіла, ERROR зі стеком) і журнал запитів (INFO: метод, operationId, статус, тривалість).
+  - `config/app_config.dart`:
+    - хост фіксований 127.0.0.1;
+    - параметри `--port` (за замовчуванням 8080), `--db` (`:memory:` або файл, за замовчуванням `.data/boxing_api.sqlite`, ігнорується git), `--catalog`, `--log-dir` (за замовчуванням `../logs/app`), `--log-file`.
+  - `logging/app_logging.dart` — синхронний запис у файл і stdout; рівні INFO / WARNING / ERROR. Рядки запитів і тіла не логуються.
+  - `composition_root.dart` — `buildApp(config, {clock, random, ids})`: єдине місце підстановки годинника, випадковості, генератора ID і шляху до каталогу.
+  - `bin/server.dart` — запуск, зупинка за SIGINT / SIGTERM.
+  - `assets/catalog/test-catalog.json` — дані T-57 за рішенням людини етапу 5 (5 довідників, 8 вправ, `catalogVersion: test-1`, `placeholder: true`). Засівання за D-06 не реалізовано (T-32).
+- tests/ (пакет `boxing_api_tests`): `test/skeleton/skeleton_smoke_test.dart` — перевірка готовності T-10, не тест TEST-GATE.
+  - Перелік операцій, методи, шляхи й наявність `requestBody` тест читає з spec/openapi.yaml.
+  - Перевіряє: 27 операцій збігаються з маршрутами каркаса; кожна повертає 501 з порожнім тілом; у лог-файлі є запис старту й по запису запиту та заглушки на кожну операцію.
+  - Після реалізації операцій цей тест замінюється.
+- `.gitignore` у src/ і tests/ (`.dart_tool/`, `.data/`), бо агент не комітить файли поза src/, tests/, logs/app/. logs/app/.gitignore ігнорує `*.log`, крім `control-*.log`.
+- Перевірки:
+  - `dart analyze --fatal-infos` у src/ і tests/ — «No issues found!» (першу помилку `undefined_class QueryExecutor` виправлено імпортом);
+  - `dart test` у tests/ — 29 з 29 пройдено (+29: All tests passed!).
+- Контрольний запуск: `dart run bin/server.dart --log-file=control-T-10-20261113.log --db=:memory:`, 5 запитів curl, зупинка SIGINT, код виходу 0. Лог — logs/app/control-T-10-20261113.log.
+- Аналіз логу:
+  - Старт: `starting`, `app composed operations=27 database=memory catalog=…`, `listening host=127.0.0.1 port=8080`. `lsof` підтвердив прослуховування лише 127.0.0.1:8080.
+  - На кожен запит записано пару: WARNING `not implemented` з місцем зупинки (декодер або сервіс) і INFO з методом, operationId, статусом і тривалістю (0–5 мс). Значення фільтра `level=level-beginner` і тіло POST у лог не потрапили.
+  - Перший запит `getAnalytics` — це опитування готовності з циклу curl.
+  - Неіснуючий маршрут дав 404 і `operationId=-`. Тіло цієї відповіді — текст shelf_router «Route not found», а не модель `Error`; контракт таких маршрутів не описує.
+  - ERROR-записів немає; зупинка записана (`stopping signal=SIGINT`, `stopped`).
+- Пропозиція щодо logs/app/: комітити лише логи контрольних запусків (`control-<T-ID>-<дата>.log`) як доказ; решта логів лишається локально (REQ-NF-004).
+
+**Питання до специфікації (передано людині):**
+1. Статус 501 і порожнє тіло заглушок відсутні в spec/openapi.yaml. Це тимчасовий стан каркаса, який зникає з реалізацією; Prism proxy позначатиме його як невідповідність.
+2. Для неіснуючих маршрутів контракт не визначає відповіді (зараз 404 з текстовим тілом shelf_router).
+3. Записи заглушок мають рівень WARNING без стеку. Рішення 3 вимагає ERROR зі стеком для винятків, але `UnimplementedError` — очікуваний стан каркаса, а не збій.
+
+**Повний діалог:** не збережено агентом
+**Рішення людини (13.11.2026):**
+1. 501 із порожнім тілом до реалізації операцій прийнято.
+2. 404 для неіснуючого маршруту не змінювати.
+3. WARNING без стеку для заглушок погоджено.
+4. Димовий тест tests/test/skeleton/skeleton_smoke_test.dart буде видалено перед TEST-GATE, бо він не є тестом вимог.
+5. Назви лог-файлів залишити (`control-<T-ID>-YYYYMMDD.log`); у репозиторій потрапляють лише логи контрольних запусків.
+6. Коміт `feat: [agent] API project skeleton with stubs and logging` підтверджено.

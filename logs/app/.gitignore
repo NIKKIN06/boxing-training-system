@@ -1,0 +1,4 @@
+# Application logs are local (REQ-NF-004). Only logs of control runs are
+# committed as evidence: control-<T-ID>-<YYYYMMDD>.log (T-10 proposal).
+*.log
+!control-*.log

@@ -1,0 +1,3 @@
+.dart_tool/
+# Local SQLite database (REQ-NF-004); never committed.
+.data/

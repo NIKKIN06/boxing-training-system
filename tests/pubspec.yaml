@@ -1,0 +1,21 @@
+name: boxing_api_tests
+description: >-
+  Tests of the boxing training system REST API. Derived only from spec/srs.md,
+  spec/acceptance.feature and spec/openapi.yaml (lab 5 rules).
+version: 0.1.0
+publish_to: none
+
+# CON-003: exact SDK and package versions are pinned; pubspec.lock is committed.
+environment:
+  sdk: 3.14.0
+
+dependencies:
+  boxing_api:
+    path: ../src
+
+dev_dependencies:
+  http: 1.6.0
+  json_schema: 5.2.2
+  shelf: 1.4.3
+  test: 1.33.0
+  yaml: 3.1.4

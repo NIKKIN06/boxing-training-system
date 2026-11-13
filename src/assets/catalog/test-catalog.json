@@ -1,0 +1,275 @@
+{
+  "catalogVersion": "test-1",
+  "placeholder": true,
+  "source": "T-57 (API scope of lab 5), approved by human 12.11.2026; D-01, D-26, D-27, CON-005. [TEST] placeholders, not physical load recommendations.",
+  "dictionaries": [
+    {
+      "dictionary": "training-levels",
+      "values": [
+        {"id": "level-beginner", "name": "[TEST] Початковий"},
+        {"id": "level-intermediate", "name": "[TEST] Середній"},
+        {"id": "level-advanced", "name": "[TEST] Високий"}
+      ]
+    },
+    {
+      "dictionary": "intensities",
+      "values": [
+        {"id": "intensity-low", "name": "[TEST] Низька"},
+        {"id": "intensity-medium", "name": "[TEST] Середня"},
+        {"id": "intensity-high", "name": "[TEST] Висока"}
+      ]
+    },
+    {
+      "dictionary": "emphases",
+      "values": [
+        {"id": "emphasis-technique", "name": "[TEST] Техніка"},
+        {"id": "emphasis-endurance", "name": "[TEST] Витривалість"}
+      ]
+    },
+    {
+      "dictionary": "equipment",
+      "values": [
+        {"id": "equipment-bag", "name": "[TEST] Мішок"},
+        {"id": "equipment-rope", "name": "[TEST] Скакалка"},
+        {"id": "equipment-pads", "name": "[TEST] Лапи"}
+      ]
+    },
+    {
+      "dictionary": "execution-means",
+      "values": [
+        {"id": "means-no-equipment", "name": "[TEST] Без обладнання"},
+        {"id": "means-apparatus", "name": "[TEST] На снарядах"},
+        {"id": "means-pads", "name": "[TEST] На лапах"},
+        {"id": "means-pairs", "name": "[TEST] У парах"}
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "ex-1",
+      "name": "[TEST] Бій з тінню",
+      "description": "[TEST] Опис виконання бою з тінню.",
+      "origin": "initial",
+      "type": "simple",
+      "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-beginner", "level-intermediate"],
+      "allowedIntensities": ["intensity-low", "intensity-medium"],
+      "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [
+        {
+          "id": "var-1",
+          "executionMeans": "means-no-equipment",
+          "equipment": [],
+          "mode": "time",
+          "rounds": {"min": 1, "max": 5, "recommended": 3},
+          "intervalSeconds": {"min": 60, "max": 300, "recommended": 180},
+          "restSeconds": {"min": 30, "max": 120, "recommended": 60}
+        }
+      ],
+      "videoUrl": "https://example.com/test/shadow-boxing",
+      "videoAuthorName": "[TEST] Автор відео",
+      "authorPageUrl": "https://example.com/test/author",
+      "deprecated": false
+    },
+    {
+      "id": "ex-2",
+      "name": "[TEST] Комбінації на мішку",
+      "description": "[TEST] Опис виконання комбінацій на мішку.",
+      "origin": "initial",
+      "type": "combination",
+      "allowedStages": ["main"],
+      "allowedLevels": ["level-beginner"],
+      "allowedIntensities": ["intensity-medium", "intensity-high"],
+      "emphases": ["emphasis-technique", "emphasis-endurance"],
+      "loadCharacter": "special-physical",
+      "variants": [
+        {
+          "id": "var-1",
+          "executionMeans": "means-apparatus",
+          "equipment": ["equipment-bag"],
+          "mode": "time",
+          "rounds": {"min": 1, "max": 12, "recommended": 6},
+          "intervalSeconds": {"min": 60, "max": 180, "recommended": 180},
+          "restSeconds": {"min": 30, "max": 120, "recommended": 60}
+        }
+      ],
+      "videoUrl": "https://example.com/test/bag-combinations",
+      "videoAuthorName": "[TEST] Автор відео",
+      "authorPageUrl": "https://example.com/test/author",
+      "deprecated": false
+    },
+    {
+      "id": "ex-3",
+      "name": "[TEST] Віджимання",
+      "description": "[TEST] Опис виконання віджимань.",
+      "origin": "initial",
+      "type": "simple",
+      "allowedStages": ["warm-up", "main"],
+      "allowedLevels": ["level-beginner"],
+      "allowedIntensities": ["intensity-medium"],
+      "emphases": ["emphasis-technique"],
+      "loadCharacter": "general-physical",
+      "variants": [
+        {
+          "id": "var-1",
+          "executionMeans": "means-no-equipment",
+          "equipment": [],
+          "mode": "repetitions",
+          "sets": {"min": 1, "max": 5, "recommended": 3},
+          "repetitions": {"min": 5, "max": 20, "recommended": 10},
+          "restSeconds": {"min": 0, "max": 60, "recommended": 30},
+          "repetitionTimeSeconds": 3
+        }
+      ],
+      "videoUrl": "https://example.com/test/push-ups",
+      "videoAuthorName": "[TEST] Автор відео",
+      "authorPageUrl": "https://example.com/test/author",
+      "deprecated": false
+    },
+    {
+      "id": "ex-4",
+      "name": "[TEST] Розтяжка",
+      "description": "[TEST] Опис виконання розтяжки.",
+      "origin": "initial",
+      "type": "simple",
+      "allowedStages": ["cool-down"],
+      "allowedLevels": ["level-beginner", "level-intermediate"],
+      "allowedIntensities": ["intensity-low", "intensity-medium"],
+      "emphases": [],
+      "loadCharacter": "not-applicable",
+      "variants": [
+        {
+          "id": "var-1",
+          "executionMeans": "means-no-equipment",
+          "equipment": [],
+          "mode": "time",
+          "rounds": {"min": 1, "max": 4, "recommended": 2},
+          "intervalSeconds": {"min": 300, "max": 600, "recommended": 450},
+          "restSeconds": {"min": 0, "max": 60, "recommended": 30}
+        }
+      ],
+      "videoUrl": "https://example.com/test/stretching",
+      "videoAuthorName": "[TEST] Автор відео",
+      "authorPageUrl": "https://example.com/test/author",
+      "deprecated": false
+    },
+    {
+      "id": "ex-6",
+      "name": "[TEST] Прямий удар",
+      "description": "[TEST] Опис виконання прямого удару.",
+      "origin": "initial",
+      "type": "single-punch",
+      "allowedStages": ["main"],
+      "allowedLevels": ["level-intermediate"],
+      "allowedIntensities": ["intensity-medium", "intensity-high"],
+      "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [
+        {
+          "id": "var-1",
+          "executionMeans": "means-pads",
+          "equipment": ["equipment-pads"],
+          "mode": "time",
+          "rounds": {"min": 1, "max": 12, "recommended": 6},
+          "intervalSeconds": {"min": 60, "max": 180, "recommended": 180},
+          "restSeconds": {"min": 30, "max": 120, "recommended": 60}
+        },
+        {
+          "id": "var-2",
+          "executionMeans": "means-apparatus",
+          "equipment": ["equipment-bag"],
+          "mode": "time",
+          "rounds": {"min": 1, "max": 12, "recommended": 6},
+          "intervalSeconds": {"min": 60, "max": 180, "recommended": 180},
+          "restSeconds": {"min": 30, "max": 120, "recommended": 60}
+        }
+      ],
+      "videoUrl": "https://example.com/test/straight-punch",
+      "videoAuthorName": "[TEST] Автор відео",
+      "authorPageUrl": "https://example.com/test/author",
+      "deprecated": false
+    },
+    {
+      "id": "ex-7",
+      "name": "[TEST] Робота в парах",
+      "description": "[TEST] Опис виконання роботи в парах.",
+      "origin": "initial",
+      "type": "combination",
+      "allowedStages": ["main"],
+      "allowedLevels": ["level-advanced"],
+      "allowedIntensities": ["intensity-high"],
+      "emphases": ["emphasis-endurance"],
+      "loadCharacter": "special-physical",
+      "variants": [
+        {
+          "id": "var-1",
+          "executionMeans": "means-pairs",
+          "equipment": [],
+          "mode": "time",
+          "rounds": {"min": 1, "max": 5, "recommended": 3},
+          "intervalSeconds": {"min": 60, "max": 300, "recommended": 180},
+          "restSeconds": {"min": 30, "max": 120, "recommended": 60}
+        }
+      ],
+      "videoUrl": "https://example.com/test/pair-work",
+      "videoAuthorName": "[TEST] Автор відео",
+      "authorPageUrl": "https://example.com/test/author",
+      "deprecated": false
+    },
+    {
+      "id": "ex-8",
+      "name": "[TEST] Розминка в русі",
+      "description": "[TEST] Опис виконання розминки в русі.",
+      "origin": "initial",
+      "type": "simple",
+      "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-beginner"],
+      "allowedIntensities": ["intensity-medium", "intensity-high"],
+      "emphases": [],
+      "loadCharacter": "special-physical",
+      "variants": [
+        {
+          "id": "var-1",
+          "executionMeans": "means-no-equipment",
+          "equipment": [],
+          "mode": "time",
+          "rounds": {"min": 1, "max": 5, "recommended": 3},
+          "intervalSeconds": {"min": 60, "max": 180, "recommended": 120},
+          "restSeconds": {"min": 30, "max": 90, "recommended": 60}
+        }
+      ],
+      "videoUrl": "https://example.com/test/moving-warm-up",
+      "videoAuthorName": "[TEST] Автор відео",
+      "authorPageUrl": "https://example.com/test/author",
+      "deprecated": false
+    },
+    {
+      "id": "ex-9",
+      "name": "[TEST] Застаріла вправа",
+      "description": "[TEST] Опис застарілої вправи.",
+      "origin": "initial",
+      "type": "single-punch",
+      "allowedStages": ["main"],
+      "allowedLevels": ["level-beginner"],
+      "allowedIntensities": ["intensity-medium"],
+      "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [
+        {
+          "id": "var-1",
+          "executionMeans": "means-no-equipment",
+          "equipment": [],
+          "mode": "time",
+          "rounds": {"min": 1, "max": 5, "recommended": 3},
+          "intervalSeconds": {"min": 60, "max": 300, "recommended": 180},
+          "restSeconds": {"min": 30, "max": 120, "recommended": 60}
+        }
+      ],
+      "videoUrl": "https://example.com/test/deprecated",
+      "videoAuthorName": "[TEST] Автор відео",
+      "authorPageUrl": "https://example.com/test/author",
+      "deprecated": true
+    }
+  ]
+}
