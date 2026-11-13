@@ -1,0 +1,68 @@
+{
+  "catalogVersion": "fixture-bdd-010",
+  "placeholder": true,
+  "source": "Test fixture for BDD-010 (AC-F-008, SRS §5.6): fixed main 2040 s and cool-down 600 s; the warm-up exercise is selected by level and intensity, so the only possible plan has exactly 3239, 3240, 3960 or 3961 s for D = 1 h 0 min. [TEST] data, not physical load recommendations (D-01, CON-005).",
+  "dictionaries": [
+    {"dictionary": "training-levels", "values": [{"id": "level-beginner", "name": "[TEST] Початковий"}, {"id": "level-intermediate", "name": "[TEST] Середній"}, {"id": "level-advanced", "name": "[TEST] Високий"}]},
+    {"dictionary": "intensities", "values": [{"id": "intensity-low", "name": "[TEST] Низька"}, {"id": "intensity-medium", "name": "[TEST] Середня"}, {"id": "intensity-high", "name": "[TEST] Висока"}]},
+    {"dictionary": "emphases", "values": [{"id": "emphasis-technique", "name": "[TEST] Техніка"}, {"id": "emphasis-endurance", "name": "[TEST] Витривалість"}]},
+    {"dictionary": "equipment", "values": [{"id": "equipment-bag", "name": "[TEST] Мішок"}, {"id": "equipment-rope", "name": "[TEST] Скакалка"}, {"id": "equipment-pads", "name": "[TEST] Лапи"}]},
+    {"dictionary": "execution-means", "values": [{"id": "means-no-equipment", "name": "[TEST] Без обладнання"}, {"id": "means-apparatus", "name": "[TEST] На снарядах"}, {"id": "means-pads", "name": "[TEST] На лапах"}, {"id": "means-pairs", "name": "[TEST] У парах"}]}
+  ],
+  "exercises": [
+    {
+      "id": "fx10-warm-599", "name": "[TEST] Розминка 599 с", "description": "[TEST] Разом 3239 с.",
+      "origin": "initial", "type": "simple", "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-low"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 1, "recommended": 1}, "intervalSeconds": {"min": 599, "max": 599, "recommended": 599}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx10", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx10-warm-600", "name": "[TEST] Розминка 600 с", "description": "[TEST] Разом 3240 с.",
+      "origin": "initial", "type": "simple", "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 1, "recommended": 1}, "intervalSeconds": {"min": 600, "max": 600, "recommended": 600}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx10", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx10-warm-1320", "name": "[TEST] Розминка 1320 с", "description": "[TEST] Разом 3960 с.",
+      "origin": "initial", "type": "simple", "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-intermediate"], "allowedIntensities": ["intensity-low"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 1, "recommended": 1}, "intervalSeconds": {"min": 1320, "max": 1320, "recommended": 1320}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx10", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx10-warm-1321", "name": "[TEST] Розминка 1321 с", "description": "[TEST] Разом 3961 с.",
+      "origin": "initial", "type": "simple", "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-intermediate"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 1, "recommended": 1}, "intervalSeconds": {"min": 1321, "max": 1321, "recommended": 1321}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx10", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx10-main", "name": "[TEST] Основна частина 2040 с", "description": "[TEST] Фіксована основна частина.",
+      "origin": "initial", "type": "combination", "allowedStages": ["main"],
+      "allowedLevels": ["level-beginner", "level-intermediate"], "allowedIntensities": ["intensity-low", "intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 1, "recommended": 1}, "intervalSeconds": {"min": 2040, "max": 2040, "recommended": 2040}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx10", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx10-cool", "name": "[TEST] Заминка 600 с", "description": "[TEST] Фіксована заминка.",
+      "origin": "initial", "type": "simple", "allowedStages": ["cool-down"],
+      "allowedLevels": ["level-beginner", "level-intermediate"], "allowedIntensities": ["intensity-low", "intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "not-applicable",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 1, "recommended": 1}, "intervalSeconds": {"min": 600, "max": 600, "recommended": 600}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx10", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    }
+  ]
+}

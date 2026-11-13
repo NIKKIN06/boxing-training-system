@@ -1,0 +1,41 @@
+{
+  "catalogVersion": "fixture-bdd-012",
+  "placeholder": true,
+  "source": "Test fixture for BDD-012 (AC-F-009): the sum of maximum times of all eligible variants is 80 min (600 + 3600 + 600 s) for D = 2 h 0 min. [TEST] data, not physical load recommendations (D-01, CON-005).",
+  "dictionaries": [
+    {"dictionary": "training-levels", "values": [{"id": "level-beginner", "name": "[TEST] Початковий"}, {"id": "level-intermediate", "name": "[TEST] Середній"}, {"id": "level-advanced", "name": "[TEST] Високий"}]},
+    {"dictionary": "intensities", "values": [{"id": "intensity-low", "name": "[TEST] Низька"}, {"id": "intensity-medium", "name": "[TEST] Середня"}, {"id": "intensity-high", "name": "[TEST] Висока"}]},
+    {"dictionary": "emphases", "values": [{"id": "emphasis-technique", "name": "[TEST] Техніка"}, {"id": "emphasis-endurance", "name": "[TEST] Витривалість"}]},
+    {"dictionary": "equipment", "values": [{"id": "equipment-bag", "name": "[TEST] Мішок"}, {"id": "equipment-rope", "name": "[TEST] Скакалка"}, {"id": "equipment-pads", "name": "[TEST] Лапи"}]},
+    {"dictionary": "execution-means", "values": [{"id": "means-no-equipment", "name": "[TEST] Без обладнання"}, {"id": "means-apparatus", "name": "[TEST] На снарядах"}, {"id": "means-pads", "name": "[TEST] На лапах"}, {"id": "means-pairs", "name": "[TEST] У парах"}]}
+  ],
+  "exercises": [
+    {
+      "id": "fx12-warm", "name": "[TEST] Розминка до 600 с", "description": "[TEST] Максимум 2 × 300 с.",
+      "origin": "initial", "type": "simple", "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 2, "recommended": 1}, "intervalSeconds": {"min": 60, "max": 300, "recommended": 300}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx12", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx12-main", "name": "[TEST] Основна частина до 3600 с", "description": "[TEST] Максимум 12 × 300 с.",
+      "origin": "initial", "type": "combination", "allowedStages": ["main"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 300, "recommended": 300}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx12", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx12-cool", "name": "[TEST] Заминка до 600 с", "description": "[TEST] Максимум 2 × 300 с.",
+      "origin": "initial", "type": "simple", "allowedStages": ["cool-down"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "not-applicable",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 2, "recommended": 1}, "intervalSeconds": {"min": 60, "max": 300, "recommended": 300}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx12", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    }
+  ]
+}

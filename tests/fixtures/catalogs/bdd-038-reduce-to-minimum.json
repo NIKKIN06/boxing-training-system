@@ -1,0 +1,41 @@
+{
+  "catalogVersion": "fixture-bdd-038",
+  "placeholder": true,
+  "source": "Test fixture for BDD-038 (AC-F-008, D-10): with recommended values the only plan lasts 4800 s > 3960 s; with values between minimum and recommended it can last 3240–3960 s (D = 1 h 0 min). [TEST] data, not physical load recommendations (D-01, CON-005).",
+  "dictionaries": [
+    {"dictionary": "training-levels", "values": [{"id": "level-beginner", "name": "[TEST] Початковий"}, {"id": "level-intermediate", "name": "[TEST] Середній"}, {"id": "level-advanced", "name": "[TEST] Високий"}]},
+    {"dictionary": "intensities", "values": [{"id": "intensity-low", "name": "[TEST] Низька"}, {"id": "intensity-medium", "name": "[TEST] Середня"}, {"id": "intensity-high", "name": "[TEST] Висока"}]},
+    {"dictionary": "emphases", "values": [{"id": "emphasis-technique", "name": "[TEST] Техніка"}, {"id": "emphasis-endurance", "name": "[TEST] Витривалість"}]},
+    {"dictionary": "equipment", "values": [{"id": "equipment-bag", "name": "[TEST] Мішок"}, {"id": "equipment-rope", "name": "[TEST] Скакалка"}, {"id": "equipment-pads", "name": "[TEST] Лапи"}]},
+    {"dictionary": "execution-means", "values": [{"id": "means-no-equipment", "name": "[TEST] Без обладнання"}, {"id": "means-apparatus", "name": "[TEST] На снарядах"}, {"id": "means-pads", "name": "[TEST] На лапах"}, {"id": "means-pairs", "name": "[TEST] У парах"}]}
+  ],
+  "exercises": [
+    {
+      "id": "fx38-warm", "name": "[TEST] Розминка, рекомендовано 900 с", "description": "[TEST] Рекомендовано 3 × 300 с.",
+      "origin": "initial", "type": "simple", "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 3, "recommended": 3}, "intervalSeconds": {"min": 60, "max": 300, "recommended": 300}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx38", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx38-main", "name": "[TEST] Основна частина, рекомендовано 3000 с", "description": "[TEST] Рекомендовано 10 × 300 с.",
+      "origin": "initial", "type": "combination", "allowedStages": ["main"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 10, "recommended": 10}, "intervalSeconds": {"min": 60, "max": 300, "recommended": 300}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx38", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "fx38-cool", "name": "[TEST] Заминка, рекомендовано 900 с", "description": "[TEST] Рекомендовано 3 × 300 с.",
+      "origin": "initial", "type": "simple", "allowedStages": ["cool-down"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "not-applicable",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 3, "recommended": 3}, "intervalSeconds": {"min": 60, "max": 300, "recommended": 300}, "restSeconds": {"min": 0, "max": 0, "recommended": 0}}],
+      "videoUrl": "https://example.com/test/fx38", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    }
+  ]
+}
