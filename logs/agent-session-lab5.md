@@ -598,6 +598,7 @@
 | 236 | analytics | BDD-048 NEG-29 D-21 AC-F-015 getAnalytics: on 30 June 2026 the period 1 June – 1 July → 422 END_DATE_IN_FUTURE | BDD-048, AC-F-015, NEG-29 | REQ-F-015 | `getAnalytics` | T-27 | 501: getAnalytics |
 | 237 | analytics | D-21 AC-F-015 getAnalytics: the end date equal to today is accepted; bounds are inclusive | AC-F-015 | REQ-F-015 | `getAnalytics` | T-27 | 501: generatePlan |
 | 238 | analytics | D-21 AC-F-015 getAnalytics: the length of the range is not limited | AC-F-015 | REQ-F-015 | `getAnalytics` | T-27 | 501: getAnalytics |
+| — | — | API-тесту немає: відхилення підтвердження припинення — дія клієнта, запит не надсилається | BDD-027, AC-F-013 | REQ-F-013 | — | T-25 | клієнт, поза ЛР-5 (рішення людини 13.11.2026, питання 14) |
 
 Примітка до таблиці: колонка «Червоний запуск» — операція, що першою відповіла 501 у тесті (для більшості тестів це передумова, наприклад `generatePlan`). REQ-NF-006 / AC-NF-006 покриває також простежуваність і FakeClock / SeededRandom у всіх тестах.
 
@@ -643,3 +644,19 @@
 5. `a1f6daf` test: [agent] T-24, T-25, T-26 current session, executed plan and completed trainings tests
 6. `4096c06` test: [agent] T-27 analytics tests
 7. docs: [agent] red run log and lab 5 session log, stage 7 — цей запис журналу, logs/app/control-red-20261113.log і .jsonl.
+
+**Рішення людини щодо решти питань етапу 7 (13.11.2026):**
+- 3. STAGE_NOT_IN_EXERCISE не вимагається (AC-F-010 «якщо воно відображається») — погоджено.
+- 4. FILTER_MISMATCH за акцентом для розминки й заминки не перевіряється — погоджено.
+- 5. Відсутні поля `PlanItemParametersInput` не перевіряються — погоджено. Прогалина специфікації, статус «Відкладено».
+- 6. Невідомі значення довідників у тілах `createExercise` / `generatePlan` і поле іншого режиму у варіанті вправи не перевіряються — погоджено. Статус «Відкладено».
+- 7. `renameOpenPlan` без `name`, `getDictionary` з невідомою назвою, некоректна дата в query не перевіряються — погоджено. Статус «Відкладено».
+- Для випадків 5–7 реалізація відповідає лише статусами й кодами, оголошеними в контракті для операції; нових кодів не вводити.
+- 9. `Location`: для `addOpenPlanItem` — URI створеного елемента, для `startCurrentSession` — `/current-session` — погоджено.
+- 10. `replaceOpenPlanItem` зберігає `id` елемента (приклад контракту); ідентичність id між копіями не перевіряється — погоджено.
+- 12. 500 STORAGE_WRITE_FAILED для `deleteTrainingPlan` — погоджено (оголошено в контракті).
+- 13. Префікс `custom-` не перевіряється — погоджено.
+- 14. BDD-027 — дія клієнта, API-тесту немає. У таблиці простежуваності додано рядок із позначкою «клієнт, поза ЛР-5» — погоджено.
+- 16. Тести запускаються лише з concurrency 1 — погоджено (зафіксовано в tests/dart_test.yaml).
+- 17. Тест «never 501» перевіряє лише «статус оголошено і не 501» — погоджено.
+- Тести не змінювалися. Усі питання етапу 7 закрито (1, 2, 8, 11, 15, 18 — попереднім рішенням 13.11.2026).
