@@ -1609,4 +1609,43 @@
 
 **Повний діалог:** не збережено агентом
 
-**Коміт:** docs: [agent] Prism regression check after T-69 — журнал і logs/app/contract-prism-20261114.log (`git add -f`); лог застосунку api-20261114-190726.log лишається локальним (рішення людини кроку 3).
+**Коміт:** `d3c6c19` docs: [agent] Prism regression check after T-69 (`git log --oneline -1`) — журнал і logs/app/contract-prism-20261114.log (`git add -f`); лог застосунку api-20261114-190726.log лишається локальним (рішення людини кроку 3). Коміт підтверджено людиною.
+
+## Етап 30. ЛР-5, крок 6: рефакторинг коду T-69 без зміни поведінки — 14.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. Рефакторинг коду, зміненого для T-69 (`22458ef`: domain/exercise.dart, http/request_decoder.dart, application/catalog_service.dart), без зміни поведінки базової специфікації й ADD-003. Спершу аналіз без змін (дублювання, магічні значення, зокрема перелік Unicode White_Space, довжина методів, межі компонентів); зупинитися й чекати погодження.
+2. Після погодження: кожен крок — зміна → повний `dart test` (346) → `dart analyze --fatal-infos` → коміт `refactor: [agent] …`; tests/ і spec/ не змінювати.
+3. Контрольний лог control-green-t69-refactor-20261114.log, порівняння шаблонів із control-green-t69-20261114.log, перевірка D-40; етап у журналі; коміт `docs: [agent] refactoring control run after T-69`.
+
+**Аналіз (без змін коду):**
+- Дублювання немає: обрізання пробільних символів і зведення регістру в src/ є лише в коді T-69 (`grep` за `trim()`, `toLowerCase`, `_isWhiteSpace`).
+- Довжина методів у нормі (`_nameContains` — 12 рядків, `listExercises` — 17). Межі компонентів — як у критерії 5 issue #70 (http — обрізання, application — регістр і підрядок, domain — значення); переносити обрізання не доцільно.
+- Пропозиції: R1 — магічні шістнадцяткові значення `_isWhiteSpace` замінити іменованою таблицею діапазонів за PropList.txt (ризик: TG-013 — табуляцію, U+00A0 тощо тести не перевіряють, тому потрібен скрипт еквівалентності); R2 — винести умову пошуку з `listExercises` у `_matchesName`; R3 — порядок оголошення поля `nameContains` у `ExerciseFilter` (косметика). Не пропонувалось: `String.trim()` (змінило б поведінку для U+FEFF, D-38), кешування назв у нижньому регістрі, зміна вибору першого значення (Q-ADD3-01).
+
+**Рішення людини (14.11.2026):** R1 і R2 погоджено, R3 — не робити (косметика). R1 — зі скриптом еквівалентності на U+0000…U+FFFF поза репозиторієм, результат — у журнал. Серію комітів R1, R2 погоджено: виводити `git diff --cached --stat` і результат тестів без очікування підтвердження; зупинитися, якщо тести не проходять, є зауваження analyze або скрипт знайде розбіжності.
+
+**Дії агента:**
+- **R1** (`src/lib/src/http/request_decoder.dart`): константа `_unicodeWhiteSpace` — 11 діапазонів `(від, до)` рядок у рядок за PropList.txt з назвами символів у коментарях; `_isWhiteSpace` — перевірка входження в діапазони. Поведінка й публічні назви не змінені.
+  - Скрипт еквівалентності `ws_equiv.py` (Python, поза репозиторієм): бере старий предикат з `git show 22458ef:src/lib/src/http/request_decoder.dart`, а новий предикат і таблицю — з робочого файлу дослівно (без ручного копіювання), складає Dart-програму в scratchpad і запускає її `dart run`. Результат: «code points checked: 65536; white space (old): 25; differences: 0»; U+FEFF — `false` в обох; код виходу 0. 25 — кількість кодових точок White_Space у PropList.txt.
+  - `dart analyze --fatal-infos` (src/, tests/) — «No issues found!»; `dart test` — 346 `success` (підрахунок за `--reporter json`).
+  - `git diff --cached --stat`: `src/lib/src/http/request_decoder.dart | 31 ++++++++++++++++++-------------` (18+, 13−). Коміт `0a13862` refactor: [agent] named Unicode White_Space table in request decoder.
+- **R2** (`src/lib/src/application/catalog_service.dart`): `static bool _matchesName(Exercise e, String? search)` — підрядок у назві в нижньому регістрі, `null` — без пошуку; умова в `listExercises`: `!e.deprecated && _matches(e, filter) && _matchesName(e, search)`. Значення пошуку зводиться до нижнього регістру один раз на запит, як і раніше; запис логу не змінено.
+  - `dart analyze --fatal-infos` — «No issues found!»; `dart test` — 346 `success`.
+  - `git diff --cached --stat`: `src/lib/src/application/catalog_service.dart | 9 ++++++---` (6+, 3−). Коміт `8c3eca0` refactor: [agent] extract name search predicate in catalog service.
+- tests/ і spec/ не змінено: `git diff --stat 22458ef -- tests spec` — порожньо.
+
+**Контрольний запуск (14.11.2026):**
+- `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-t69-refactor-20261114.log dart test --reporter compact --file-reporter json:../logs/app/control-green-t69-refactor-20261114.jsonl` → код виходу 0; за JSON — 346 `success`, подій `error` 0.
+
+**Аналіз логу logs/app/control-green-t69-refactor-20261114.log (скрипти поза репозиторієм):**
+- Порівняння шаблонів записів (рівень, логер, повідомлення з маскованими значеннями) із logs/app/control-green-t69-20261114.log (`log_compare.py`): записів 2721 → 2721; шаблонів 28 → 28; лише до / лише після — немає; розбіжностей кількостей за шаблоном — немає; рядків поза форматом (стеки чотирьох ERROR) 165 → 165. Рівні: INFO 2576, WARNING 141, ERROR 4 — як до рефакторингу (ERROR — ті самі змодельовані збої запису затверджених тестів).
+- `exercises listed … search=true` — 21, `search=false` — 54, як до рефакторингу.
+- D-40 (`d40_check.py`, як на етапі 29): 19 непорожніх значень пошуку з тестового файлу у 45 формах (сирі, обрізані, у нижньому регістрі, URL-кодовані з `%20` і `+`) і рядок `nameContains` — збігів 0.
+- Висновок: зовнішня поведінка й записи логу не змінилися; значень пошуку в лозі немає.
+
+**Далі:** людина повторно запускає tests/tool/prism_check.sh (критерій 7 issue #70).
+
+**Повний діалог:** не збережено агентом
+
+**Коміт:** docs: [agent] refactoring control run after T-69 — журнал і logs/app/control-green-t69-refactor-20261114.log, .jsonl.
