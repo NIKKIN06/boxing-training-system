@@ -76,20 +76,31 @@ final class PlanGenerator {
     final lower = tolerance.minSeconds;
     final upper = tolerance.maxSeconds;
 
-    // 1. Candidates (T-38).
-    final candidates = <Candidate>[
-      for (final e in exercises)
-        for (final v in e.variants)
-          if (Stage.values.where((s) => isEligible(e, v, s, params)).toList()
-              case final stages when stages.isNotEmpty)
-            Candidate(e, v, stages),
-    ];
+    final candidates = _candidates(exercises, params);
     final perStage = {
       for (final s in Stage.values)
         s: candidates.where((c) => c.stages.contains(s)).toList(),
     };
+    _requireNoCandidateGap(perStage);
+    final options = {for (final c in candidates) c: _Options(c.variant)};
+    _requireVolumeWithinBounds(candidates, perStage, options, lower, upper);
+    return _search(candidates, perStage, options, lower, upper);
+  }
 
-    // 2. Proven impossibility (AC-F-009, D-10).
+  /// Step 1 (T-38): variants eligible by §5.1 for at least one stage.
+  static List<Candidate> _candidates(
+    List<Exercise> exercises,
+    GenerationParameters params,
+  ) => [
+    for (final e in exercises)
+      for (final v in e.variants)
+        if (Stage.values.where((s) => isEligible(e, v, s, params)).toList()
+            case final stages when stages.isNotEmpty)
+          Candidate(e, v, stages),
+  ];
+
+  /// Step 2 (AC-F-009): a stage without candidates.
+  static void _requireNoCandidateGap(Map<Stage, List<Candidate>> perStage) {
     final emptyStages = [
       for (final s in Stage.values)
         if (perStage[s]!.isEmpty) s,
@@ -106,7 +117,17 @@ final class PlanGenerator {
         ],
       );
     }
-    final options = {for (final c in candidates) c: _Options(c.variant)};
+  }
+
+  /// Step 2 (AC-F-009, D-10): the smallest volume above `1,1 × D` or the
+  /// largest one below `0,9 × D`.
+  static void _requireVolumeWithinBounds(
+    List<Candidate> candidates,
+    Map<Stage, List<Candidate>> perStage,
+    Map<Candidate, _Options> options,
+    int lower,
+    int upper,
+  ) {
     final minVolume = Stage.values.fold(
       0,
       (sum, s) => sum + perStage[s]!.map((c) => options[c]!.minDuration).reduce(math.min),
@@ -135,8 +156,16 @@ final class PlanGenerator {
         ],
       );
     }
+  }
 
-    // 3. Search (D-11, D-13, D-25).
+  /// Steps 3–5 (D-11, D-13, D-25): the search over selections.
+  GenerationResult _search(
+    List<Candidate> candidates,
+    Map<Stage, List<Candidate>> perStage,
+    Map<Candidate, _Options> options,
+    int lower,
+    int upper,
+  ) {
     final start = clock.now();
     final orders = {for (final s in Stage.values) s: _shuffled(perStage[s]!)};
     final extraStage = {
@@ -327,9 +356,9 @@ int? _largestAtMost(List<_Range> ranges, int lower, int upper) {
 /// recommended values.
 final class _Options {
   _Options(this.variant)
-    : recommended = _recommended(variant.fields),
-      minDuration = itemDurationSeconds(_bound(variant.fields, min: true)),
-      maxDuration = itemDurationSeconds(_bound(variant.fields, min: false));
+    : recommended = _pick(variant.fields, (r) => r.recommended),
+      minDuration = itemDurationSeconds(_pick(variant.fields, (r) => r.min)),
+      maxDuration = itemDurationSeconds(_pick(variant.fields, (r) => r.max));
 
   final Variant variant;
   final PlanItemParameters recommended;
@@ -374,11 +403,7 @@ final class _Options {
       case final TimeVariantFields f:
         for (var n = f.rounds.min; n <= f.rounds.max; n++) {
           for (var t = f.intervalSeconds.min; t <= f.intervalSeconds.max; t++) {
-            // With one round the rest does not change the duration (§5.4).
-            final rests = n == 1
-                ? [f.restSeconds.recommended]
-                : [for (var r = f.restSeconds.min; r <= f.restSeconds.max; r++) r];
-            for (final r in rests) {
+            for (final r in _rests(n, f.restSeconds)) {
               offer(
                 TimeParameters(rounds: n, intervalSeconds: t, restSeconds: r),
                 _gap(n, f.rounds) + _gap(t, f.intervalSeconds) + _gap(r, f.restSeconds),
@@ -389,10 +414,7 @@ final class _Options {
       case final RepetitionsVariantFields f:
         for (var n = f.sets.min; n <= f.sets.max; n++) {
           for (var p = f.repetitions.min; p <= f.repetitions.max; p++) {
-            final rests = n == 1
-                ? [f.restSeconds.recommended]
-                : [for (var r = f.restSeconds.min; r <= f.restSeconds.max; r++) r];
-            for (final r in rests) {
+            for (final r in _rests(n, f.restSeconds)) {
               offer(
                 RepetitionsParameters(
                   sets: n,
@@ -412,34 +434,28 @@ final class _Options {
   static double _gap(int value, ParameterRange range) =>
       (value - range.recommended).abs() / math.max(1, range.max - range.min);
 
-  static PlanItemParameters _recommended(VariantFields f) => switch (f) {
+  /// Rest values to try for [count] rounds or sets: with one round the rest
+  /// does not change the duration (§5.4), so only the recommended one.
+  static List<int> _rests(int count, ParameterRange rest) => count == 1
+      ? [rest.recommended]
+      : [for (var r = rest.min; r <= rest.max; r++) r];
+
+  /// Parameters with one value of every range chosen by [pick] (the
+  /// recommended values, all minimums or all maximums).
+  static PlanItemParameters _pick(
+    VariantFields f,
+    int Function(ParameterRange) pick,
+  ) => switch (f) {
     TimeVariantFields() => TimeParameters(
-      rounds: f.rounds.recommended,
-      intervalSeconds: f.intervalSeconds.recommended,
-      restSeconds: f.restSeconds.recommended,
+      rounds: pick(f.rounds),
+      intervalSeconds: pick(f.intervalSeconds),
+      restSeconds: pick(f.restSeconds),
     ),
     RepetitionsVariantFields() => RepetitionsParameters(
-      sets: f.sets.recommended,
-      repetitions: f.repetitions.recommended,
-      restSeconds: f.restSeconds.recommended,
+      sets: pick(f.sets),
+      repetitions: pick(f.repetitions),
+      restSeconds: pick(f.restSeconds),
       repetitionTimeSeconds: f.repetitionTimeSeconds,
     ),
   };
-
-  static PlanItemParameters _bound(VariantFields f, {required bool min}) {
-    int pick(ParameterRange r) => min ? r.min : r.max;
-    return switch (f) {
-      TimeVariantFields() => TimeParameters(
-        rounds: pick(f.rounds),
-        intervalSeconds: pick(f.intervalSeconds),
-        restSeconds: pick(f.restSeconds),
-      ),
-      RepetitionsVariantFields() => RepetitionsParameters(
-        sets: pick(f.sets),
-        repetitions: pick(f.repetitions),
-        restSeconds: pick(f.restSeconds),
-        repetitionTimeSeconds: f.repetitionTimeSeconds,
-      ),
-    };
-  }
 }

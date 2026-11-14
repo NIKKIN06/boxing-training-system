@@ -51,7 +51,7 @@ final class PlanGenerationService {
     } on DomainError catch (error) {
       _log.info(
         'plan not generated targetSeconds=$target code=${error.code.wire} '
-        'reasons=[${error.reasons.map((r) => '${r.code.wire}${r.stage == null ? '' : ':${r.stage!.wire}'}').join(',')}]',
+        'reasons=[${_reasonsForLog(error)}]',
       );
       rethrow;
     } on Object catch (error, stackTrace) {
@@ -64,6 +64,24 @@ final class PlanGenerationService {
       throw const DomainError(ErrorCode.generationFailed);
     }
 
+    final plan = _toOpenPlan(result, parameters, target);
+    openPlans.put(plan);
+    _log.info(
+      'plan generated openPlanId=${plan.id} targetSeconds=$target '
+      'totalSeconds=${plan.content.estimatedDurationSeconds} '
+      'items=${plan.content.stages.map((s) => s.items.length).join('/')} '
+      'checkedSelections=${result.checkedSelections}',
+    );
+    return plan;
+  }
+
+  /// The open plan of a successful generation: item ids, positions 0…n−1
+  /// and durations by §5.4.
+  OpenPlan _toOpenPlan(
+    GenerationResult result,
+    GenerationParameters parameters,
+    int target,
+  ) {
     final stages = [
       for (final s in Stage.values)
         PlanStage(
@@ -83,7 +101,7 @@ final class PlanGenerationService {
           ],
         ),
     ];
-    final plan = OpenPlan(
+    return OpenPlan(
       id: ids.newId(EntityKind.openPlan),
       sourcePlanId: null,
       content: PlanContent(
@@ -98,13 +116,10 @@ final class PlanGenerationService {
         warnings: const [],
       ),
     );
-    openPlans.put(plan);
-    _log.info(
-      'plan generated openPlanId=${plan.id} targetSeconds=$target '
-      'totalSeconds=${plan.content.estimatedDurationSeconds} '
-      'items=${stages.map((s) => s.items.length).join('/')} '
-      'checkedSelections=${result.checkedSelections}',
-    );
-    return plan;
   }
+
+  /// `CODE` or `CODE:stage` per reason, comma-separated.
+  static String _reasonsForLog(DomainError error) => error.reasons
+      .map((r) => r.stage == null ? r.code.wire : '${r.code.wire}:${r.stage!.wire}')
+      .join(',');
 }
