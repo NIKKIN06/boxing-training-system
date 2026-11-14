@@ -6,7 +6,9 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
 import '../application/catalog_service.dart';
-import '../application/plan_services.dart';
+import '../application/open_plan_service.dart';
+import '../application/plan_generation_service.dart';
+import '../application/training_plan_service.dart';
 import '../application/training_services.dart';
 import 'middleware.dart';
 import 'request_decoder.dart';

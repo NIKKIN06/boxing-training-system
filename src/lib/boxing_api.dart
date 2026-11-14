@@ -2,7 +2,9 @@
 library;
 
 export 'src/application/catalog_service.dart';
-export 'src/application/plan_services.dart';
+export 'src/application/open_plan_service.dart';
+export 'src/application/plan_generation_service.dart';
+export 'src/application/training_plan_service.dart';
 export 'src/application/training_services.dart';
 export 'src/composition_root.dart';
 export 'src/config/app_config.dart';
