@@ -360,11 +360,8 @@ final class OpenPlanService {
 }
 
 /// T-41, AC-F-010: after a change — stages in the fixed order, positions
-/// 0…n−1, the total by §5.4 and the warnings: FILTER_MISMATCH per item and
-/// attribute against the source parameters (D-14), STAGE_EMPTY per empty
-/// stage, DURATION_OUT_OF_TOLERANCE when the exact total is outside ±10 %.
-/// STAGE_NOT_IN_EXERCISE is optional («якщо воно відображається») and is not
-/// produced (stage 7, decision on question 3).
+/// 0…n−1, the total by §5.4 and the warnings of [planWarnings] against the
+/// current catalog.
 Future<PlanContent> recomputePlan(
   PlanContent base,
   List<List<PlanItem>> lists,
@@ -372,29 +369,17 @@ Future<PlanContent> recomputePlan(
 ) async {
   final stages = renumberStages(lists);
   final catalog = {for (final e in await exercises.findAll()) e.id: e};
-  final params = base.generationParameters;
   final total = planDurationSeconds(stages);
-  final tolerance = base.durationTolerance;
-  final warnings = <PlanWarning>[
-    for (final s in stages)
-      for (final i in s.items)
-        if (catalog[i.exerciseId] case final e?)
-          for (final a in filterMismatches(e, i.variant, s.stage, params))
-            PlanWarning(
-              code: PlanWarningCode.filterMismatch,
-              itemId: i.id,
-              attribute: a,
-            ),
-    for (final s in stages)
-      if (s.items.isEmpty)
-        PlanWarning(code: PlanWarningCode.stageEmpty, stage: s.stage),
-    if (total < tolerance.minSeconds || total > tolerance.maxSeconds)
-      const PlanWarning(code: PlanWarningCode.durationOutOfTolerance),
-  ];
   return base.copyWith(
     stages: stages,
     estimatedDurationSeconds: total,
-    warnings: warnings,
+    warnings: planWarnings(
+      stages: stages,
+      catalog: catalog,
+      parameters: base.generationParameters,
+      tolerance: base.durationTolerance,
+      totalSeconds: total,
+    ),
   );
 }
 

@@ -104,6 +104,35 @@ List<WarningAttribute> filterMismatches(
     WarningAttribute.emphasis,
 ];
 
+/// T-41, AC-F-010: warnings of an edited plan — FILTER_MISMATCH per item and
+/// attribute against the source parameters (D-14; items whose exercise is
+/// not in [catalog] get none), STAGE_EMPTY per empty stage,
+/// DURATION_OUT_OF_TOLERANCE when the exact [totalSeconds] is outside ±10 %.
+/// STAGE_NOT_IN_EXERCISE is optional («якщо воно відображається») and is not
+/// produced (stage 7, decision on question 3).
+List<PlanWarning> planWarnings({
+  required List<PlanStage> stages,
+  required Map<String, Exercise> catalog,
+  required GenerationParameters parameters,
+  required DurationTolerance tolerance,
+  required int totalSeconds,
+}) => [
+  for (final s in stages)
+    for (final i in s.items)
+      if (catalog[i.exerciseId] case final e?)
+        for (final a in filterMismatches(e, i.variant, s.stage, parameters))
+          PlanWarning(
+            code: PlanWarningCode.filterMismatch,
+            itemId: i.id,
+            attribute: a,
+          ),
+  for (final s in stages)
+    if (s.items.isEmpty)
+      PlanWarning(code: PlanWarningCode.stageEmpty, stage: s.stage),
+  if (totalSeconds < tolerance.minSeconds || totalSeconds > tolerance.maxSeconds)
+    const PlanWarning(code: PlanWarningCode.durationOutOfTolerance),
+];
+
 /// T-41, AC-F-010, SRS §5.3, D-08, BDD-032: parameters of a plan item of
 /// variant [v]. Only the fields of the variant mode apply; a missing field
 /// keeps its value from [current] (updateOpenPlanItem) or is required
