@@ -1427,4 +1427,21 @@
 
 **Повний діалог:** не збережено агентом
 
-**Коміт:** `spec/` — людина. `docs/api/*`, журнал — docs: [agent] apply ADD-003 to API docs, ticket T-69 — після підтвердження людиною `git diff --cached`.
+**Коміт:** `spec/` — людина. `docs/api/*`, журнал — `ac68bd0` docs: [agent] apply ADD-003 to API docs (повідомлення без «ticket T-69», бо issue на цьому етапі не створено; підтверджено людиною). Людина прийняла формулювання статусу SRS; curl-команди до POS-37…42 у `scenarios.md` не потрібні — сценарії буде додано в `prism_check.sh` на кроці 5.
+
+## Етап 26. Створення issue T-69 — 14.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запит:** текст тікета затверджено (`45fd5dd` docs: [human] approve T-69 ticket text). Створити issue T-69 командою `gh issue create` за `docs/plan/ticket-T-69-draft.md`, номер — лише з виводу; внести T-69 у `docs/plan/decomposition.md` (розділ 1, рядок REQ-F-003 розділу 2) і T-69 (#номер) у колонку «Тікет» `spec/traceability.md` для REQ-F-003 і REQ-NF-004 (пряма вказівка змінити `spec/`).
+
+**Дії агента:**
+- RISK-22: статус `ticket-T-69-draft.md` — «Затверджено людиною 14.11.2026», дію дозволено.
+- Повторна перевірка перед створенням: `gh issue list --state all --limit 300 --json title --jq '…max, length'` → `68`, `68`; issues з назвою `[T-69]` — немає; `gh label list` — мітка `type:Feature` існує.
+- Назву (71 символ) і тіло (22 рядки) витягнуто скриптом (Ruby) дослівно з розділу 2 затвердженого файлу, без ручного переписування.
+- `gh issue create --title "[T-69] ADD-003: пошук вправ у каталозі за частиною назви (nameContains)" --body-file <тіло> --label type:Feature` → `https://github.com/NIKKIN06/boxing-training-system/issues/70`. Номер **#70** — з цього виводу (RISK-21). Перевірка `gh issue view 70 --json number,title,labels,state`: OPEN, `type:Feature`; тіло на GitHub збігається з файлом (різниця — лише кінцевий порожній рядок).
+- `docs/plan/decomposition.md`: рядок T-69 у розділі 1 (текст розділу 3 тікета, Issue — #70); T-69 у колонках Test і Feature рядка REQ-F-003 розділу 2 (за тікетом); примітка в преамбулі (ADD-003 §4.4).
+- `spec/traceability.md`: T-69 (#70) у колонці «Тікет» рядків REQ-F-003 і REQ-NF-004 (SAG-008). Не індексується — коміт `spec:` робить людина.
+- Поле Executor у GitHub Project не встановлювалося (не було в запиті). Тести й система не запускалися, логу для аналізу немає.
+
+**Повний діалог:** не збережено агентом
+
+**Коміт:** docs: [agent] create issue T-69 — `docs/plan/decomposition.md` і журнал; `spec/` — людина.
