@@ -521,8 +521,8 @@ curl -i -s -X PATCH 'http://127.0.0.1:4010/current-session/executed-plan/items/i
 
 Підраховано скриптом за цим документом і `spec/openapi.yaml`:
 
-- позитивних сценаріїв — 36, покрито всі 27 операцій;
-- негативних сценаріїв — 34 (31 за кодами `Error` і 3 з порушенням схеми); покрито всі 22 коди `Error.code` і всі 3 причини `PLAN_GENERATION_IMPOSSIBLE`.
+- позитивних сценаріїв — 42 (36 з розділу 2 і 6 з розділу 6 «ADD-003»), покрито всі 27 операцій;
+- негативних сценаріїв — 35 (31 за кодами `Error`, 3 з порушенням схеми і 1 з розділу 6 «ADD-003»); покрито всі 22 коди `Error.code` і всі 3 причини `PLAN_GENERATION_IMPOSSIBLE`.
 
 ## 5. Результати перевірки mock (крок 13)
 
@@ -622,3 +622,23 @@ curl -i -s -X PATCH 'http://127.0.0.1:4010/current-session/executed-plan/items/i
 - **Негативні сценарії: 34 із 34 збіглися** за статусом і `code`.
 - Тіла всіх 68 відповідей із тілом за JSON збігаються з відповідними прикладами `spec/openapi.yaml`. Відповіді POS-24 і POS-29 (`204`) тіла не мають, як і визначено контрактом.
 - **Розбіжностей зі специфікацією не виявлено**, тому помилок у специфікації немає. Дві особливості mock (тіло на невалідний запит не описує порушення; без `example=` береться перший приклад) описано в розділі «Обмеження mock». Вони не впливають на збіг статусів і кодів.
+
+## 6. ADD-003: пошук за частиною назви (`nameContains`)
+
+Підрозділ додано 14.11.2026 за затвердженим адендумом `spec/addenda/ADD-003.md` (SPEC-ADDENDUM-GATE GO, `logs/spec-addendum-gate.md`; розділ 4.1 адендуму, рішення людини Q-ADD3-10). Наявні POS-01…36 і NEG-01…34 та результати кроку 13 (розділ 5) не змінюються; POS-37…42 і NEG-35 на mock ще не виконувалися.
+
+Prism у режимі mock не фільтрує дані: він перевіряє лише відповідність схемі й повертає приклад з `Prefer`. Тому семантику пошуку перевіряють тести `dart test`, а Prism proxy (`tests/tool/prism_check.sh`) — відповідність реальних відповідей схемі.
+
+| ID | operationId | REQ-ID | AC / BDD | Запит | Очікуваний статус | Очікуваний результат |
+|---|---|---|---|---|---|---|
+| POS-37 | `listExercises` | REQ-F-003 | AC-F-003; BDD-053 | `GET /exercises?nameContains=удар` (URL-кодовано) | 200 | `items` — лише незастарілі вправи, назва яких містить «удар» без урахування регістру |
+| POS-38 | `listExercises` | REQ-F-003 | AC-F-003; BDD-053 | `GET /exercises?nameContains=УДАР` | 200 | ті самі `items`, що в POS-37 |
+| POS-39 | `listExercises` | REQ-F-003 | AC-F-003; BDD-053 | `GET /exercises?nameContains=%20%20удар%20%20` | 200 | ті самі `items`, що в POS-37 |
+| POS-40 | `listExercises` | REQ-F-003 | AC-F-003; BDD-053 | `GET /exercises?nameContains=удар&type=combination` | 200 | лише вправи, що відповідають і пошуку, і фільтру (D-39) |
+| POS-41 | `listExercises` | REQ-F-003 | AC-F-003; BDD-053 | `GET /exercises?nameContains=аперкот`; `Prefer: example=emptySelection` для mock | 200 | `items: []` |
+| POS-42 | `listExercises` | REQ-F-003 | AC-F-003; BDD-053 | `GET /exercises?nameContains=%20%20%20` | 200 | ті самі `items`, що без параметра |
+| NEG-35 | `listExercises` | REQ-F-003 | AC-F-003 | `GET /exercises?nameContains=удар&level=level-unknown` | 422 | `UNKNOWN_DICTIONARY_VALUE`: пошук не скасовує перевірку значень інших фільтрів (наявне правило NEG-05) |
+
+Інших NEG-сценаріїв рішення не породжує: для `nameContains` немає значень, які відхиляються. Повторення параметра — «Відкладено», сценарію немає (Q-ADD3-01). У POS-39 і POS-42 — звичайний пробіл (Q-ADD3-03).
+
+Для NEG-35 у mock-режимі `level` — масив рядків без enum, тож без `Prefer: code=422, example=unknownDictionaryValue` Prism поверне `200`; `422` дає лише реальна система через proxy (SAG-002, `logs/spec-addendum-gate.md`).

@@ -3,7 +3,7 @@
 | Поле | Значення |
 |---|---|
 | Статус | **Чернетка** (не затверджено людиною) |
-| Дата | 26.10.2026 |
+| Дата | 26.10.2026; таблицю перегенеровано 14.11.2026 після внесення ADD-003 (`spec/openapi.yaml` 1.1.0, BDD-053) |
 | Підготував | Кодинговий агент (Claude Code, модель `claude-opus-5-5`) |
 | Джерела | `spec/openapi.yaml` (розширення `x-req-ids`, `x-trace`); `spec/acceptance.feature` (теги BDD); `docs/api/resource-model.md`, розділ 1 |
 | Спосіб побудови | Таблицю згенеровано скриптом з `spec/openapi.yaml` і `spec/acceptance.feature`, вручну не редагувалася |
@@ -19,11 +19,11 @@
 
 | REQ-ID | operationId | Метод і URI | AC | BDD | D-xx |
 |---|---|---|---|---|---|
-| REQ-F-001 | `listExercises` | `GET /exercises` | — | BDD-001 | D-06, D-09, ADD-002 D-34 |
+| REQ-F-001 | `listExercises` | `GET /exercises` | — | BDD-001 | D-06, D-09, ADD-002 D-34, ADD-003 D-36, ADD-003 D-37, ADD-003 D-38, ADD-003 D-39, ADD-003 D-40 |
 | REQ-F-002 | `createExercise` | `POST /exercises` | AC-F-002 | BDD-002, BDD-024 | D-05, D-07, D-08 |
 | REQ-F-002 | `getExercise` | `GET /exercises/{exerciseId}` | — | BDD-024 | D-06, D-07 |
 | REQ-F-002 | `updateExercise` | `PUT /exercises/{exerciseId}` | AC-F-002 | BDD-002, BDD-003 | D-05, D-08, ADD-002 D-33 |
-| REQ-F-003 | `listExercises` | `GET /exercises` | AC-F-003 | BDD-004 | D-06, D-09, ADD-002 D-34 |
+| REQ-F-003 | `listExercises` | `GET /exercises` | AC-F-003 | BDD-004, BDD-053 | D-06, D-09, ADD-002 D-34, ADD-003 D-36, ADD-003 D-37, ADD-003 D-38, ADD-003 D-39, ADD-003 D-40 |
 | REQ-F-003 | `getDictionary` | `GET /dictionaries/{dictionaryName}` | — | — | — |
 | REQ-F-004 | `createExercise` | `POST /exercises` | AC-F-004 | BDD-024 | D-05, D-07, D-08 |
 | REQ-F-004 | `getExercise` | `GET /exercises/{exerciseId}` | AC-F-004 | BDD-005, BDD-024 | D-06, D-07 |
