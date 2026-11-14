@@ -48,12 +48,46 @@ final class RequestDecoder {
       emphases: query['emphasis'] ?? const [],
       executionMeans: query['executionMeans'] ?? const [],
       equipment: query['equipment'] ?? const [],
+      nameContains: _nameContains(query['nameContains']),
     );
     if (details.isNotEmpty) {
       throw DomainError(ErrorCode.unknownDictionaryValue, details: details);
     }
     return filter;
   }
+
+  /// `nameContains` (ADD-003 D-38): leading and trailing Unicode White_Space
+  /// is dropped; an empty result means no search. The length is not limited.
+  /// A repeated parameter is not defined by the contract (Q-ADD3-01,
+  /// deferred); the first value is used.
+  static String? _nameContains(List<String>? values) {
+    if (values == null || values.isEmpty) return null;
+    final value = values.first;
+    var start = 0;
+    var end = value.length;
+    while (start < end && _isWhiteSpace(value.codeUnitAt(start))) {
+      start++;
+    }
+    while (end > start && _isWhiteSpace(value.codeUnitAt(end - 1))) {
+      end--;
+    }
+    return start == end ? null : value.substring(start, end);
+  }
+
+  /// Unicode property White_Space (all its code points are in the BMP).
+  /// Unlike `String.trim`, U+FEFF is not white space.
+  static bool _isWhiteSpace(int c) =>
+      (c >= 0x0009 && c <= 0x000D) ||
+      c == 0x0020 ||
+      c == 0x0085 ||
+      c == 0x00A0 ||
+      c == 0x1680 ||
+      (c >= 0x2000 && c <= 0x200A) ||
+      c == 0x2028 ||
+      c == 0x2029 ||
+      c == 0x202F ||
+      c == 0x205F ||
+      c == 0x3000;
 
   /// Body `ExerciseInput` of `createExercise` / `updateExercise`. `id`,
   /// `origin` and `deprecated` in the body are ignored (D-05).

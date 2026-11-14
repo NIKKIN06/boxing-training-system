@@ -56,16 +56,22 @@ final class CatalogService {
     );
   }
 
-  /// operationId `listExercises` (REQ-F-001, REQ-F-003; AC-F-003, D-06, D-09, D-34).
+  /// operationId `listExercises` (REQ-F-001, REQ-F-003; AC-F-003, D-06, D-09,
+  /// D-34; ADD-003 D-36…D-39). The search value is not logged (ADD-003 D-40).
   Future<List<ExerciseSummary>> listExercises(ExerciseFilter filter) async {
     _checkDictionaryValues(filter);
+    final search = filter.nameContains?.toLowerCase();
     final all = await exercises.findAll();
     final items = [
       for (final e in all)
-        if (!e.deprecated && _matches(e, filter))
+        if (!e.deprecated &&
+            _matches(e, filter) &&
+            (search == null || e.name.toLowerCase().contains(search)))
           ExerciseSummary(id: e.id, name: e.name, type: e.type, origin: e.origin),
     ];
-    _log.info('exercises listed count=${items.length}');
+    _log.info(
+      'exercises listed count=${items.length} search=${search != null}',
+    );
     return items;
   }
 

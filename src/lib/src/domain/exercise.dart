@@ -190,7 +190,13 @@ final class ExerciseFilter {
     this.loadCharacters = const [],
     this.executionMeans = const [],
     this.equipment = const [],
+    this.nameContains,
   });
+
+  /// Search by a part of the name (ADD-003 D-36…D-39): the value without
+  /// leading and trailing white space; `null` — the search is not applied
+  /// (no parameter or an empty value, D-38).
+  final String? nameContains;
 
   final List<Stage> stages;
   final List<ExerciseType> types;
