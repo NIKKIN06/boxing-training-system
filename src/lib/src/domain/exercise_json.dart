@@ -67,7 +67,9 @@ JsonMap dictionaryToJson(Dictionary d) => {
   ],
 };
 
-T _enum<T extends WireEnum>(List<T> values, Object? raw) {
+/// The value of [values] with the wire form [raw] of a trusted copy; an
+/// unknown value throws [FormatException].
+T enumFromJson<T extends WireEnum>(List<T> values, Object? raw) {
   final value = raw is String ? fromWire(values, raw) : null;
   if (value == null) throw FormatException('Unknown value', raw);
   return value;
@@ -93,7 +95,7 @@ ParameterRange _range(Object? raw) {
 }
 
 VariantFields variantFieldsFromJson(JsonMap m) {
-  final mode = _enum(ExecutionMode.values, m['mode']);
+  final mode = enumFromJson(ExecutionMode.values, m['mode']);
   final means = m['executionMeans']! as String;
   final equipment = _strings(m['equipment']);
   return switch (mode) {
@@ -126,15 +128,15 @@ Exercise exerciseFromJson(Object? raw) {
     id: m['id']! as String,
     name: m['name']! as String,
     description: m['description']! as String,
-    origin: _enum(Origin.values, m['origin']),
-    type: _enum(ExerciseType.values, m['type']),
+    origin: enumFromJson(Origin.values, m['origin']),
+    type: enumFromJson(ExerciseType.values, m['type']),
     allowedStages: [
-      for (final s in _strings(m['allowedStages'])) _enum(Stage.values, s),
+      for (final s in _strings(m['allowedStages'])) enumFromJson(Stage.values, s),
     ],
     allowedLevels: _strings(m['allowedLevels']),
     allowedIntensities: _strings(m['allowedIntensities']),
     emphases: _strings(m['emphases']),
-    loadCharacter: _enum(LoadCharacter.values, m['loadCharacter']),
+    loadCharacter: enumFromJson(LoadCharacter.values, m['loadCharacter']),
     variants: [for (final v in m['variants']! as List<Object?>) variantFromJson(v)],
     videoUrl: m['videoUrl'] as String?,
     videoAuthorName: m['videoAuthorName'] as String?,
@@ -146,7 +148,7 @@ Exercise exerciseFromJson(Object? raw) {
 Dictionary dictionaryFromJson(Object? raw) {
   final m = _map(raw);
   return Dictionary(
-    name: _enum(DictionaryName.values, m['dictionary']),
+    name: enumFromJson(DictionaryName.values, m['dictionary']),
     values: [
       for (final v in m['values']! as List<Object?>)
         DictionaryValue(

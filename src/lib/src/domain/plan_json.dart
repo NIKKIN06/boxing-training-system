@@ -17,12 +17,6 @@ JsonMap savedPlanToJson(SavedPlan p) => {
   ...planContentToJson(p.content),
 };
 
-T _wire<T extends WireEnum>(List<T> values, Object? raw) {
-  final value = raw is String ? fromWire(values, raw) : null;
-  if (value == null) throw FormatException('Unknown value', raw);
-  return value;
-}
-
 GenerationParameters generationParametersFromJson(Object? raw) {
   final m = raw! as JsonMap;
   final t = m['targetDuration']! as JsonMap;
@@ -64,7 +58,7 @@ PlanItem planItemFromJson(Object? raw) {
     exerciseId: m['exerciseId']! as String,
     exerciseName: m['exerciseName']! as String,
     variant: variantFromJson(m['variant']),
-    stage: _wire(Stage.values, m['stage']),
+    stage: enumFromJson(Stage.values, m['stage']),
     position: m['position']! as int,
     parameters: itemParametersFromJson(m['parameters']),
     estimatedDurationSeconds: m['estimatedDurationSeconds']! as int,
@@ -74,7 +68,7 @@ PlanItem planItemFromJson(Object? raw) {
 List<PlanStage> stagesFromJson(Object? raw) => [
   for (final s in (raw! as List<Object?>).cast<JsonMap>())
     PlanStage(
-      stage: _wire(Stage.values, s['stage']),
+      stage: enumFromJson(Stage.values, s['stage']),
       items: [for (final i in s['items']! as List<Object?>) planItemFromJson(i)],
     ),
 ];
@@ -82,12 +76,12 @@ List<PlanStage> stagesFromJson(Object? raw) => [
 List<PlanWarning> warningsFromJson(Object? raw) => [
   for (final w in (raw! as List<Object?>).cast<JsonMap>())
     PlanWarning(
-      code: _wire(PlanWarningCode.values, w['code']),
-      stage: w['stage'] == null ? null : _wire(Stage.values, w['stage']),
+      code: enumFromJson(PlanWarningCode.values, w['code']),
+      stage: w['stage'] == null ? null : enumFromJson(Stage.values, w['stage']),
       itemId: w['itemId'] as String?,
       attribute: w['attribute'] == null
           ? null
-          : _wire(WarningAttribute.values, w['attribute']),
+          : enumFromJson(WarningAttribute.values, w['attribute']),
     ),
 ];
 
@@ -142,16 +136,24 @@ JsonMap planContentToJson(PlanContent c) => {
     'minSeconds': c.durationTolerance.minSeconds,
     'maxSeconds': c.durationTolerance.maxSeconds,
   },
-  'stages': [
-    for (final s in c.stages)
-      {
-        'stage': s.stage.wire,
-        'items': [for (final i in s.items) planItemToJson(i)],
-      },
-  ],
+  'stages': stagesToJson(c.stages),
   'estimatedDurationSeconds': c.estimatedDurationSeconds,
-  'warnings': [for (final w in c.warnings) planWarningToJson(w)],
+  'warnings': warningsToJson(c.warnings),
 };
+
+/// Stages with their items (schema `PlanStage`), shared by plans and
+/// executed plans.
+List<JsonMap> stagesToJson(List<PlanStage> stages) => [
+  for (final s in stages)
+    {
+      'stage': s.stage.wire,
+      'items': [for (final i in s.items) planItemToJson(i)],
+    },
+];
+
+List<JsonMap> warningsToJson(List<PlanWarning> warnings) => [
+  for (final w in warnings) planWarningToJson(w),
+];
 
 JsonMap openPlanToJson(OpenPlan p) => {
   'id': p.id,

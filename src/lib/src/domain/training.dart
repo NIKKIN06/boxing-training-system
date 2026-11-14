@@ -12,6 +12,10 @@ final class LocalDate {
   final int day;
 }
 
+/// The local calendar date of [localTime].
+LocalDate localDateOf(DateTime localTime) =>
+    LocalDate(localTime.year, localTime.month, localTime.day);
+
 /// Executed plan — refined composition and actual parameters (D-19; schema `ExecutedPlan`).
 final class ExecutedPlan {
   const ExecutedPlan({required this.stages});

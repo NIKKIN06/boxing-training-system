@@ -14,10 +14,6 @@ String localDateToJson(LocalDate d) =>
     '${d.month.toString().padLeft(2, '0')}-'
     '${d.day.toString().padLeft(2, '0')}';
 
-/// The local calendar date of [localTime].
-LocalDate localDateOf(DateTime localTime) =>
-    LocalDate(localTime.year, localTime.month, localTime.day);
-
 LocalDate localDateFromJson(String raw) {
   final parts = raw.split('-');
   if (parts.length != 3) throw FormatException('Expected YYYY-MM-DD', raw);
@@ -29,13 +25,7 @@ LocalDate localDateFromJson(String raw) {
 }
 
 JsonMap executedPlanToJson(ExecutedPlan p) => {
-  'stages': [
-    for (final s in p.stages)
-      {
-        'stage': s.stage.wire,
-        'items': [for (final i in s.items) planItemToJson(i)],
-      },
-  ],
+  'stages': stagesToJson(p.stages),
 };
 
 ExecutedPlan executedPlanFromJson(Object? raw) =>

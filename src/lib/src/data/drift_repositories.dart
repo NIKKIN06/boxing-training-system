@@ -232,8 +232,8 @@ final class DriftTrainingPlanRepository implements TrainingPlanRepository {
         generationParametersJson: jsonEncode(
           generationParametersToJson(p.content.generationParameters),
         ),
-        stagesJson: jsonEncode(planContentToJson(p.content)['stages']),
-        warningsJson: jsonEncode(planContentToJson(p.content)['warnings']),
+        stagesJson: jsonEncode(stagesToJson(p.content.stages)),
+        warningsJson: jsonEncode(warningsToJson(p.content.warnings)),
       );
 
   static SavedPlan _fromRow(TrainingPlanRow r) {
