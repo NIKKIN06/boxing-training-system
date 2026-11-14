@@ -2,7 +2,7 @@
 
 | Поле | Значення |
 |---|---|
-| Статус | Чернетка (draft) для людини; рішення про відповідність приймає людина |
+| Статус | Затверджено людиною 14.11.2026 |
 | Дата | 14.11.2026 |
 | Гілка, HEAD | `impl/lab5`, `1feda3a` (робоче дерево: змінено лише `logs/agent-session-lab5.md`) |
 | Еталон | SRS v1.2 (`spec/srs.md`), `spec/openapi.yaml` 1.1.0, ADD-003 (D-36…D-40), `spec/acceptance.feature`, `spec/traceability.md` |
