@@ -11,6 +11,7 @@ import '../domain/exercise_validation.dart';
 import '../logging/app_logging.dart';
 import '../ports/repositories.dart';
 import '../ports/system_ports.dart';
+import 'storage_write.dart';
 
 final Logger _log = Logger(LogNames.catalog);
 
@@ -79,7 +80,7 @@ final class CatalogService {
           Variant(id: ids.newId(EntityKind.variant), fields: v.fields),
       ],
     );
-    await _store(() => exercises.insert(exercise));
+    await guardStorageWrite(() => exercises.insert(exercise));
     _log.info(
       'exercise created id=${exercise.id} variants=${exercise.variants.length}',
     );
@@ -118,7 +119,7 @@ final class CatalogService {
       }
     }
     final exercise = _build(id: stored.id, input: input, variants: variants);
-    await _store(() => exercises.update(exercise));
+    await guardStorageWrite(() => exercises.update(exercise));
     _log.info(
       'exercise updated id=${exercise.id} variants=${variants.length} '
       'kept=${kept.length} added=${variants.length - kept.length} '
@@ -163,15 +164,6 @@ final class CatalogService {
     authorPageUrl: input.authorPageUrl,
     deprecated: false,
   );
-
-  /// REQ-NF-003: a failed write → 500 STORAGE_WRITE_FAILED, nothing saved.
-  static Future<void> _store(Future<void> Function() write) async {
-    try {
-      await write();
-    } on StorageWriteException {
-      throw const DomainError(ErrorCode.storageWriteFailed);
-    }
-  }
 
   /// NEG-05: filter values must exist in the shared dictionaries (SRS §4.4).
   void _checkDictionaryValues(ExerciseFilter filter) {

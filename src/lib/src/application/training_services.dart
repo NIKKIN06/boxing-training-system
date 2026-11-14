@@ -15,6 +15,7 @@ import '../domain/training_json.dart';
 import '../logging/app_logging.dart';
 import '../ports/repositories.dart';
 import '../ports/system_ports.dart';
+import 'storage_write.dart';
 
 final Logger _log = Logger(LogNames.trainings);
 
@@ -162,11 +163,7 @@ final class CompletedTrainingService {
       executedPlan: current.executedPlan,
       note: note,
     );
-    try {
-      await trainings.insert(record);
-    } on StorageWriteException {
-      throw const DomainError(ErrorCode.storageWriteFailed);
-    }
+    await guardStorageWrite(() => trainings.insert(record));
     session.set(null);
     _log.info(
       'training completed trainingId=${record.id} '

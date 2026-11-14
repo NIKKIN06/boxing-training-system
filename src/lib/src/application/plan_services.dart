@@ -14,6 +14,7 @@ import '../logging/app_logging.dart';
 import '../ports/repositories.dart';
 import '../ports/system_ports.dart';
 import 'plan_generator.dart';
+import 'storage_write.dart';
 
 final Logger _log = Logger(LogNames.plans);
 
@@ -429,7 +430,7 @@ final class TrainingPlanService {
     }
     _requireNotEmpty(open);
     final saved = _saved(ids.newId(EntityKind.trainingPlan), open);
-    await _write(() => trainingPlans.insert(saved));
+    await guardStorageWrite(() => trainingPlans.insert(saved));
     openPlans.put(
       OpenPlan(id: open.id, sourcePlanId: saved.id, content: saved.content),
     );
@@ -459,7 +460,7 @@ final class TrainingPlanService {
     }
     _requireNotEmpty(open);
     final saved = _saved(planId, open);
-    await _write(() => trainingPlans.update(saved));
+    await guardStorageWrite(() => trainingPlans.update(saved));
     openPlans.put(
       OpenPlan(id: open.id, sourcePlanId: planId, content: saved.content),
     );
@@ -475,7 +476,7 @@ final class TrainingPlanService {
   Future<void> deleteTrainingPlan(String planId) async {
     final plan = await trainingPlans.findById(planId);
     if (plan == null) throw const DomainError(ErrorCode.notFound);
-    await _write(() => trainingPlans.delete(planId));
+    await guardStorageWrite(() => trainingPlans.delete(planId));
     _log.info('training plan deleted planId=$planId');
   }
 
@@ -503,14 +504,5 @@ final class TrainingPlanService {
         name: name == null || name.isEmpty ? defaultPlanName(now) : name,
       ),
     );
-  }
-
-  /// REQ-NF-003: a failed write → 500 STORAGE_WRITE_FAILED, previous state kept.
-  static Future<void> _write(Future<void> Function() write) async {
-    try {
-      await write();
-    } on StorageWriteException {
-      throw const DomainError(ErrorCode.storageWriteFailed);
-    }
   }
 }
