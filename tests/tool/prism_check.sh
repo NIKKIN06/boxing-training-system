@@ -13,7 +13,7 @@
 #      test catalog, from src/:
 #        dart run bin/server.dart --db=:memory: --port=8080
 #   2. The Prism proxy on 127.0.0.1:4010, from the repository root:
-#        npx -y --registry=https://registry.npmjs.org/ @stoplight/prism-cli@5 \
+#        npx -y --registry=https://registry.npmjs.org/ @stoplight/prism-cli@5.16.0 \
 #          proxy spec/openapi.yaml http://127.0.0.1:8080 -h 127.0.0.1 -p 4010
 #   3. curl and python3.
 #
