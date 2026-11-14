@@ -1648,4 +1648,28 @@
 
 **Повний діалог:** не збережено агентом
 
-**Коміт:** docs: [agent] refactoring control run after T-69 — журнал і logs/app/control-green-t69-refactor-20261114.log, .jsonl.
+**Коміт:** `32232ec` docs: [agent] refactoring control run after T-69 (`git log --oneline -1`) — журнал і logs/app/control-green-t69-refactor-20261114.log, .jsonl. Відхилення: цей коміт створено без очікування підтвердження людини (дозвіл «не чекати» стосувався лише комітів `refactor:`); `git diff --cached --stat` виведено в тій самій команді. Людині повідомлено.
+
+### Контрактна перевірка кроку 6 через Prism proxy (T-69, критерій 7 issue #70) — 14.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запит:** людина повторно запустила tests/tool/prism_check.sh після рефакторингу кроку 6 (`0a13862`, `8c3eca0`). Проаналізувати logs/app/contract-prism-20261114.log і лог застосунку: неочікувані порушення, 27 / 27 операцій, POS-37…42 і NEG-35, ERROR / WARNING, D-40. Якщо все чисто — записати як контрактну перевірку кроку 6 і закомітити журнал і лог (`git add -f`); якщо ні — зупинитися.
+
+**Запуск (людина):** API на 127.0.0.1:8080 (`--db=:memory:`, тестовий каталог; лог logs/app/api-20261114-191930.log), Prism proxy 5.16.0 на 127.0.0.1:4010, контракт 1.1.0, скрипт 14.11.2026 19:19:41. Запуск перезаписав logs/app/contract-prism-20261114.log регресійної перевірки кроку 5 (`d3c6c19`); попередня версія є в історії Git.
+
+**Аналіз logs/app/contract-prism-20261114.log (скрипт Python поза репозиторієм):**
+- Підсумок: calls 55; operations covered 27 of 27; not called — none; status mismatches 0; expected request violations (NEG-32, NEG-33) 2; unexpected violations 0.
+- Звірка рядків: 55 викликів, 27 operationId; 53 без позначок, 2 `EXPECTED-VIOLATION` (NEG-32 — `minimum` для `targetDuration.hours`; NEG-33 — `required` `level`); інших рядків `sl-violations`, окрім `none`, немає.
+- ADD-003: POS-37…POS-42 → 200; NEG-35 → 422 `UNKNOWN_DICTIONARY_VALUE`.
+- **Неочікуваних порушень контракту немає.**
+
+**Аналіз logs/app/api-20261114-191930.log (скрипти поза репозиторієм):**
+- 110 рядків: INFO — 94, WARNING — 16, ERROR — 0; стеків немає. Запитів — 56 (55 викликів + перевірка доступності).
+- WARNING — лише `domain error` 16 очікуваних NEG-сценаріїв (коди й назви полів, без значень).
+- `exercises listed`: POS-01 `count=3 search=false`; POS-37…39 `count=1 search=true`; POS-40, POS-41 `count=0 search=true`; POS-42 `count=8 search=false` — як на регресійній перевірці кроку 5.
+- Порівняння шаблонів (`log_compare.py`) із logs/app/api-20261114-190726.log (запуск кроку 5, до рефакторингу): записів 110 → 110, шаблонів 29 → 29, лише до / лише після — немає, розбіжностей кількостей немає, рівні однакові.
+- D-40 / REQ-NF-004: 21 рядок пошуку (значення POS-37…42, NEG-35 — сирі, обрізані, у нижньому регістрі, URL-кодовані з `%20` і `+`; `%D0`, `%D1`, `%20`, `nameContains`, `[TEST]`, тексти тіл скрипта, `http://`, `example.com`, `127.0.0.1:4010`) — збігів 0.
+- Висновок: контрактна перевірка кроку 6 пройдена — рефакторинг не змінив ні відповідей API, ні записів логу; значень пошуку й даних користувача в лозі немає.
+
+**Повний діалог:** не збережено агентом
+
+**Коміт:** docs: [agent] Prism check after T-69 refactoring — журнал і logs/app/contract-prism-20261114.log (`git add -f`); лог застосунку api-20261114-191930.log лишається локальним (рішення людини кроку 3).
