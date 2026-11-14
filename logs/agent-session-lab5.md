@@ -1211,3 +1211,28 @@
 **Повний діалог:** не збережено агентом
 
 **Коміт:** docs: [agent] refactoring control run and prism check script — журнал, контрольний лог (.log, .jsonl) і скрипт; хеш — у `git log` після коміту.
+
+### Контрактна перевірка кроку 3 через Prism proxy — 14.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запит:** людина запустила tests/tool/prism_check.sh через Prism proxy; проаналізувати logs/app/contract-prism-20261114.log і лог застосунку цього запуску: порушення `sl-violations` (крім очікуваних NEG-32, NEG-33), покриття 27 операцій, ERROR / WARNING і відсутність даних користувача. Якщо порушень немає — записати в журнал і закомітити; якщо є — зупинитися.
+
+**Запуск (людина):** API на 127.0.0.1:8080 (`--db=:memory:`, тестовий каталог; лог logs/app/api-20261114-160403.log), Prism proxy на 127.0.0.1:4010, скрипт 14.11.2026 16:04:57.
+
+**Аналіз logs/app/contract-prism-20261114.log (підсумок скрипта звірено окремим скриптом Python за рядками викликів):**
+- Викликів 48; різних operationId — 27 з 27; не викликано — жодної.
+- Розбіжностей статусів 0. Статуси: 200 — 23, 201 — 8, 204 — 2, 403 — 1, 404 — 4, 409 — 1, 422 — 9.
+- `sl-violations` лише у двох викликах — NEG-32 `generatePlan` (`request.body.targetDuration.hours`, `minimum`) і NEG-33 `generatePlan` (`request.body`, `required` для `level`); обидва навмисно порушують схему, сервер відповів 422 VALIDATION_FAILED. Неочікуваних порушень (запитів і відповідей) — 0.
+- Коди NEG збігаються з docs/api/scenarios.md: NO_CURRENT_SESSION (NEG-24, 25, 30, 31), NOT_FOUND (NEG-02), UNKNOWN_DICTIONARY_VALUE (NEG-05), INITIAL_EXERCISE_READ_ONLY (NEG-06), VALIDATION_FAILED (NEG-04, 32, 33), PLAN_NOT_FOUND (NEG-13), OPEN_PLAN_NOT_FOUND (NEG-20), INVALID_PERIOD (NEG-27, 28), END_DATE_IN_FUTURE (NEG-29).
+
+**Аналіз logs/app/api-20261114-160403.log (скрипт Python поза репозиторієм):**
+- 96 записів: INFO 81, WARNING 15, ERROR 0; записів зі стеком 0, `unhandled exception` 0.
+- Запитів 49 по 27 operationId (48 викликів скрипта + перевірка доступності `GET /training-plans` на початку скрипта: `listTrainingPlans` — 3 записи); `operationId=-` — 0, статус 501 — 0.
+- WARNING — 15 `domain error` з кодами контракту, по одному на кожен NEG-виклик: NO_CURRENT_SESSION 4, VALIDATION_FAILED 3, INVALID_PERIOD 2, NOT_FOUND, UNKNOWN_DICTIONARY_VALUE, INITIAL_EXERCISE_READ_ONLY, PLAN_NOT_FOUND, OPEN_PLAN_NOT_FOUND, END_DATE_IN_FUTURE — по 1.
+- Даних користувача немає: пошук `[TEST]`, `Стрибки`, `Ранкове`, `віджимань` (тексти тіл запитів скрипта), `/Users/`, `SELECT`, `INSERT` — збігів 0. Шлях до логу у записі `starting` — відносний (`../logs/app/…`).
+- Висновок: після рефакторингу реальні відповіді всіх 27 операцій відповідають spec/openapi.yaml за перевіркою Prism; порушення є лише в навмисно невалідних запитах NEG-32 і NEG-33.
+
+**Рішення людини (14.11.2026):** logs/app/.gitignore пропускає лише `control-*.log`; лог перевірки додати `git add -f`, правила .gitignore не змінювати. Лог застосунку api-20261114-160403.log лишається локальним.
+
+**Повний діалог:** не збережено агентом
+
+**Коміт:** docs: [agent] Prism contract check after refactoring — журнал і logs/app/contract-prism-20261114.log; хеш — у `git log` після коміту.
