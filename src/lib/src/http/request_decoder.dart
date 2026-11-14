@@ -74,20 +74,25 @@ final class RequestDecoder {
     return start == end ? null : value.substring(start, end);
   }
 
-  /// Unicode property White_Space (all its code points are in the BMP).
-  /// Unlike `String.trim`, U+FEFF is not white space.
+  /// Code point ranges (inclusive) of the Unicode property White_Space, as
+  /// listed in PropList.txt; all of them are in the BMP. Unlike `String.trim`,
+  /// U+FEFF is not white space.
+  static const _unicodeWhiteSpace = <(int, int)>[
+    (0x0009, 0x000D), // <control-0009>..<control-000D>
+    (0x0020, 0x0020), // SPACE
+    (0x0085, 0x0085), // <control-0085>
+    (0x00A0, 0x00A0), // NO-BREAK SPACE
+    (0x1680, 0x1680), // OGHAM SPACE MARK
+    (0x2000, 0x200A), // EN QUAD..HAIR SPACE
+    (0x2028, 0x2028), // LINE SEPARATOR
+    (0x2029, 0x2029), // PARAGRAPH SEPARATOR
+    (0x202F, 0x202F), // NARROW NO-BREAK SPACE
+    (0x205F, 0x205F), // MEDIUM MATHEMATICAL SPACE
+    (0x3000, 0x3000), // IDEOGRAPHIC SPACE
+  ];
+
   static bool _isWhiteSpace(int c) =>
-      (c >= 0x0009 && c <= 0x000D) ||
-      c == 0x0020 ||
-      c == 0x0085 ||
-      c == 0x00A0 ||
-      c == 0x1680 ||
-      (c >= 0x2000 && c <= 0x200A) ||
-      c == 0x2028 ||
-      c == 0x2029 ||
-      c == 0x202F ||
-      c == 0x205F ||
-      c == 0x3000;
+      _unicodeWhiteSpace.any((r) => c >= r.$1 && c <= r.$2);
 
   /// Body `ExerciseInput` of `createExercise` / `updateExercise`. `id`,
   /// `origin` and `deprecated` in the body are ignored (D-05).
