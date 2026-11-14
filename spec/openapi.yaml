@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Boxing Training System API
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Контракт операцій інформаційної системи планування та формування тренувань з боксу.
 
@@ -10,7 +10,7 @@ info:
     локально для перевірки контракту. SRS §2.3, REQ-NF-001, REQ-NF-004 не змінюються.
 
     Джерела: docs/api/resource-model.md; spec/srs.md (SRS v1.0); spec/addenda/ADD-001.md;
-    spec/addenda/ADD-002.md.
+    spec/addenda/ADD-002.md; spec/addenda/ADD-003.md.
 
     Загальні угоди (resource-model.md, розділ 4.0):
     - час інтервалів, відпочинку та орієнтовна тривалість — цілі секунди (SRS §5.3, §5.4);
@@ -69,12 +69,14 @@ paths:
         Якщо задано loadCharacter, вправи зі значенням not-applicable не повертаються; правило
         «не застосовна» стосується лише цієї ознаки (ADD-002 D-34). executionMeans і equipment має
         задовольняти один і той самий варіант вправи (AC-F-003). Застарілі вправи не повертаються
-        ніколи (D-06). Порожня вибірка — items: []. Порядок переліку не гарантується.
+        ніколи (D-06). nameContains — пошук за частиною назви без урахування регістру, разом з
+        іншими параметрами через «І» (ADD-003 D-36…D-39). Порожня вибірка — items: []. Порядок
+        переліку не гарантується.
       x-req-ids: [REQ-F-001, REQ-F-003]
       x-trace:
         ac: [AC-F-003]
-        bdd: [BDD-001, BDD-004]
-        decisions: [D-06, D-09, "ADD-002 D-34"]
+        bdd: [BDD-001, BDD-004, BDD-053]
+        decisions: [D-06, D-09, "ADD-002 D-34", "ADD-003 D-36", "ADD-003 D-37", "ADD-003 D-38", "ADD-003 D-39", "ADD-003 D-40"]
       parameters:
         - $ref: '#/components/parameters/StageFilter'
         - $ref: '#/components/parameters/TypeFilter'
@@ -84,6 +86,7 @@ paths:
         - $ref: '#/components/parameters/LoadCharacterFilter'
         - $ref: '#/components/parameters/ExecutionMeansFilter'
         - $ref: '#/components/parameters/EquipmentFilter'
+        - $ref: '#/components/parameters/NameContainsFilter'
       responses:
         '200':
           description: Параметри коректні; порожня вибірка — items [] (AC-F-003).
@@ -1210,6 +1213,19 @@ components:
         type: array
         items:
           type: string
+    NameContainsFilter:
+      name: nameContains
+      in: query
+      required: false
+      description: >-
+        Частина назви вправи (ADD-003 D-36…D-38). Вправа відповідає, якщо значення входить у її назву
+        як підрядок без урахування регістру (зведення до нижнього регістру; внутрішні пробіли не
+        змінюються); опис виконання не враховується. Пробільні символи (Unicode White_Space) на початку
+        й у кінці відкидаються; якщо значення після цього порожнє, пошук не застосовується. Поєднується
+        з іншими фільтрами через «І» (D-09, ADD-003 D-39).
+        Значення не записується в лог (ADD-003 D-40).
+      schema:
+        type: string
     PeriodFrom:
       name: from
       in: query
