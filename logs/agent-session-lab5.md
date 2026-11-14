@@ -627,6 +627,26 @@
 | 265 | generation_parameters | AC-F-005 generatePlan getOpenPlan: 0 h 1 min (the smallest total above zero) is accepted and converted to 60 s (tolerance 54–66 s) (TG-002) | AC-F-005 | REQ-F-005 | `generatePlan`, `getOpenPlan` | T-17 | 501: generatePlan |
 | 266 | generation_parameters | AC-F-005 generatePlan getOpenPlan: 0 h 59 min (minutes at the upper bound 59) is accepted and converted to 3540 s (tolerance 3186–3894 s) (TG-002) | AC-F-005 | REQ-F-005 | `generatePlan`, `getOpenPlan` | T-17 | 501: generatePlan |
 | 267 | generation_parameters | AC-F-005 generatePlan: 1 h 0 min (minutes at the lower bound 0) is accepted and converted to 3600 s (tolerance 3240–3960 s) (TG-002) | AC-F-005 | REQ-F-005 | `generatePlan` | T-17 | 501: generatePlan |
+| 268 | catalog_name_search | BDD-053 POS-37 D-36 D-37 AC-F-003 listExercises: «удар» → only A (initial) and B (custom); C (only the description) and deprecated E are not shown (T-69) | BDD-053, AC-F-003, POS-37, ADD-003 D-36, ADD-003 D-37 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 269 | catalog_name_search | BDD-053 POS-38 D-37 AC-F-003 listExercises: «УДАР» → the same items as «удар» (case is ignored) (T-69) | BDD-053, AC-F-003, POS-38, ADD-003 D-37 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 270 | catalog_name_search | BDD-053 POS-39 D-38 AC-F-003 listExercises: «  удар  » → the same items as «удар» (leading and trailing spaces are dropped) (T-69) | BDD-053, AC-F-003, POS-39, ADD-003 D-38 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 271 | catalog_name_search | BDD-053 POS-40 D-39 AC-F-003 listExercises: «удар» AND type combination → only B (T-69) | BDD-053, AC-F-003, POS-40, ADD-003 D-39 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 272 | catalog_name_search | BDD-053 D-36 D-06 AC-F-003 listExercises: «застаріла» → 200 and items [] (deprecated E is not shown) (T-69) | BDD-053, AC-F-003, ADD-003 D-36, D-06 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 273 | catalog_name_search | BDD-053 POS-41 D-39 AC-F-003 listExercises: «аперкот» (no match) → 200 and items [] (T-69) | BDD-053, AC-F-003, POS-41, ADD-003 D-39 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 274 | catalog_name_search | BDD-053 POS-42 D-38 AC-F-003 listExercises: «   » (empty after the spaces are dropped) → all non-deprecated exercises (T-69) | BDD-053, AC-F-003, POS-42, ADD-003 D-38 | REQ-F-003 | `listExercises` | T-69 | пройшов: параметр поки ігнорується, а очікувано всі незастарілі |
+| 275 | catalog_name_search | D-37 AC-F-003 listExercises: «ВІДЖИМАННЯ» finds initial ex-3 «[TEST] Віджимання» (І / і) (T-69) | AC-F-003, ADD-003 D-37 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 276 | catalog_name_search | D-37 AC-F-003 createExercise listExercises: «ҐАНОК» and «ґанок» find the custom exercise «[TEST] Ґанок Єнот Іній Їжак» (T-69) | AC-F-003, ADD-003 D-37 | REQ-F-003 | `createExercise`, `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 277 | catalog_name_search | D-37 AC-F-003 createExercise listExercises: «ЄНОТ» and «єнот» find the custom exercise «[TEST] Ґанок Єнот Іній Їжак» (T-69) | AC-F-003, ADD-003 D-37 | REQ-F-003 | `createExercise`, `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 278 | catalog_name_search | D-37 AC-F-003 createExercise listExercises: «ІНІЙ» and «іній» find the custom exercise «[TEST] Ґанок Єнот Іній Їжак» (T-69) | AC-F-003, ADD-003 D-37 | REQ-F-003 | `createExercise`, `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 279 | catalog_name_search | D-37 AC-F-003 createExercise listExercises: «ЇЖАК» and «їжак» find the custom exercise «[TEST] Ґанок Єнот Іній Їжак» (T-69) | AC-F-003, ADD-003 D-37 | REQ-F-003 | `createExercise`, `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 280 | catalog_name_search | D-36 AC-F-003 listExercises: «опис виконання» (only in descriptions) → 200 and items [] (T-69) | AC-F-003, ADD-003 D-36 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 281 | catalog_name_search | D-36 AC-F-003 createExercise listExercises: «серія» finds only the custom exercise B (T-69) | AC-F-003, ADD-003 D-36 | REQ-F-003 | `createExercise`, `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 282 | catalog_name_search | D-37 AC-F-003 listExercises: «прямий удар» (one inner space) finds A (T-69) | AC-F-003, ADD-003 D-37 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 283 | catalog_name_search | D-37 AC-F-003 listExercises: «прямий  удар» (two inner spaces) → 200 and items [] (inner spaces are not changed) (T-69) | AC-F-003, ADD-003 D-37 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 284 | catalog_name_search | D-38 AC-F-003 listExercises: empty value «» does not restrict the selection → all non-deprecated exercises (T-69) | AC-F-003, ADD-003 D-38 | REQ-F-003 | `listExercises` | T-69 | пройшов: параметр поки ігнорується, а очікувано всі незастарілі |
+| 285 | catalog_name_search | D-39 D-09 AC-F-003 listExercises: «удар» AND stage main → only A (T-69) | AC-F-003, ADD-003 D-39, D-09 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 286 | catalog_name_search | D-39 D-09 AC-F-003 listExercises: «прямий» AND type combination → 200 and items [] (T-69) | AC-F-003, ADD-003 D-39, D-09 | REQ-F-003 | `listExercises` | T-69 | склад items (параметр ігнорується) |
+| 287 | catalog_name_search | NEG-35 D-39 AC-F-003 listExercises: «удар» with level level-unknown → 422 UNKNOWN_DICTIONARY_VALUE (the search does not cancel the check of other filters) (T-69) | AC-F-003, NEG-35, ADD-003 D-39 | REQ-F-003 | `listExercises` | T-69 | пройшов: 422 дає наявна перевірка level (NEG-05) |
 | — | — | API-тесту немає: відхилення підтвердження припинення — дія клієнта, запит не надсилається | BDD-027, AC-F-013 | REQ-F-013 | — | T-25 | клієнт, поза ЛР-5 (рішення людини 13.11.2026, питання 14) |
 
 Примітка до таблиці: колонка «Червоний запуск» — операція, що першою відповіла 501 у тесті (для більшості тестів це передумова, наприклад `generatePlan`). REQ-NF-006 / AC-NF-006 покриває також простежуваність і FakeClock / SeededRandom у всіх тестах.
@@ -1445,3 +1465,55 @@
 **Повний діалог:** не збережено агентом
 
 **Коміт:** docs: [agent] create issue T-69 — `docs/plan/decomposition.md` і журнал; `spec/` — людина.
+
+## Етап 27. T-69: тести пошуку за частиною назви (ADD-003) і червоний запуск — 14.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. ЛР-5, крок 5: тести T-69 (#70) за TDD на гілці impl/lab5 за критерієм 2 issue #70 — кожен крок BDD-053, POS-37…42, NEG-35; апострофи, NFC / NFD і повторення параметра не тестуються.
+2. Правила — як на етапі 7: джерела лише ADD-003, AC-F-003, BDD-053, spec/openapi.yaml і POS-37…42 / NEG-35; назва тесту містить ID (BDD / AC / POS / NEG / D-xx) і operationId; валідатор контракту; дані — наявний тестовий каталог і createExercise для вправ B і C. Змінювати лише tests/; src/, spec/ і наявні тести не змінювати.
+3. POS-37…42 і NEG-35 — у tests/tool/prism_check.sh.
+4. Червоний запуск (`dart analyze --fatal-infos`; `dart test` з логом logs/app/control-red-t69-20261114.log і `--file-reporter json:../logs/app/control-red-t69-20261114.jsonl`); скриптом довести, що нові тести падають через склад items, а не «Failed to load», і всі 326 наявних проходять; перелік несподівано зелених тестів; аналіз логу, рядки таблиці простежуваності, цей етап. Коміт `test: [agent] T-69 name search tests (ADD-003)` після показу `git diff --cached --stat`.
+
+**Пропозиція агента та дії:**
+- Прочитано: ADD-003 (D-36…D-40, §3.4, §3.5, §4.1), issue #70 (`gh issue view 70`), docs/api/scenarios.md розділ 6, `NameContainsFilter` і `listExercises` у spec/openapi.yaml, тестовий каталог src/assets/catalog/test-catalog.json (лише читання), support-файли тестів, catalog_filter_test.dart (як зразок). Код src/ не читався.
+- Дані BDD-053: A = ex-6 «[TEST] Прямий удар» (початкова, single-punch); E = ex-9 «[TEST] Застаріла вправа» (застаріла) — з тестового каталогу; B «[TEST] Серія: удар знизу» (combination) і C «[TEST] Бій з тінню» з описом «[TEST] Опис: удар у повітря без партнера.» — createExercise у `setUp` на основі `ropeExerciseInput()` (приклад контракту). Назва C (як у BDD-053) збігається з назвою ex-1 «[TEST] Бій з тінню»: REQ-F-002 / AC-F-002 відхиляють лише порожню назву чи опис, вимоги унікальності назв вправ немає; createExercise повернув 201. Ні ex-1, ні C не містять «удар» у назві, тож на очікувані множини збіг не впливає. Для Ґ/Є/І/Ї — власна вправа «[TEST] Ґанок Єнот Іній Їжак» (createExercise у тесті) і початкова ex-3 «[TEST] Віджимання» (І).
+- Новий файл tests/test/exercises/catalog_name_search_test.dart, 20 тестів (5 груп «T-69 …»):
+  - кроки BDD-053 (7): «удар» → {A, B} (POS-37; C — лише опис, E — застаріла); «УДАР» (POS-38); «  удар  » (POS-39); «удар» І type combination → {B} (POS-40); «застаріла» → `[]` (D-06); «аперкот» → `[]` (POS-41); «   » → усі незастарілі (POS-42);
+  - регістр кирилиці D-37 (5): «ВІДЖИМАННЯ» → ex-3; «ҐАНОК» / «ґанок», «ЄНОТ» / «єнот», «ІНІЙ» / «іній», «ЇЖАК» / «їжак» → власна вправа;
+  - лише назва, початкові й власні (D-36, 2): «опис виконання» (є лише в описах) → `[]`; «серія» → лише власна B;
+  - пробіли (D-37, D-38, 3): «прямий удар» → A; «прямий  удар» (два пробіли) → `[]`; порожнє значення «» → усі незастарілі;
+  - «І» з фільтрами (D-39, 3): «удар» І stage main → A; «прямий» І type combination → `[]`; NEG-35 «удар» І level level-unknown → 422 `UNKNOWN_DICTIONARY_VALUE`, деталь `level` / `DICTIONARY_VALUE`.
+  - Кожна відповідь проходить валідатор контракту (`ApiClient.send`); склад перевіряється як множина id (порядок не гарантується, контракт). Кожна перевірка складу має `reason` «listExercises items (ADD-003)» — за ним скрипт відрізняє очікувану причину падіння.
+- Не тестується (критерій 2 issue #70): апострофи й NFC / NFD (уточнення D-37, не пункт AC-F-003), повторення параметра (Q-ADD3-01, відкладено). Пробіли на початку й у кінці — лише звичайний пробіл (Q-ADD3-03). D-40 — аналізом логу (нижче), окремого тесту немає (ADD-003 §3.4).
+- Примітка: `ApiClient.send` будує query через `Uri(queryParameters: …)`, тож пробіл кодується як `+`, а не `%20`, як у POS-39 / POS-42; сервер декодує обидва як пробіл. Значення `%20` перевіряє prism_check.sh.
+- tests/tool/prism_check.sh: блок «ADD-003» після POS-08 — POS-37…42 (200) і NEG-35 (422) з URL-кодованими значеннями (обчислено `urllib.parse.quote`); `bash -n` — без помилок. Скрипт не запускався (запускає людина з Prism proxy і сервером).
+- tests/tool/red_check_t69.py — новий скрипт перевірки червоного запуску T-69 (наявний red_check.py шукає 501 і не змінювався).
+- Наявні тести, tests/test/support/, фікстури, src/, spec/ не змінено.
+
+**Червоний запуск (14.11.2026):**
+- `cd tests && dart analyze --fatal-infos` → «No issues found!».
+- `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-red-t69-20261114.log dart test --reporter compact --file-reporter json:../logs/app/control-red-t69-20261114.jsonl` → код виходу 1; +329 −17.
+- `python3 -I tool/red_check_t69.py ../logs/app/control-red-t69-20261114.jsonl` → код виходу 0:
+  - 18 наборів; «Failed to load» і помилок завантаження — немає;
+  - наявні тести (інші набори): 326 `success`, падінь 0;
+  - T-69: 20 тестів; 17 — `failure` з першою помилкою `TestFailure` перевірки складу «listExercises items (ADD-003)»: `Actual` — повний каталог або повний результат фільтра (наприклад, POS-40: `{ex-2, ex-7, B}` замість `{B}`; «удар» І stage main: `{ex-2, ex-3, ex-6, ex-7}` замість `{ex-6}`), тобто `nameContains` поки ігнорується; інших причин 0.
+- Несподівано пройшли 3 тести T-69 — очікуваний результат збігається з поведінкою «параметр ігнорується»:
+  1. BDD-053 POS-42 «   » → усі незастарілі: без застосування пошуку повертається весь каталог;
+  2. D-38 порожнє значення «» → усі незастарілі: так само;
+  3. NEG-35 «удар» І level level-unknown → 422: 422 дає наявна перевірка `level` (NEG-05), не пошук.
+  Вони не доводять реалізації, але після неї стережуть від регресії: (1), (2) — що порожнє після відкидання пробілів значення не звужує вибірку, (3) — що пошук не скасовує перевірку інших фільтрів.
+
+**Аналіз логу logs/app/control-red-t69-20261114.log (скрипт поза репозиторієм):**
+- 2713 записів; INFO — 2568, WARNING — 141, ERROR — 4. Рядків поза форматом запису — 157: це стеки чотирьох ERROR (153 кадри і 4 «asynchronous gap»), пошкоджених рядків 0.
+- Порівняння з logs/app/control-green-refactor-20261114.log (останній зелений, 326 тестів; 2545 записів): +168 записів. createExercise 201 — +44 (2 у `setUp` × 20 тестів + 4 у тестах Ґ/Є/І/Ї); listExercises 200 — +19, з 52 до 71 (по одному запиту в 15 тестах і перший запит 4 тестів Ґ/Є/І/Ї, які падають на першій перевірці), listExercises 422 — +1 (NEG-35, WARNING `domain error operationId=listExercises code=UNKNOWN_DICTIONARY_VALUE details=[level:DICTIONARY_VALUE]`).
+- ERROR — ті самі 4 змодельовані збої запису затверджених тестів (`write failed operation=completedTraining.insert`, `trainingPlan.insert`, `trainingPlan.update`, `trainingPlan.delete`); 5xx — ті самі 4 × 500 і 1 × 503 generatePlan, що в зеленому лозі. Нових ERROR і винятків немає.
+- D-40 / REQ-NF-004: у лозі 0 входжень `nameContains`, усіх значень пошуку тестів («удар», «УДАР», «аперкот», «застаріла», «ВІДЖИМАННЯ», «ґанок» … «їжак», «опис виконання», «серія», «прямий»), URL-кодованих `%D0` / `%D1`, `[TEST]`, `level-unknown`, `http://`, `127.0.0.1`. На червоному кроці це очікувано (параметр не обробляється); остаточна перевірка D-40 — після реалізації (критерій 6 issue #70).
+- Висновок: нові тести падають через склад items; помилок середовища, компіляції чи завантаження немає, регресій немає.
+
+**Таблиця простежуваності:** додано рядки 268–287 (таблиця етапу 7; згенеровано скриптом `trace_t69.py` поза репозиторієм із виводу репортера). Тест TG-012 (`catalog_missing_exercise_test.dart`, етап 15) у таблиці не має рядка — не доповнювалось, бо поза запитом.
+
+**Питання до специфікації:** нових немає.
+
+**Повний діалог:** не збережено агентом
+
+**Коміт:** очікує підтвердження людини.

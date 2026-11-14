@@ -176,6 +176,18 @@ PY
 call POS-07 updateExercise 200 none PUT "/exercises/$EX_ID" "$UPDATE_BODY"
 call POS-08 getDictionary 200 none GET /dictionaries/training-levels
 
+# --- ADD-003: search by a part of the name, nameContains (POS-37…42, NEG-35) -
+# Values are URL-encoded: удар, УДАР, «  удар  », аперкот, «   » (ordinary
+# spaces, Q-ADD3-03). Prism proxy checks the schema of real responses only;
+# the composition of items is checked by dart test (scenarios.md, «ADD-003»).
+call POS-37 listExercises 200 none GET '/exercises?nameContains=%D1%83%D0%B4%D0%B0%D1%80'
+call POS-38 listExercises 200 none GET '/exercises?nameContains=%D0%A3%D0%94%D0%90%D0%A0'
+call POS-39 listExercises 200 none GET '/exercises?nameContains=%20%20%D1%83%D0%B4%D0%B0%D1%80%20%20'
+call POS-40 listExercises 200 none GET '/exercises?nameContains=%D1%83%D0%B4%D0%B0%D1%80&type=combination'
+call POS-41 listExercises 200 none GET '/exercises?nameContains=%D0%B0%D0%BF%D0%B5%D1%80%D0%BA%D0%BE%D1%82'
+call POS-42 listExercises 200 none GET '/exercises?nameContains=%20%20%20'
+call NEG-35 listExercises 422 none GET '/exercises?nameContains=%D1%83%D0%B4%D0%B0%D1%80&level=level-unknown'
+
 # --- Generation and the open plan (POS-09, POS-11, POS-13…POS-18) ----------
 call POS-09 generatePlan 201 none POST /plan-generations "$GENERATION_BODY"
 OPEN1="$(json "$LAST_BODY" id)"
