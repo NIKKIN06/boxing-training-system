@@ -6,7 +6,8 @@ import 'package:shelf/shelf.dart';
 
 import '../domain/domain_error.dart';
 import '../logging/app_logging.dart';
-import 'json_mapping.dart';
+import 'error_mapping.dart';
+import 'response_encoder.dart';
 
 /// Response context key carrying the operationId to the request logger.
 const String operationIdContextKey = 'boxing_api.operationId';
