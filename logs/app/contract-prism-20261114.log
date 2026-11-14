@@ -1,4 +1,4 @@
-# Prism proxy contract check — 14.11.2026 16:04:57
+# Prism proxy contract check — 14.11.2026 19:07:37
 # Script: tests/tool/prism_check.sh; proxy: http://127.0.0.1:4010; spec: spec/openapi.yaml
 # Upstream: the API with --db=:memory: and the test catalog (fresh start)
 [01] NEG-24  getCurrentSession       GET    /current-session -> 404
@@ -52,69 +52,84 @@
      sl-violations: none
 [18] POS-04  getExercise             GET    /exercises/ex-1 -> 200
      sl-violations: none
-[19] POS-05  getExercise             GET    /exercises/custom-f4af52a88a8cdd4e99188acc2281f9de -> 200
+[19] POS-05  getExercise             GET    /exercises/custom-16283a8987db14ea7a1a20e2f9427f2c -> 200
      sl-violations: none
-[20] POS-07  updateExercise          PUT    /exercises/custom-f4af52a88a8cdd4e99188acc2281f9de -> 200
+[20] POS-07  updateExercise          PUT    /exercises/custom-16283a8987db14ea7a1a20e2f9427f2c -> 200
      sl-violations: none
 [21] POS-08  getDictionary           GET    /dictionaries/training-levels -> 200
      sl-violations: none
-[22] POS-09  generatePlan            POST   /plan-generations -> 201
+[22] POS-37  listExercises           GET    /exercises?nameContains=%D1%83%D0%B4%D0%B0%D1%80 -> 200
      sl-violations: none
-[23] POS-11  getOpenPlan             GET    /open-plans/open-688bb0650b63de3d21585aac22c9e8d6 -> 200
+[23] POS-38  listExercises           GET    /exercises?nameContains=%D0%A3%D0%94%D0%90%D0%A0 -> 200
      sl-violations: none
-[24] POS-13  renameOpenPlan          PATCH  /open-plans/open-688bb0650b63de3d21585aac22c9e8d6 -> 200
+[24] POS-39  listExercises           GET    /exercises?nameContains=%20%20%D1%83%D0%B4%D0%B0%D1%80%20%20 -> 200
      sl-violations: none
-[25] POS-14  addOpenPlanItem         POST   /open-plans/open-688bb0650b63de3d21585aac22c9e8d6/items -> 201
+[25] POS-40  listExercises           GET    /exercises?nameContains=%D1%83%D0%B4%D0%B0%D1%80&type=combination -> 200
      sl-violations: none
-[26] POS-15  replaceOpenPlanItem     PUT    /open-plans/open-688bb0650b63de3d21585aac22c9e8d6/items/item-5ae272c2af84d50985774c0558b4e949 -> 200
+[26] POS-41  listExercises           GET    /exercises?nameContains=%D0%B0%D0%BF%D0%B5%D1%80%D0%BA%D0%BE%D1%82 -> 200
      sl-violations: none
-[27] POS-16  updateOpenPlanItem      PATCH  /open-plans/open-688bb0650b63de3d21585aac22c9e8d6/items/item-5ae272c2af84d50985774c0558b4e949 -> 200
+[27] POS-42  listExercises           GET    /exercises?nameContains=%20%20%20 -> 200
      sl-violations: none
-[28] POS-17  updateOpenPlanItem      PATCH  /open-plans/open-688bb0650b63de3d21585aac22c9e8d6/items/item-5ae272c2af84d50985774c0558b4e949 -> 200
+[28] NEG-35  listExercises           GET    /exercises?nameContains=%D1%83%D0%B4%D0%B0%D1%80&level=level-unknown -> 422
      sl-violations: none
-[29] POS-18  deleteOpenPlanItem      DELETE /open-plans/open-688bb0650b63de3d21585aac22c9e8d6/items/item-5ae272c2af84d50985774c0558b4e949 -> 200
+     code: UNKNOWN_DICTIONARY_VALUE
+[29] POS-09  generatePlan            POST   /plan-generations -> 201
      sl-violations: none
-[30] POS-20  listTrainingPlans       GET    /training-plans -> 200
+[30] POS-11  getOpenPlan             GET    /open-plans/open-13b64648057c72cda6dadcc78834e8fa -> 200
      sl-violations: none
-[31] POS-21  saveNewTrainingPlan     POST   /training-plans -> 201
+[31] POS-13  renameOpenPlan          PATCH  /open-plans/open-13b64648057c72cda6dadcc78834e8fa -> 200
      sl-violations: none
-[32] POS-19  listTrainingPlans       GET    /training-plans -> 200
+[32] POS-14  addOpenPlanItem         POST   /open-plans/open-13b64648057c72cda6dadcc78834e8fa/items -> 201
      sl-violations: none
-[33] POS-22  getTrainingPlan         GET    /training-plans/plan-2cd4aa77b0722dfbf8d90f11f901fd05 -> 200
+[33] POS-15  replaceOpenPlanItem     PUT    /open-plans/open-13b64648057c72cda6dadcc78834e8fa/items/item-eefde16cac74c30e6107b6bab27fd64b -> 200
      sl-violations: none
-[34] POS-10  openSavedPlan           POST   /open-plans -> 201
+[34] POS-16  updateOpenPlanItem      PATCH  /open-plans/open-13b64648057c72cda6dadcc78834e8fa/items/item-eefde16cac74c30e6107b6bab27fd64b -> 200
      sl-violations: none
-[35] POS-12  getOpenPlan             GET    /open-plans/open-d8b57f44fe1f3dd40d43978f6c5ce431 -> 200
+[35] POS-17  updateOpenPlanItem      PATCH  /open-plans/open-13b64648057c72cda6dadcc78834e8fa/items/item-eefde16cac74c30e6107b6bab27fd64b -> 200
      sl-violations: none
-[36] POS-23  overwriteTrainingPlan   PUT    /training-plans/plan-2cd4aa77b0722dfbf8d90f11f901fd05 -> 200
+[36] POS-18  deleteOpenPlanItem      DELETE /open-plans/open-13b64648057c72cda6dadcc78834e8fa/items/item-eefde16cac74c30e6107b6bab27fd64b -> 200
      sl-violations: none
-[37] POS-25  startCurrentSession     POST   /current-session -> 201
+[37] POS-20  listTrainingPlans       GET    /training-plans -> 200
      sl-violations: none
-[38] POS-26  getCurrentSession       GET    /current-session -> 200
+[38] POS-21  saveNewTrainingPlan     POST   /training-plans -> 201
      sl-violations: none
-[39] POS-27  updateExecutedPlanItem  PATCH  /current-session/executed-plan/items/item-8bc0f0b5fea786d76dfb6004c5665b26 -> 200
+[39] POS-19  listTrainingPlans       GET    /training-plans -> 200
      sl-violations: none
-[40] POS-28  deleteExecutedPlanItem  DELETE /current-session/executed-plan/items/item-ad9d75034a3522147890211adb5c41ef -> 200
+[40] POS-22  getTrainingPlan         GET    /training-plans/plan-adec39e09113e0d18a11dff4a2e43a45 -> 200
      sl-violations: none
-[41] POS-30  completeTraining        POST   /completed-trainings -> 201
+[41] POS-10  openSavedPlan           POST   /open-plans -> 201
      sl-violations: none
-[42] POS-32  listCompletedTrainings  GET    /completed-trainings -> 200
+[42] POS-12  getOpenPlan             GET    /open-plans/open-94cb68e80488c784bafef85f99d62e5e -> 200
      sl-violations: none
-[43] POS-34  getCompletedTraining    GET    /completed-trainings/training-132ba1c0509c2fe73905f695470d955e -> 200
+[43] POS-23  overwriteTrainingPlan   PUT    /training-plans/plan-adec39e09113e0d18a11dff4a2e43a45 -> 200
      sl-violations: none
-[44] POS-35  getAnalytics            GET    /analytics?from=2026-10-16&to=2026-11-14 -> 200
+[44] POS-25  startCurrentSession     POST   /current-session -> 201
      sl-violations: none
-[45] POS-35  getAnalytics            GET    /analytics -> 200
+[45] POS-26  getCurrentSession       GET    /current-session -> 200
      sl-violations: none
-[46] POS-25  startCurrentSession     POST   /current-session -> 201
+[46] POS-27  updateExecutedPlanItem  PATCH  /current-session/executed-plan/items/item-391f33656b700bc4e8ab967fedf5c39b -> 200
      sl-violations: none
-[47] POS-29  abortCurrentSession     DELETE /current-session -> 204
+[47] POS-28  deleteExecutedPlanItem  DELETE /current-session/executed-plan/items/item-a142e1fb128e22f58e69dcd491f4b30e -> 200
      sl-violations: none
-[48] POS-24  deleteTrainingPlan      DELETE /training-plans/plan-2cd4aa77b0722dfbf8d90f11f901fd05 -> 204
+[48] POS-30  completeTraining        POST   /completed-trainings -> 201
+     sl-violations: none
+[49] POS-32  listCompletedTrainings  GET    /completed-trainings -> 200
+     sl-violations: none
+[50] POS-34  getCompletedTraining    GET    /completed-trainings/training-af27785b3455278cf866d05dba59ac97 -> 200
+     sl-violations: none
+[51] POS-35  getAnalytics            GET    /analytics?from=2026-10-16&to=2026-11-14 -> 200
+     sl-violations: none
+[52] POS-35  getAnalytics            GET    /analytics -> 200
+     sl-violations: none
+[53] POS-25  startCurrentSession     POST   /current-session -> 201
+     sl-violations: none
+[54] POS-29  abortCurrentSession     DELETE /current-session -> 204
+     sl-violations: none
+[55] POS-24  deleteTrainingPlan      DELETE /training-plans/plan-adec39e09113e0d18a11dff4a2e43a45 -> 204
      sl-violations: none
 
 # Summary
-calls: 48
+calls: 55
 operations covered: 27 of 27
 operations not called: none
 status mismatches: 0
