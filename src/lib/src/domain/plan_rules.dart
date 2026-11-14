@@ -23,12 +23,27 @@ int planDurationSeconds(Iterable<PlanStage> stages) => stages.fold(
       s.items.fold(sum, (acc, i) => acc + i.estimatedDurationSeconds),
 );
 
-/// SRS §5.5: `D = h × 3600 + m × 60`.
-int targetDurationSeconds(TargetDuration t) => t.hours * 3600 + t.minutes * 60;
+const int secondsPerHour = 3600;
+const int secondsPerMinute = 60;
 
-/// SRS §5.6: `0,9 × D ≤ T ≤ 1,1 × D`, bounds included, in whole seconds.
-DurationTolerance durationTolerance(int d) =>
-    DurationTolerance(minSeconds: (9 * d + 9) ~/ 10, maxSeconds: 11 * d ~/ 10);
+/// SRS §5.5: the largest number of minutes of a target duration.
+const int maxTargetMinutes = 59;
+
+/// SRS §5.6: the tolerance bounds `0,9` and `1,1` in tenths of D.
+const int _lowerBoundTenths = 9;
+const int _upperBoundTenths = 11;
+const int _tenths = 10;
+
+/// SRS §5.5: `D = h × 3600 + m × 60`.
+int targetDurationSeconds(TargetDuration t) =>
+    t.hours * secondsPerHour + t.minutes * secondsPerMinute;
+
+/// SRS §5.6: `0,9 × D ≤ T ≤ 1,1 × D`, bounds included, in whole seconds
+/// (the lower bound rounded up, the upper one down).
+DurationTolerance durationTolerance(int d) => DurationTolerance(
+  minSeconds: (_lowerBoundTenths * d + _tenths - 1) ~/ _tenths,
+  maxSeconds: _upperBoundTenths * d ~/ _tenths,
+);
 
 /// T-36, AC-F-005, SRS §5.5: hours ≥ 0, minutes 0…59, total > 0 — checked
 /// before the search (BDD-006). Structural rules are checked while decoding.
@@ -50,7 +65,7 @@ List<ErrorDetail> validateGenerationParameters(GenerationParameters p) {
         constraint: Constraint.minimum,
       ),
     );
-  } else if (t.minutes > 59) {
+  } else if (t.minutes > maxTargetMinutes) {
     details.add(
       const ErrorDetail(
         field: 'targetDuration.minutes',
@@ -180,19 +195,25 @@ List<PlanWarning> planWarnings({
       foreign('sets', input.sets);
       foreign('repetitions', input.repetitions);
       final old = current is TimeParameters ? current : null;
-      final n = value('rounds', input.rounds, old?.rounds, 1, f.rounds);
+      final n = value(
+        'rounds',
+        input.rounds,
+        old?.rounds,
+        minCountValue,
+        f.rounds,
+      );
       final t = value(
         'intervalSeconds',
         input.intervalSeconds,
         old?.intervalSeconds,
-        1,
+        minCountValue,
         f.intervalSeconds,
       );
       final r = value(
         'restSeconds',
         input.restSeconds,
         old?.restSeconds,
-        0,
+        minRestSeconds,
         f.restSeconds,
       );
       if (details.isNotEmpty) return (null, details);
@@ -204,19 +225,19 @@ List<PlanWarning> planWarnings({
       foreign('rounds', input.rounds);
       foreign('intervalSeconds', input.intervalSeconds);
       final old = current is RepetitionsParameters ? current : null;
-      final n = value('sets', input.sets, old?.sets, 1, f.sets);
+      final n = value('sets', input.sets, old?.sets, minCountValue, f.sets);
       final p = value(
         'repetitions',
         input.repetitions,
         old?.repetitions,
-        1,
+        minCountValue,
         f.repetitions,
       );
       final r = value(
         'restSeconds',
         input.restSeconds,
         old?.restSeconds,
-        0,
+        minRestSeconds,
         f.restSeconds,
       );
       if (details.isNotEmpty) return (null, details);

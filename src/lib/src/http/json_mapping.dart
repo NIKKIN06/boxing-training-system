@@ -266,7 +266,7 @@ final class RequestDecoder {
       final variantId = r.string(o, 'variantId');
       final stage = r.enumValue(o, 'stage', Stage.values);
       final (_, position) = r.optionalInteger(o, 'position');
-      r.atLeast(position, 0, 'position');
+      r.atLeast(position, _minPosition, 'position');
       final parameters = r.field(o, 'parameters', (v, p) => _itemParameters(r, v, p));
       if (exerciseId == null ||
           variantId == null ||
@@ -324,7 +324,7 @@ final class RequestDecoder {
           ? r.enumValue(o, 'stage', Stage.values)
           : null;
       final (_, position) = r.optionalInteger(o, 'position');
-      r.atLeast(position, 0, 'position');
+      r.atLeast(position, _minPosition, 'position');
       return PlanItemPatch(
         parameters: parameters,
         stage: stage,
@@ -392,7 +392,7 @@ final class RequestDecoder {
       final values = query[name];
       if (values == null || values.isEmpty) return null;
       final raw = values.first;
-      final m = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$').firstMatch(raw);
+      final m = _datePattern.firstMatch(raw);
       if (m == null) throw const DomainError(ErrorCode.badRequest);
       final d = LocalDate(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
       final check = DateTime.utc(d.year, d.month, d.day);
@@ -404,6 +404,12 @@ final class RequestDecoder {
 
     return (from: date('from'), to: date('to'));
   }
+
+  /// `format: date` — `YYYY-MM-DD`.
+  static final RegExp _datePattern = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
+
+  /// Schema `minimum: 0` of `position`.
+  static const int _minPosition = 0;
 }
 
 /// Success responses with status codes and `Location` headers of the contract.
@@ -521,21 +527,25 @@ final class ResponseEncoder {
   Response noContent() => Response(204);
 }
 
+/// `Content-Type` of every JSON response.
+const String jsonContentType = 'application/json; charset=utf-8';
+
 /// A JSON response; [location] is the URI of a created resource (201).
 Response jsonResponse(int status, Object? body, {String? location}) => Response(
   status,
   body: jsonEncode(body),
-  headers: {
-    'content-type': 'application/json; charset=utf-8',
-    'location': ?location,
-  },
+  headers: {'content-type': jsonContentType, 'location': ?location},
 );
+
+/// The only operation that answers NO_CURRENT_SESSION with 409.
+const String _noCurrentSessionConflictOperation = 'completeTraining';
 
 /// HTTP status of an error code of [operationId] as declared in
 /// spec/openapi.yaml for every code of `Error.code`. NO_CURRENT_SESSION is
 /// 409 for completeTraining (`NoCurrentSessionConflict`) and 404 elsewhere.
 int errorStatus(ErrorCode code, String operationId) => switch (code) {
-  ErrorCode.noCurrentSession => operationId == 'completeTraining' ? 409 : 404,
+  ErrorCode.noCurrentSession =>
+    operationId == _noCurrentSessionConflictOperation ? 409 : 404,
   ErrorCode.sessionAlreadyActive => 409,
   ErrorCode.executedPlanEmpty ||
   ErrorCode.invalidPeriod ||

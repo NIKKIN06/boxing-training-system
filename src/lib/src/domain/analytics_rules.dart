@@ -18,13 +18,19 @@ LocalDate addDays(LocalDate d, int days) {
   return LocalDate(t.year, t.month, t.day);
 }
 
+/// D-21: the default period — today and the previous days, 30 days in all.
+const int defaultPeriodDays = 30;
+
 /// AC-F-015, D-21, D-35: the period of [from] and [to] for [today] (the local
 /// date of the device). Both absent → today and the 29 previous days; only
 /// one of them → INVALID_PERIOD; `from` after `to` → INVALID_PERIOD; `to`
 /// after today → END_DATE_IN_FUTURE. The length is not limited (D-21).
 AnalyticsPeriod resolvePeriod(LocalDate? from, LocalDate? to, LocalDate today) {
   if (from == null && to == null) {
-    return AnalyticsPeriod(from: addDays(today, -29), to: today);
+    return AnalyticsPeriod(
+      from: addDays(today, -(defaultPeriodDays - 1)),
+      to: today,
+    );
   }
   if (from == null || to == null) {
     throw DomainError(

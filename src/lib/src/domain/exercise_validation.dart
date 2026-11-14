@@ -24,15 +24,20 @@ List<ErrorDetail> validateExerciseInput(ExerciseInput input) {
     switch (input.variants[i].fields) {
       case final TimeVariantFields f:
         // SRS §5.3: rounds and interval are positive, rest is non-negative.
-        _range(details, '$path.rounds', f.rounds, 1);
-        _range(details, '$path.intervalSeconds', f.intervalSeconds, 1);
-        _range(details, '$path.restSeconds', f.restSeconds, 0);
+        _range(details, '$path.rounds', f.rounds, minCountValue);
+        _range(
+          details,
+          '$path.intervalSeconds',
+          f.intervalSeconds,
+          minCountValue,
+        );
+        _range(details, '$path.restSeconds', f.restSeconds, minRestSeconds);
       case final RepetitionsVariantFields f:
         // SRS §5.3, D-08: sets, repetitions and `e` are positive.
-        _range(details, '$path.sets', f.sets, 1);
-        _range(details, '$path.repetitions', f.repetitions, 1);
-        _range(details, '$path.restSeconds', f.restSeconds, 0);
-        if (f.repetitionTimeSeconds < 1) {
+        _range(details, '$path.sets', f.sets, minCountValue);
+        _range(details, '$path.repetitions', f.repetitions, minCountValue);
+        _range(details, '$path.restSeconds', f.restSeconds, minRestSeconds);
+        if (f.repetitionTimeSeconds < minCountValue) {
           add('$path.repetitionTimeSeconds', Constraint.minimum);
         }
     }

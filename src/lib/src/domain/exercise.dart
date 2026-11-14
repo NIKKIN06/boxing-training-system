@@ -17,6 +17,13 @@ final class ParameterRange {
   final int recommended;
 }
 
+/// SRS §5.3, D-08: the smallest value of rounds, intervals, sets,
+/// repetitions and `e`.
+const int minCountValue = 1;
+
+/// SRS §5.3: the smallest rest between rounds or sets.
+const int minRestSeconds = 0;
+
 /// Mode-specific fields of an execution variant.
 sealed class VariantFields {
   const VariantFields({required this.executionMeans, required this.equipment});

@@ -38,11 +38,17 @@ final class RandomIdGenerator implements IdGenerator {
     EntityKind.completedTraining: 'training',
   };
 
+  /// 16 random bytes → 32 hex digits.
+  static const int _idBytes = 16;
+  static const int _byteValues = 256;
+
   @override
   String newId(EntityKind kind) {
     final buffer = StringBuffer('${prefixes[kind]}-');
-    for (var i = 0; i < 16; i++) {
-      buffer.write(_random.nextInt(256).toRadixString(16).padLeft(2, '0'));
+    for (var i = 0; i < _idBytes; i++) {
+      buffer.write(
+        _random.nextInt(_byteValues).toRadixString(16).padLeft(2, '0'),
+      );
     }
     return buffer.toString();
   }
