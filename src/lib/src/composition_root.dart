@@ -24,6 +24,7 @@ import 'data/system_ports.dart';
 import 'http/middleware.dart';
 import 'http/routes.dart';
 import 'logging/app_logging.dart';
+import 'ports/repositories.dart';
 import 'ports/system_ports.dart';
 
 /// Composed application: an HTTP handler and its resources.
@@ -74,15 +75,7 @@ App buildApp(
   final usedRandom = random ?? SystemRandomSource();
   final usedIds = ids ?? RandomIdGenerator();
 
-  final QueryExecutor executor;
-  if (config.isInMemoryDatabase) {
-    executor = NativeDatabase.memory();
-  } else {
-    final file = File(config.databasePath);
-    file.parent.createSync(recursive: true);
-    executor = NativeDatabase.createInBackground(file);
-  }
-  final database = AppDatabase(executor);
+  final database = AppDatabase(_openDatabase(config));
 
   final exercises = DriftExerciseRepository(database);
   final trainingPlans = DriftTrainingPlanRepository(database);
@@ -108,41 +101,16 @@ App buildApp(
     ),
   );
 
-  final services = Services(
+  final services = _buildServices(
     catalog: catalog,
-    generation: PlanGenerationService(
-      exercises: exercises,
-      openPlans: openPlans,
-      clock: usedClock,
-      random: usedRandom,
-      ids: usedIds,
-    ),
-    openPlans: OpenPlanService(
-      exercises: exercises,
-      trainingPlans: trainingPlans,
-      openPlans: openPlans,
-      ids: usedIds,
-    ),
-    trainingPlans: TrainingPlanService(
-      trainingPlans: trainingPlans,
-      openPlans: openPlans,
-      clock: usedClock,
-      ids: usedIds,
-    ),
-    currentSession: CurrentSessionService(
-      openPlans: openPlans,
-      session: session,
-      clock: usedClock,
-    ),
-    completedTrainings: CompletedTrainingService(
-      trainings: completedTrainings,
-      session: session,
-      ids: usedIds,
-    ),
-    analytics: AnalyticsService(
-      trainings: completedTrainings,
-      clock: usedClock,
-    ),
+    exercises: exercises,
+    trainingPlans: trainingPlans,
+    completedTrainings: completedTrainings,
+    openPlans: openPlans,
+    session: session,
+    clock: usedClock,
+    random: usedRandom,
+    ids: usedIds,
   );
 
   final handler = const Pipeline()
@@ -157,3 +125,57 @@ App buildApp(
   );
   return App._(handler, database, initialized);
 }
+
+/// SQLite in memory for `--db=:memory:`, otherwise a file in a background
+/// isolate; the directory of the file is created when missing.
+QueryExecutor _openDatabase(AppConfig config) {
+  if (config.isInMemoryDatabase) return NativeDatabase.memory();
+  final file = File(config.databasePath);
+  file.parent.createSync(recursive: true);
+  return NativeDatabase.createInBackground(file);
+}
+
+/// The application services over the chosen storage and system ports.
+Services _buildServices({
+  required CatalogService catalog,
+  required ExerciseRepository exercises,
+  required TrainingPlanRepository trainingPlans,
+  required CompletedTrainingRepository completedTrainings,
+  required OpenPlanStore openPlans,
+  required CurrentSessionStore session,
+  required Clock clock,
+  required RandomSource random,
+  required IdGenerator ids,
+}) => Services(
+  catalog: catalog,
+  generation: PlanGenerationService(
+    exercises: exercises,
+    openPlans: openPlans,
+    clock: clock,
+    random: random,
+    ids: ids,
+  ),
+  openPlans: OpenPlanService(
+    exercises: exercises,
+    trainingPlans: trainingPlans,
+    openPlans: openPlans,
+    ids: ids,
+  ),
+  trainingPlans: TrainingPlanService(
+    trainingPlans: trainingPlans,
+    openPlans: openPlans,
+    clock: clock,
+    ids: ids,
+  ),
+  currentSession: CurrentSessionService(
+    openPlans: openPlans,
+    session: session,
+    clock: clock,
+  ),
+  completedTrainings: CompletedTrainingService(
+    trainings: completedTrainings,
+    session: session,
+    ids: ids,
+  ),
+  analytics: AnalyticsService(trainings: completedTrainings, clock: clock),
+);

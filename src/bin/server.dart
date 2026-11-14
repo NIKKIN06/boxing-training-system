@@ -32,15 +32,24 @@ Future<void> main(List<String> args) async {
   final log = Logger(LogNames.server);
   log.info('starting pid=$pid logFile=${fileSink.file!.path}');
 
+  Future<void> closeSinks() async {
+    await consoleSink.close();
+    await fileSink.close();
+  }
+
+  /// A failed start: the application (if built) and the sinks are closed.
+  Future<void> abort([App? app]) async {
+    await app?.close();
+    await closeSinks();
+    exitCode = 1;
+  }
+
   final App app;
   try {
     app = buildApp(config);
   } catch (error, stackTrace) {
     log.severe('startup failed', safeErrorDescription(error), stackTrace);
-    await consoleSink.close();
-    await fileSink.close();
-    exitCode = 1;
-    return;
+    return abort();
   }
 
   // T-32: requests are served only after the catalog is initialized; the
@@ -49,11 +58,7 @@ Future<void> main(List<String> args) async {
     await app.initialized;
   } on Object {
     log.severe('startup aborted reason=catalog-initialization-failed');
-    await app.close();
-    await consoleSink.close();
-    await fileSink.close();
-    exitCode = 1;
-    return;
+    return abort(app);
   }
 
   final HttpServer server;
@@ -61,11 +66,7 @@ Future<void> main(List<String> args) async {
     server = await shelf_io.serve(app.handler, AppConfig.host, config.port);
   } catch (error, stackTrace) {
     log.severe('startup failed', safeErrorDescription(error), stackTrace);
-    await app.close();
-    await consoleSink.close();
-    await fileSink.close();
-    exitCode = 1;
-    return;
+    return abort(app);
   }
   log.info('listening host=${AppConfig.host} port=${server.port}');
 
@@ -86,6 +87,5 @@ Future<void> main(List<String> args) async {
   await server.close(force: true);
   await app.close();
   log.info('stopped');
-  await consoleSink.close();
-  await fileSink.close();
+  await closeSinks();
 }

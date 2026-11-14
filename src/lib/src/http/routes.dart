@@ -71,7 +71,23 @@ Router buildRouter(
   RequestDecoder decode = const RequestDecoder(),
   ResponseEncoder encode = const ResponseEncoder(),
 }) {
-  final router = Router();
+  final routes = _Routes(Router(), s, decode, encode)
+    ..catalog()
+    ..plans()
+    ..trainingPlans()
+    ..currentSession()
+    ..completedTrainings();
+  return routes.router;
+}
+
+/// Registers the routes by resource group, in the order of spec/openapi.yaml.
+final class _Routes {
+  _Routes(this.router, this.s, this.decode, this.encode);
+
+  final Router router;
+  final Services s;
+  final RequestDecoder decode;
+  final ResponseEncoder encode;
 
   void route(
     String method,
@@ -82,196 +98,221 @@ Router buildRouter(
     router.add(method, path, operation(operationId, handler));
   }
 
-  String p(Request request, String name) => request.params[name]!;
+  static String p(Request request, String name) => request.params[name]!;
 
-  // exercises, variants (REQ-F-001…REQ-F-004)
-  route('GET', '/exercises', 'listExercises', (r) async {
-    final filter = decode.exerciseFilter(r.url.queryParametersAll);
-    return encode.exerciseList(await s.catalog.listExercises(filter));
-  });
-  route('POST', '/exercises', 'createExercise', (r) async {
-    final input = decode.exerciseInput(await r.readAsString());
-    return encode.exerciseCreated(await s.catalog.createExercise(input));
-  });
-  route('GET', '/exercises/<exerciseId>', 'getExercise', (r) async {
-    return encode.exercise(await s.catalog.getExercise(p(r, 'exerciseId')));
-  });
-  route('PUT', '/exercises/<exerciseId>', 'updateExercise', (r) async {
-    final input = decode.exerciseInput(await r.readAsString());
-    return encode.exercise(
-      await s.catalog.updateExercise(p(r, 'exerciseId'), input),
-    );
-  });
+  /// exercises, variants (REQ-F-001…REQ-F-004); dictionaries (SRS §4.4).
+  void catalog() {
+    route('GET', '/exercises', 'listExercises', (r) async {
+      final filter = decode.exerciseFilter(r.url.queryParametersAll);
+      return encode.exerciseList(await s.catalog.listExercises(filter));
+    });
+    route('POST', '/exercises', 'createExercise', (r) async {
+      final input = decode.exerciseInput(await r.readAsString());
+      return encode.exerciseCreated(await s.catalog.createExercise(input));
+    });
+    route('GET', '/exercises/<exerciseId>', 'getExercise', (r) async {
+      return encode.exercise(await s.catalog.getExercise(p(r, 'exerciseId')));
+    });
+    route('PUT', '/exercises/<exerciseId>', 'updateExercise', (r) async {
+      final input = decode.exerciseInput(await r.readAsString());
+      return encode.exercise(
+        await s.catalog.updateExercise(p(r, 'exerciseId'), input),
+      );
+    });
+    route('GET', '/dictionaries/<dictionaryName>', 'getDictionary', (r) async {
+      final name = decode.dictionaryName(p(r, 'dictionaryName'));
+      return encode.dictionary(await s.catalog.getDictionary(name));
+    });
+  }
 
-  // dictionaries (SRS §4.4)
-  route('GET', '/dictionaries/<dictionaryName>', 'getDictionary', (r) async {
-    final name = decode.dictionaryName(p(r, 'dictionaryName'));
-    return encode.dictionary(await s.catalog.getDictionary(name));
-  });
-
-  // plan-generations (REQ-F-005…REQ-F-009)
-  route('POST', '/plan-generations', 'generatePlan', (r) async {
-    final params = decode.generationParameters(await r.readAsString());
-    return encode.openPlanCreated(await s.generation.generatePlan(params));
-  });
-
-  // open-plans, items (REQ-F-010, REQ-F-011)
-  route('POST', '/open-plans', 'openSavedPlan', (r) async {
-    final sourcePlanId = decode.sourcePlanId(await r.readAsString());
-    return encode.openPlanCreated(
-      await s.openPlans.openSavedPlan(sourcePlanId),
-    );
-  });
-  route('GET', '/open-plans/<openPlanId>', 'getOpenPlan', (r) async {
-    return encode.openPlan(await s.openPlans.getOpenPlan(p(r, 'openPlanId')));
-  });
-  route('PATCH', '/open-plans/<openPlanId>', 'renameOpenPlan', (r) async {
-    final name = decode.planName(await r.readAsString());
-    return encode.openPlan(
-      await s.openPlans.renameOpenPlan(p(r, 'openPlanId'), name),
-    );
-  });
-  route('POST', '/open-plans/<openPlanId>/items', 'addOpenPlanItem', (r) async {
-    final item = decode.planItemCreate(await r.readAsString());
-    final (plan, itemId) = await s.openPlans.addOpenPlanItem(
-      p(r, 'openPlanId'),
-      item,
-    );
-    return encode.openPlanItemCreated(plan, itemId);
-  });
-  route(
-    'PUT',
-    '/open-plans/<openPlanId>/items/<itemId>',
-    'replaceOpenPlanItem',
-    (r) async {
-      final item = decode.planItemReplace(await r.readAsString());
+  /// plan-generations (REQ-F-005…REQ-F-009); open-plans, items (REQ-F-010,
+  /// REQ-F-011).
+  void plans() {
+    route('POST', '/plan-generations', 'generatePlan', (r) async {
+      final params = decode.generationParameters(await r.readAsString());
+      return encode.openPlanCreated(await s.generation.generatePlan(params));
+    });
+    route('POST', '/open-plans', 'openSavedPlan', (r) async {
+      final sourcePlanId = decode.sourcePlanId(await r.readAsString());
+      return encode.openPlanCreated(
+        await s.openPlans.openSavedPlan(sourcePlanId),
+      );
+    });
+    route('GET', '/open-plans/<openPlanId>', 'getOpenPlan', (r) async {
+      return encode.openPlan(await s.openPlans.getOpenPlan(p(r, 'openPlanId')));
+    });
+    route('PATCH', '/open-plans/<openPlanId>', 'renameOpenPlan', (r) async {
+      final name = decode.planName(await r.readAsString());
       return encode.openPlan(
-        await s.openPlans.replaceOpenPlanItem(
+        await s.openPlans.renameOpenPlan(p(r, 'openPlanId'), name),
+      );
+    });
+    route(
+      'POST',
+      '/open-plans/<openPlanId>/items',
+      'addOpenPlanItem',
+      (r) async {
+        final item = decode.planItemCreate(await r.readAsString());
+        final (plan, itemId) = await s.openPlans.addOpenPlanItem(
           p(r, 'openPlanId'),
-          p(r, 'itemId'),
           item,
-        ),
-      );
-    },
-  );
-  route(
-    'PATCH',
-    '/open-plans/<openPlanId>/items/<itemId>',
-    'updateOpenPlanItem',
-    (r) async {
-      final patch = decode.planItemPatch(await r.readAsString());
-      return encode.openPlan(
-        await s.openPlans.updateOpenPlanItem(
-          p(r, 'openPlanId'),
-          p(r, 'itemId'),
-          patch,
-        ),
-      );
-    },
-  );
-  route(
-    'DELETE',
-    '/open-plans/<openPlanId>/items/<itemId>',
-    'deleteOpenPlanItem',
-    (r) async {
-      return encode.openPlan(
-        await s.openPlans.deleteOpenPlanItem(
-          p(r, 'openPlanId'),
-          p(r, 'itemId'),
-        ),
-      );
-    },
-  );
+        );
+        return encode.openPlanItemCreated(plan, itemId);
+      },
+    );
+    route(
+      'PUT',
+      '/open-plans/<openPlanId>/items/<itemId>',
+      'replaceOpenPlanItem',
+      (r) async {
+        final item = decode.planItemReplace(await r.readAsString());
+        return encode.openPlan(
+          await s.openPlans.replaceOpenPlanItem(
+            p(r, 'openPlanId'),
+            p(r, 'itemId'),
+            item,
+          ),
+        );
+      },
+    );
+    route(
+      'PATCH',
+      '/open-plans/<openPlanId>/items/<itemId>',
+      'updateOpenPlanItem',
+      (r) async {
+        final patch = decode.planItemPatch(await r.readAsString());
+        return encode.openPlan(
+          await s.openPlans.updateOpenPlanItem(
+            p(r, 'openPlanId'),
+            p(r, 'itemId'),
+            patch,
+          ),
+        );
+      },
+    );
+    route(
+      'DELETE',
+      '/open-plans/<openPlanId>/items/<itemId>',
+      'deleteOpenPlanItem',
+      (r) async {
+        return encode.openPlan(
+          await s.openPlans.deleteOpenPlanItem(
+            p(r, 'openPlanId'),
+            p(r, 'itemId'),
+          ),
+        );
+      },
+    );
+  }
 
-  // training-plans (REQ-F-011)
-  route('GET', '/training-plans', 'listTrainingPlans', (r) async {
-    return encode.trainingPlanList(await s.trainingPlans.listTrainingPlans());
-  });
-  route('POST', '/training-plans', 'saveNewTrainingPlan', (r) async {
-    final openPlanId = decode.openPlanId(await r.readAsString());
-    return encode.savedPlanCreated(
-      await s.trainingPlans.saveNewTrainingPlan(openPlanId),
-    );
-  });
-  route('GET', '/training-plans/<planId>', 'getTrainingPlan', (r) async {
-    return encode.savedPlan(
-      await s.trainingPlans.getTrainingPlan(p(r, 'planId')),
-    );
-  });
-  route('PUT', '/training-plans/<planId>', 'overwriteTrainingPlan', (r) async {
-    final openPlanId = decode.openPlanId(await r.readAsString());
-    return encode.savedPlan(
-      await s.trainingPlans.overwriteTrainingPlan(p(r, 'planId'), openPlanId),
-    );
-  });
-  route('DELETE', '/training-plans/<planId>', 'deleteTrainingPlan', (r) async {
-    await s.trainingPlans.deleteTrainingPlan(p(r, 'planId'));
-    return encode.noContent();
-  });
-
-  // current-session, executed-plan (REQ-F-012, REQ-F-013)
-  route('POST', '/current-session', 'startCurrentSession', (r) async {
-    final openPlanId = decode.openPlanId(await r.readAsString());
-    return encode.currentSessionCreated(
-      await s.currentSession.startCurrentSession(openPlanId),
-    );
-  });
-  route('GET', '/current-session', 'getCurrentSession', (r) async {
-    return encode.currentSession(await s.currentSession.getCurrentSession());
-  });
-  route('DELETE', '/current-session', 'abortCurrentSession', (r) async {
-    await s.currentSession.abortCurrentSession();
-    return encode.noContent();
-  });
-  route(
-    'PATCH',
-    '/current-session/executed-plan/items/<itemId>',
-    'updateExecutedPlanItem',
-    (r) async {
-      final params = decode.executedItemParameters(await r.readAsString());
-      return encode.currentSession(
-        await s.currentSession.updateExecutedPlanItem(p(r, 'itemId'), params),
+  /// training-plans (REQ-F-011).
+  void trainingPlans() {
+    route('GET', '/training-plans', 'listTrainingPlans', (r) async {
+      return encode.trainingPlanList(await s.trainingPlans.listTrainingPlans());
+    });
+    route('POST', '/training-plans', 'saveNewTrainingPlan', (r) async {
+      final openPlanId = decode.openPlanId(await r.readAsString());
+      return encode.savedPlanCreated(
+        await s.trainingPlans.saveNewTrainingPlan(openPlanId),
       );
-    },
-  );
-  route(
-    'DELETE',
-    '/current-session/executed-plan/items/<itemId>',
-    'deleteExecutedPlanItem',
-    (r) async {
-      return encode.currentSession(
-        await s.currentSession.deleteExecutedPlanItem(p(r, 'itemId')),
+    });
+    route('GET', '/training-plans/<planId>', 'getTrainingPlan', (r) async {
+      return encode.savedPlan(
+        await s.trainingPlans.getTrainingPlan(p(r, 'planId')),
       );
-    },
-  );
+    });
+    route(
+      'PUT',
+      '/training-plans/<planId>',
+      'overwriteTrainingPlan',
+      (r) async {
+        final openPlanId = decode.openPlanId(await r.readAsString());
+        return encode.savedPlan(
+          await s.trainingPlans.overwriteTrainingPlan(
+            p(r, 'planId'),
+            openPlanId,
+          ),
+        );
+      },
+    );
+    route(
+      'DELETE',
+      '/training-plans/<planId>',
+      'deleteTrainingPlan',
+      (r) async {
+        await s.trainingPlans.deleteTrainingPlan(p(r, 'planId'));
+        return encode.noContent();
+      },
+    );
+  }
 
-  // completed-trainings (REQ-F-013, REQ-F-014)
-  route('POST', '/completed-trainings', 'completeTraining', (r) async {
-    final note = decode.trainingNote(await r.readAsString());
-    return encode.completedTrainingCreated(
-      await s.completedTrainings.completeTraining(note),
+  /// current-session, executed-plan (REQ-F-012, REQ-F-013).
+  void currentSession() {
+    route('POST', '/current-session', 'startCurrentSession', (r) async {
+      final openPlanId = decode.openPlanId(await r.readAsString());
+      return encode.currentSessionCreated(
+        await s.currentSession.startCurrentSession(openPlanId),
+      );
+    });
+    route('GET', '/current-session', 'getCurrentSession', (r) async {
+      return encode.currentSession(await s.currentSession.getCurrentSession());
+    });
+    route('DELETE', '/current-session', 'abortCurrentSession', (r) async {
+      await s.currentSession.abortCurrentSession();
+      return encode.noContent();
+    });
+    route(
+      'PATCH',
+      '/current-session/executed-plan/items/<itemId>',
+      'updateExecutedPlanItem',
+      (r) async {
+        final params = decode.executedItemParameters(await r.readAsString());
+        return encode.currentSession(
+          await s.currentSession.updateExecutedPlanItem(p(r, 'itemId'), params),
+        );
+      },
     );
-  });
-  route('GET', '/completed-trainings', 'listCompletedTrainings', (r) async {
-    return encode.completedTrainingList(
-      await s.completedTrainings.listCompletedTrainings(),
+    route(
+      'DELETE',
+      '/current-session/executed-plan/items/<itemId>',
+      'deleteExecutedPlanItem',
+      (r) async {
+        return encode.currentSession(
+          await s.currentSession.deleteExecutedPlanItem(p(r, 'itemId')),
+        );
+      },
     );
-  });
-  route('GET', '/completed-trainings/<trainingId>', 'getCompletedTraining', (
-    r,
-  ) async {
-    return encode.completedTraining(
-      await s.completedTrainings.getCompletedTraining(p(r, 'trainingId')),
-    );
-  });
+  }
 
-  // analytics (REQ-F-015, REQ-F-016)
-  route('GET', '/analytics', 'getAnalytics', (r) async {
-    final period = decode.analyticsPeriod(r.url.queryParametersAll);
-    return encode.analytics(
-      await s.analytics.getAnalytics(from: period.from, to: period.to),
+  /// completed-trainings (REQ-F-013, REQ-F-014); analytics (REQ-F-015,
+  /// REQ-F-016).
+  void completedTrainings() {
+    route('POST', '/completed-trainings', 'completeTraining', (r) async {
+      final note = decode.trainingNote(await r.readAsString());
+      return encode.completedTrainingCreated(
+        await s.completedTrainings.completeTraining(note),
+      );
+    });
+    route('GET', '/completed-trainings', 'listCompletedTrainings', (r) async {
+      return encode.completedTrainingList(
+        await s.completedTrainings.listCompletedTrainings(),
+      );
+    });
+    route(
+      'GET',
+      '/completed-trainings/<trainingId>',
+      'getCompletedTraining',
+      (r) async {
+        return encode.completedTraining(
+          await s.completedTrainings.getCompletedTraining(p(r, 'trainingId')),
+        );
+      },
     );
-  });
-
-  return router;
+    route('GET', '/analytics', 'getAnalytics', (r) async {
+      final period = decode.analyticsPeriod(r.url.queryParametersAll);
+      return encode.analytics(
+        await s.analytics.getAnalytics(from: period.from, to: period.to),
+      );
+    });
+  }
 }
