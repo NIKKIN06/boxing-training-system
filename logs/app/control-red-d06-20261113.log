@@ -1,0 +1,16 @@
+00:00 +0: loading test/exercises/catalog_missing_exercise_test.dart
+00:00 +0: BDD-035 D-06 AC-F-001 getExercise listExercises: ex-1 absent from the new catalog version is kept with deprecated true and is not shown in the catalog
+00:00 +0 -1: BDD-035 D-06 AC-F-001 getExercise listExercises: ex-1 absent from the new catalog version is kept with deprecated true and is not shown in the catalog [E]
+  Expected: true
+    Actual: <false>
+  
+  package:matcher                                         expect
+  test/exercises/catalog_missing_exercise_test.dart 33:5  main.<fn>
+  
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  test/exercises/catalog_missing_exercise_test.dart: BDD-035 D-06 AC-F-001 getExercise listExercises: ex-1 absent from the new catalog version is kept with deprecated true and is not shown in the catalog
+
+Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
+For example, 'dart test --chain-stack-traces'.

@@ -1,0 +1,108 @@
+{
+  "catalogVersion": "fixture-selection-rules",
+  "placeholder": true,
+  "source": "Test fixture for T-19 (AC-F-006, SRS §5.1, D-06): eligible exercises per stage and decoys, each violating exactly one selection rule for the parameters level-beginner / intensity-medium / emphasis-technique / [equipment-bag]. Ranges copied from the contract examples (ex-1, ex-2, ex-4). [TEST] data, not physical load recommendations (D-01, CON-005).",
+  "dictionaries": [
+    {"dictionary": "training-levels", "values": [{"id": "level-beginner", "name": "[TEST] Початковий"}, {"id": "level-intermediate", "name": "[TEST] Середній"}, {"id": "level-advanced", "name": "[TEST] Високий"}]},
+    {"dictionary": "intensities", "values": [{"id": "intensity-low", "name": "[TEST] Низька"}, {"id": "intensity-medium", "name": "[TEST] Середня"}, {"id": "intensity-high", "name": "[TEST] Висока"}]},
+    {"dictionary": "emphases", "values": [{"id": "emphasis-technique", "name": "[TEST] Техніка"}, {"id": "emphasis-endurance", "name": "[TEST] Витривалість"}]},
+    {"dictionary": "equipment", "values": [{"id": "equipment-bag", "name": "[TEST] Мішок"}, {"id": "equipment-rope", "name": "[TEST] Скакалка"}, {"id": "equipment-pads", "name": "[TEST] Лапи"}]},
+    {"dictionary": "execution-means", "values": [{"id": "means-no-equipment", "name": "[TEST] Без обладнання"}, {"id": "means-apparatus", "name": "[TEST] На снарядах"}, {"id": "means-pads", "name": "[TEST] На лапах"}, {"id": "means-pairs", "name": "[TEST] У парах"}]}
+  ],
+  "exercises": [
+    {
+      "id": "sel-warm", "name": "[TEST] Розминка з іншим акцентом", "description": "[TEST] Єдина придатна вправа розминки; акцент не збігається (SRS §5.1: для розминки не обов'язковий).",
+      "origin": "initial", "type": "simple", "allowedStages": ["warm-up"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-endurance"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 5, "recommended": 3}, "intervalSeconds": {"min": 60, "max": 300, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}],
+      "videoUrl": "https://example.com/test/sel-warm", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "sel-main", "name": "[TEST] Основна частина на мішку", "description": "[TEST] Придатна вправа основної частини.",
+      "origin": "initial", "type": "combination", "allowedStages": ["main"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-apparatus", "equipment": ["equipment-bag"], "mode": "time",
+        "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}],
+      "videoUrl": "https://example.com/test/sel-main", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "sel-two-variants", "name": "[TEST] Два варіанти", "description": "[TEST] var-1 потребує недоступної скакалки, var-2 — доступного мішка.",
+      "origin": "initial", "type": "single-punch", "allowedStages": ["main"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [
+        {"id": "var-1", "executionMeans": "means-apparatus", "equipment": ["equipment-rope"], "mode": "time",
+          "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}},
+        {"id": "var-2", "executionMeans": "means-apparatus", "equipment": ["equipment-bag"], "mode": "time",
+          "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}
+      ],
+      "videoUrl": "https://example.com/test/sel-two-variants", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "sel-cool", "name": "[TEST] Заминка з іншим акцентом", "description": "[TEST] Єдина придатна вправа заминки; акцент не збігається (SRS §5.1: для заминки не обов'язковий).",
+      "origin": "initial", "type": "simple", "allowedStages": ["cool-down"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-endurance"],
+      "loadCharacter": "not-applicable",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 4, "recommended": 2}, "intervalSeconds": {"min": 300, "max": 600, "recommended": 450}, "restSeconds": {"min": 0, "max": 60, "recommended": 30}}],
+      "videoUrl": "https://example.com/test/sel-cool", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "decoy-level", "name": "[TEST] Інший рівень", "description": "[TEST] Порушує лише правило 2 §5.1.",
+      "origin": "initial", "type": "combination", "allowedStages": ["warm-up", "main", "cool-down"],
+      "allowedLevels": ["level-intermediate"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}],
+      "videoUrl": "https://example.com/test/decoy-level", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "decoy-intensity", "name": "[TEST] Інша інтенсивність", "description": "[TEST] Порушує лише правило 3 §5.1.",
+      "origin": "initial", "type": "combination", "allowedStages": ["warm-up", "main", "cool-down"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-high"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-no-equipment", "equipment": [], "mode": "time",
+        "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}],
+      "videoUrl": "https://example.com/test/decoy-intensity", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "decoy-equipment", "name": "[TEST] Недоступне обладнання", "description": "[TEST] Порушує лише правило 4 §5.1: скакалки немає серед доступного.",
+      "origin": "initial", "type": "combination", "allowedStages": ["warm-up", "main", "cool-down"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-apparatus", "equipment": ["equipment-rope"], "mode": "time",
+        "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}],
+      "videoUrl": "https://example.com/test/decoy-equipment", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "decoy-equipment-partial", "name": "[TEST] Частково доступне обладнання", "description": "[TEST] Порушує лише правило 4 §5.1: мішок доступний, лапи — ні.",
+      "origin": "initial", "type": "combination", "allowedStages": ["warm-up", "main", "cool-down"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-apparatus", "equipment": ["equipment-bag", "equipment-pads"], "mode": "time",
+        "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}],
+      "videoUrl": "https://example.com/test/decoy-equipment-partial", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "decoy-emphasis", "name": "[TEST] Інший акцент основної частини", "description": "[TEST] Порушує лише правило 5 §5.1 (лише основна частина).",
+      "origin": "initial", "type": "combination", "allowedStages": ["main"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-endurance"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-apparatus", "equipment": ["equipment-bag"], "mode": "time",
+        "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}],
+      "videoUrl": "https://example.com/test/decoy-emphasis", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": false
+    },
+    {
+      "id": "decoy-deprecated", "name": "[TEST] Застаріла придатна вправа", "description": "[TEST] Порушує лише правило 6 §5.1 (D-06).",
+      "origin": "initial", "type": "combination", "allowedStages": ["warm-up", "main", "cool-down"],
+      "allowedLevels": ["level-beginner"], "allowedIntensities": ["intensity-medium"], "emphases": ["emphasis-technique"],
+      "loadCharacter": "special-physical",
+      "variants": [{"id": "var-1", "executionMeans": "means-apparatus", "equipment": ["equipment-bag"], "mode": "time",
+        "rounds": {"min": 1, "max": 12, "recommended": 6}, "intervalSeconds": {"min": 60, "max": 180, "recommended": 180}, "restSeconds": {"min": 30, "max": 120, "recommended": 60}}],
+      "videoUrl": "https://example.com/test/decoy-deprecated", "videoAuthorName": "[TEST] Автор відео", "authorPageUrl": "https://example.com/test/author", "deprecated": true
+    }
+  ]
+}

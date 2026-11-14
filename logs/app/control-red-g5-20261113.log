@@ -1,0 +1,707 @@
+2026-11-13T20:00:36.870502Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_cdPPRd/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.560284Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.597832Z INFO plans: plan generated openPlanId=open-811357f92a64e2aad7deb100330e5b12 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.600972Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=534
+2026-11-13T20:00:37.611308Z INFO plans: open plan item added openPlanId=open-811357f92a64e2aad7deb100330e5b12 itemId=item-794b6579d1dd09c8cad7cca40169efb4 stage=main position=1
+2026-11-13T20:00:37.611652Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=3
+2026-11-13T20:00:37.613059Z INFO plans: open plan item added openPlanId=open-811357f92a64e2aad7deb100330e5b12 itemId=item-ba3f1969b4c9c1cc159c907be8ae5f2d stage=main position=2
+2026-11-13T20:00:37.613307Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.614759Z INFO trainings: session started openPlanId=open-811357f92a64e2aad7deb100330e5b12 sourcePlanId=- items=5
+2026-11-13T20:00:37.615187Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.618840Z INFO trainings: training completed trainingId=training-89df36de822d0676dcacbb1f330fc797 localStartDate=2026-06-01 items=5 note=false
+2026-11-13T20:00:37.619178Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=2
+2026-11-13T20:00:37.629609Z INFO plans: plan generated openPlanId=open-8ff0bc2cb42a4c875b1f189c1ca11863 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.630006Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=9
+2026-11-13T20:00:37.631572Z INFO plans: open plan item added openPlanId=open-8ff0bc2cb42a4c875b1f189c1ca11863 itemId=item-c94b866da9da87fff3661c2667d87808 stage=main position=1
+2026-11-13T20:00:37.631831Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.632771Z INFO trainings: session started openPlanId=open-8ff0bc2cb42a4c875b1f189c1ca11863 sourcePlanId=- items=4
+2026-11-13T20:00:37.632969Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.634438Z INFO trainings: training completed trainingId=training-2df777b95c0bdb677023f449b6e21dfc localStartDate=2026-06-30 items=4 note=false
+2026-11-13T20:00:37.634649Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.643543Z INFO plans: plan generated openPlanId=open-d0b382d4bf8dc4fea066de932365d494 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.643796Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=8
+2026-11-13T20:00:37.644991Z INFO plans: open plan item added openPlanId=open-d0b382d4bf8dc4fea066de932365d494 itemId=item-ddeb5df3dfc04ebf0ca9de7094dc72df stage=main position=1
+2026-11-13T20:00:37.645195Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.646032Z INFO trainings: session started openPlanId=open-d0b382d4bf8dc4fea066de932365d494 sourcePlanId=- items=4
+2026-11-13T20:00:37.646210Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.647549Z INFO trainings: training completed trainingId=training-1da434c30eb436fae991a865509aaf41 localStartDate=2026-07-01 items=4 note=false
+2026-11-13T20:00:37.647762Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.649445Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.649548Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:37.671593Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_g9gIFz/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.676539Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.691611Z INFO plans: plan generated openPlanId=open-da4c58e26dc965b5aef20e457f85dd0c targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.692047Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=20
+2026-11-13T20:00:37.694238Z INFO plans: open plan item added openPlanId=open-da4c58e26dc965b5aef20e457f85dd0c itemId=item-222b4083e7da145f746376e70af14fa7 stage=main position=1
+2026-11-13T20:00:37.694475Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=1
+2026-11-13T20:00:37.695407Z INFO trainings: session started openPlanId=open-da4c58e26dc965b5aef20e457f85dd0c sourcePlanId=- items=4
+2026-11-13T20:00:37.695586Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.697073Z INFO trainings: training completed trainingId=training-a26ac472dfd93f05128e7d7e2760d3ec localStartDate=2026-06-10 items=4 note=false
+2026-11-13T20:00:37.697276Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.706497Z INFO plans: plan generated openPlanId=open-dcf55fe3fe9600ba93dc48313a772c28 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.706806Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=8
+2026-11-13T20:00:37.707543Z INFO trainings: session started openPlanId=open-dcf55fe3fe9600ba93dc48313a772c28 sourcePlanId=- items=3
+2026-11-13T20:00:37.707740Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.708861Z INFO trainings: training completed trainingId=training-0659aef7184347c2563375b33b54f04b localStartDate=2026-06-12 items=3 note=false
+2026-11-13T20:00:37.709063Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.718274Z INFO plans: plan generated openPlanId=open-16671d328b7a7bd400e7444f97a5e443 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.718616Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=8
+2026-11-13T20:00:37.720073Z INFO plans: open plan item added openPlanId=open-16671d328b7a7bd400e7444f97a5e443 itemId=item-1fae7cf51e2ec777dabec252152713ef stage=main position=1
+2026-11-13T20:00:37.720282Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.721381Z INFO plans: open plan item added openPlanId=open-16671d328b7a7bd400e7444f97a5e443 itemId=item-4dc8da82a8e51f42d0edf141348953e2 stage=main position=2
+2026-11-13T20:00:37.721561Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.722351Z INFO trainings: session started openPlanId=open-16671d328b7a7bd400e7444f97a5e443 sourcePlanId=- items=5
+2026-11-13T20:00:37.722540Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.723847Z INFO trainings: training completed trainingId=training-d420716e9e1e184a5d9eb6ee5bf66881 localStartDate=2026-06-14 items=5 note=false
+2026-11-13T20:00:37.724044Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.727097Z INFO http: request method=GET operationId=getCompletedTraining status=200 durationMs=2
+2026-11-13T20:00:37.728305Z INFO http: request method=GET operationId=getCompletedTraining status=200 durationMs=0
+2026-11-13T20:00:37.729290Z INFO http: request method=GET operationId=getCompletedTraining status=200 durationMs=0
+2026-11-13T20:00:37.730136Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.730253Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:37.743139Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_dUdUH5/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.748295Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.757758Z INFO plans: plan generated openPlanId=open-972f213bdf8ddfb7c4e9980a884145f1 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.758029Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=14
+2026-11-13T20:00:37.759367Z INFO plans: open plan item added openPlanId=open-972f213bdf8ddfb7c4e9980a884145f1 itemId=item-2219024c27ffe6ffdfbefb4354ba0443 stage=main position=1
+2026-11-13T20:00:37.759650Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.760648Z INFO plans: open plan item added openPlanId=open-972f213bdf8ddfb7c4e9980a884145f1 itemId=item-a914c37af70c41f98f6102e6eb1cd34f stage=main position=2
+2026-11-13T20:00:37.760817Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.761859Z INFO plans: open plan item added openPlanId=open-972f213bdf8ddfb7c4e9980a884145f1 itemId=item-a60a798be38018a3669d1d166d9b7167 stage=main position=3
+2026-11-13T20:00:37.762076Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.762889Z INFO trainings: session started openPlanId=open-972f213bdf8ddfb7c4e9980a884145f1 sourcePlanId=- items=6
+2026-11-13T20:00:37.763086Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.764468Z INFO trainings: training completed trainingId=training-e7c2689f64623fc8ed8909eba0737279 localStartDate=2026-06-20 items=6 note=false
+2026-11-13T20:00:37.764686Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.765484Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.765614Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:37.777883Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_Kzen7E/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.783095Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.784868Z INFO catalog: exercise created id=custom-c1626c12feedd8f9b3bc68ea1f1ded69 variants=1
+2026-11-13T20:00:37.785139Z INFO http: request method=POST operationId=createExercise status=201 durationMs=6
+2026-11-13T20:00:37.793628Z INFO plans: plan generated openPlanId=open-220773e1a0b404e31c1a62119c7bb568 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.793864Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=8
+2026-11-13T20:00:37.795049Z INFO plans: open plan item added openPlanId=open-220773e1a0b404e31c1a62119c7bb568 itemId=item-800a8315386e89b16f4c9f23adc2c407 stage=main position=1
+2026-11-13T20:00:37.795255Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.796088Z INFO trainings: session started openPlanId=open-220773e1a0b404e31c1a62119c7bb568 sourcePlanId=- items=4
+2026-11-13T20:00:37.796310Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.797503Z INFO trainings: training completed trainingId=training-2543f221fba163d052a6aba113610278 localStartDate=2026-06-01 items=4 note=false
+2026-11-13T20:00:37.797681Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.799955Z INFO catalog: exercise updated id=custom-c1626c12feedd8f9b3bc68ea1f1ded69 variants=1 kept=1 added=0 removed=0
+2026-11-13T20:00:37.800137Z INFO http: request method=PUT operationId=updateExercise status=200 durationMs=1
+2026-11-13T20:00:37.808427Z INFO plans: plan generated openPlanId=open-7a291c192d4d3669f1a68d9d3a0fe599 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.808689Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=8
+2026-11-13T20:00:37.809739Z INFO plans: open plan item added openPlanId=open-7a291c192d4d3669f1a68d9d3a0fe599 itemId=item-99f14fc5240fde9bb6599e4888bdee7e stage=main position=1
+2026-11-13T20:00:37.809915Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.810467Z INFO trainings: session started openPlanId=open-7a291c192d4d3669f1a68d9d3a0fe599 sourcePlanId=- items=4
+2026-11-13T20:00:37.810619Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.811573Z INFO trainings: training completed trainingId=training-f3948eae63f845711319862a51a688e6 localStartDate=2026-06-03 items=4 note=false
+2026-11-13T20:00:37.811747Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.812307Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.812411Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:37.823174Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_GTP7vd/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.827532Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.835931Z INFO plans: plan generated openPlanId=open-80f05ccf6c2cb7545dc1eb93974a2ad8 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.836190Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:37.836795Z INFO trainings: session started openPlanId=open-80f05ccf6c2cb7545dc1eb93974a2ad8 sourcePlanId=- items=3
+2026-11-13T20:00:37.836944Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.837951Z INFO trainings: training completed trainingId=training-9d9e3210ae42a20d5d4735d042616216 localStartDate=2026-06-30 items=3 note=false
+2026-11-13T20:00:37.838117Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.838709Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.838812Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:37.848931Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_PXOYSO/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.853389Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.861718Z INFO plans: plan generated openPlanId=open-43212ad463882d73cbd3a203fb3a240d targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.861947Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:37.862553Z INFO trainings: session started openPlanId=open-43212ad463882d73cbd3a203fb3a240d sourcePlanId=- items=3
+2026-11-13T20:00:37.862715Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.863158Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.863254Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:37.871727Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_EkmDom/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.876086Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.876275Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.876353Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=4
+2026-11-13T20:00:37.884057Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_JfV43B/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.888433Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.897333Z INFO plans: plan generated openPlanId=open-c6fa2750884e8c02d0289d46a4f81736 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.897611Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:37.898827Z INFO plans: open plan item added openPlanId=open-c6fa2750884e8c02d0289d46a4f81736 itemId=item-957fdd7751fc6c54b8beb15985c0c6a5 stage=main position=1
+2026-11-13T20:00:37.899017Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:37.899592Z INFO trainings: session started openPlanId=open-c6fa2750884e8c02d0289d46a4f81736 sourcePlanId=- items=4
+2026-11-13T20:00:37.899751Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.900866Z INFO trainings: training completed trainingId=training-7a5182f664fd0f646da6da225004818f localStartDate=2026-06-15 items=4 note=false
+2026-11-13T20:00:37.901038Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.901720Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.901834Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:37.912470Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_wcFbrB/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.916956Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.917191Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.917292Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=4
+2026-11-13T20:00:37.926416Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_ybjuiB/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.930939Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.931125Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.931239Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=4
+2026-11-13T20:00:37.938867Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_wWif7d/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.942777Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.942918Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.943Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=3
+2026-11-13T20:00:37.950192Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_AfEyqt/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.954114Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.954256Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.954360Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=3
+2026-11-13T20:00:37.962068Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_H0qtOV/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.966193Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.966399Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:37.966547Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=4
+2026-11-13T20:00:37.973943Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_FtWsuD/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:37.977789Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:37.986795Z INFO plans: plan generated openPlanId=open-ac8b069ac28d0a4f240601ae65ffa77e targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.987077Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:37.987699Z INFO trainings: session started openPlanId=open-ac8b069ac28d0a4f240601ae65ffa77e sourcePlanId=- items=3
+2026-11-13T20:00:37.987864Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.988938Z INFO trainings: training completed trainingId=training-34d3cb638f9e22b2383f8bd3d7d93225 localStartDate=2026-06-01 items=3 note=false
+2026-11-13T20:00:37.989115Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:37.997588Z INFO plans: plan generated openPlanId=open-161347810d54b0ea99b43f0a89279962 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:37.997854Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=8
+2026-11-13T20:00:37.998458Z INFO trainings: session started openPlanId=open-161347810d54b0ea99b43f0a89279962 sourcePlanId=- items=3
+2026-11-13T20:00:37.998603Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:37.999565Z INFO trainings: training completed trainingId=training-45ce804f555a8aa056be6f6c9fd5520a localStartDate=2026-06-30 items=3 note=false
+2026-11-13T20:00:37.999767Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:38.000295Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:38.000406Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:38.008476Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_NiVZ3F/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.012163Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.012299Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:38.012394Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=3
+2026-11-13T20:00:38.123149Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_dPnYzt/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.354452Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.386939Z INFO plans: plan generated openPlanId=open-e75d831efbbabc29f01fa8f2e4183d49 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.390149Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=72
+2026-11-13T20:00:38.399976Z INFO plans: open plan item added openPlanId=open-e75d831efbbabc29f01fa8f2e4183d49 itemId=item-611f9aa82ee695d607393cf53453211f stage=warm-up position=1
+2026-11-13T20:00:38.400340Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=3
+2026-11-13T20:00:38.401703Z INFO plans: open plan item added openPlanId=open-e75d831efbbabc29f01fa8f2e4183d49 itemId=item-bea377eff752a12b80cd1a5279ea3fc9 stage=main position=1
+2026-11-13T20:00:38.402013Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.403350Z INFO trainings: session started openPlanId=open-e75d831efbbabc29f01fa8f2e4183d49 sourcePlanId=- items=5
+2026-11-13T20:00:38.403717Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.405811Z INFO trainings: executed item updated itemId=item-bea377eff752a12b80cd1a5279ea3fc9
+2026-11-13T20:00:38.406034Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:38.409001Z INFO trainings: training completed trainingId=training-c1c065530dea5ce48a56bd3f443e33b0 localStartDate=2026-06-30 items=5 note=true
+2026-11-13T20:00:38.409294Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=1
+2026-11-13T20:00:38.411411Z WARNING http: domain error operationId=getCurrentSession code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:38.411633Z INFO http: request method=GET operationId=getCurrentSession status=404 durationMs=0
+2026-11-13T20:00:38.411967Z WARNING http: domain error operationId=completeTraining code=NO_CURRENT_SESSION status=409 details=[]
+2026-11-13T20:00:38.412081Z INFO http: request method=POST operationId=completeTraining status=409 durationMs=0
+2026-11-13T20:00:38.413493Z INFO trainings: completed trainings listed count=1
+2026-11-13T20:00:38.413754Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=1
+2026-11-13T20:00:38.423322Z INFO plans: plan generated openPlanId=open-bc2ac668281ec3cfb7e447dc88dc196a targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.423698Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=9
+2026-11-13T20:00:38.424545Z INFO trainings: session started openPlanId=open-bc2ac668281ec3cfb7e447dc88dc196a sourcePlanId=- items=3
+2026-11-13T20:00:38.424734Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.444720Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_2Q79x2/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.449841Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.458682Z INFO plans: plan generated openPlanId=open-5a0e8e986946f26950f740d0565a2ef3 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.458963Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:38.460403Z INFO plans: open plan item added openPlanId=open-5a0e8e986946f26950f740d0565a2ef3 itemId=item-610acabcc65b83a9989c31d879070263 stage=warm-up position=1
+2026-11-13T20:00:38.460609Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.461972Z INFO plans: open plan item added openPlanId=open-5a0e8e986946f26950f740d0565a2ef3 itemId=item-e2dbf90b3fff2a6cc51d9b2ea6f5dca2 stage=main position=1
+2026-11-13T20:00:38.462267Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.463223Z INFO trainings: session started openPlanId=open-5a0e8e986946f26950f740d0565a2ef3 sourcePlanId=- items=5
+2026-11-13T20:00:38.463434Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.465212Z INFO trainings: training completed trainingId=training-3bd2017190ac5445ea4ff8a721a654ca localStartDate=2026-06-30 items=5 note=false
+2026-11-13T20:00:38.465410Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=1
+2026-11-13T20:00:38.478253Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_B0BQVX/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.482917Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.491511Z INFO plans: plan generated openPlanId=open-cd69b0a196daa3cae069824612f83d33 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.491790Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:38.493083Z INFO plans: open plan item added openPlanId=open-cd69b0a196daa3cae069824612f83d33 itemId=item-59b35d7e6bdbfad77fce6bf08e834139 stage=warm-up position=1
+2026-11-13T20:00:38.493326Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.494393Z INFO plans: open plan item added openPlanId=open-cd69b0a196daa3cae069824612f83d33 itemId=item-2c479d1352e928fcd82477317922b834 stage=main position=1
+2026-11-13T20:00:38.494598Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.495400Z INFO trainings: session started openPlanId=open-cd69b0a196daa3cae069824612f83d33 sourcePlanId=- items=5
+2026-11-13T20:00:38.495573Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.496977Z INFO trainings: training completed trainingId=training-9b0c1e27a00afabc085bceda9f28d4b0 localStartDate=2026-06-30 items=5 note=false
+2026-11-13T20:00:38.497223Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:38.509419Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_36foNG/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.513855Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.522874Z INFO plans: plan generated openPlanId=open-8e49c6453e786e394af6afc0323d3067 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.523150Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:38.524441Z INFO plans: open plan item added openPlanId=open-8e49c6453e786e394af6afc0323d3067 itemId=item-a7fd295a9b59fa77c40fbee492b0c565 stage=warm-up position=1
+2026-11-13T20:00:38.524611Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.525674Z INFO plans: open plan item added openPlanId=open-8e49c6453e786e394af6afc0323d3067 itemId=item-07c87686fda94f5a2672db06875eb0e7 stage=main position=1
+2026-11-13T20:00:38.525858Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.526632Z INFO trainings: session started openPlanId=open-8e49c6453e786e394af6afc0323d3067 sourcePlanId=- items=5
+2026-11-13T20:00:38.526815Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.528336Z INFO trainings: training completed trainingId=training-18ade294c84c411241e2cde83c89983e localStartDate=2026-06-30 items=5 note=false
+2026-11-13T20:00:38.528504Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:38.537389Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_QICILx/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.541942Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.550918Z INFO plans: plan generated openPlanId=open-7d5ed8558f7647d097b887f94d8db2e3 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.551265Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:38.552639Z INFO plans: open plan item added openPlanId=open-7d5ed8558f7647d097b887f94d8db2e3 itemId=item-5a991e05fa3df09b586e0f6990cb2a6e stage=warm-up position=1
+2026-11-13T20:00:38.552880Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.554296Z INFO plans: open plan item added openPlanId=open-7d5ed8558f7647d097b887f94d8db2e3 itemId=item-3e53a435b633e3c33785dda62eebe3aa stage=main position=1
+2026-11-13T20:00:38.554524Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.555237Z INFO trainings: session started openPlanId=open-7d5ed8558f7647d097b887f94d8db2e3 sourcePlanId=- items=5
+2026-11-13T20:00:38.555410Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.556533Z INFO trainings: training completed trainingId=training-df984f7ea3aa08c43be212eb7d670243 localStartDate=2026-06-30 items=5 note=false
+2026-11-13T20:00:38.556722Z INFO http: request method=POST operationId=completeTraining status=201 durationMs=0
+2026-11-13T20:00:38.557484Z INFO trainings: completed trainings listed count=1
+2026-11-13T20:00:38.557599Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=0
+2026-11-13T20:00:38.566128Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_6gy7Jh/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.570488Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.570686Z WARNING http: domain error operationId=completeTraining code=NO_CURRENT_SESSION status=409 details=[]
+2026-11-13T20:00:38.570791Z INFO http: request method=POST operationId=completeTraining status=409 durationMs=4
+2026-11-13T20:00:38.571064Z INFO trainings: completed trainings listed count=0
+2026-11-13T20:00:38.571188Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=0
+2026-11-13T20:00:38.581387Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_SFH8h1/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.585563Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.594245Z INFO plans: plan generated openPlanId=open-79b8b11a8731d4f2995d47ce1bc02a1b targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.594458Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.595603Z INFO plans: open plan item added openPlanId=open-79b8b11a8731d4f2995d47ce1bc02a1b itemId=item-213ee04d9053d8db9ca2bc557a5840e7 stage=warm-up position=1
+2026-11-13T20:00:38.595807Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.597084Z INFO plans: open plan item added openPlanId=open-79b8b11a8731d4f2995d47ce1bc02a1b itemId=item-89f76c055f62961997ce0c83e9e985ef stage=main position=1
+2026-11-13T20:00:38.597327Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.598096Z INFO trainings: session started openPlanId=open-79b8b11a8731d4f2995d47ce1bc02a1b sourcePlanId=- items=5
+2026-11-13T20:00:38.598281Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.599141Z WARNING http: domain error operationId=completeTraining code=BAD_REQUEST status=400 details=[]
+2026-11-13T20:00:38.599278Z INFO http: request method=POST operationId=completeTraining status=400 durationMs=0
+2026-11-13T20:00:38.599614Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.608834Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_iABmUQ/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.613291Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.621944Z INFO plans: plan generated openPlanId=open-856e3992c3c9d2278326786a1a5c411e targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.622223Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:38.623346Z INFO plans: open plan item added openPlanId=open-856e3992c3c9d2278326786a1a5c411e itemId=item-3100b47a863e3ab73b825dcc6e032fff stage=warm-up position=1
+2026-11-13T20:00:38.623516Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.624333Z INFO plans: open plan item added openPlanId=open-856e3992c3c9d2278326786a1a5c411e itemId=item-1ce13ec1b7e21d5c1b10c369763072ab stage=main position=1
+2026-11-13T20:00:38.624559Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.625225Z INFO trainings: session started openPlanId=open-856e3992c3c9d2278326786a1a5c411e sourcePlanId=- items=5
+2026-11-13T20:00:38.625387Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.625935Z INFO trainings: executed item updated itemId=item-3100b47a863e3ab73b825dcc6e032fff
+2026-11-13T20:00:38.626081Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:38.626730Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[parameters.rounds:MINIMUM]
+2026-11-13T20:00:38.626847Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.627489Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.635181Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_Bdxx5P/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.639223Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.647610Z INFO plans: plan generated openPlanId=open-c793ab827765320ac2c3f8853641725c targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.647844Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.648842Z INFO plans: open plan item added openPlanId=open-c793ab827765320ac2c3f8853641725c itemId=item-e554c1a9fda5c073f5dc940a51b4d022 stage=warm-up position=1
+2026-11-13T20:00:38.649016Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.649866Z INFO plans: open plan item added openPlanId=open-c793ab827765320ac2c3f8853641725c itemId=item-18470a4a60820ba5b40453e437e2c011 stage=main position=1
+2026-11-13T20:00:38.650027Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.650603Z INFO trainings: session started openPlanId=open-c793ab827765320ac2c3f8853641725c sourcePlanId=- items=5
+2026-11-13T20:00:38.650759Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.651346Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[parameters.sets:MINIMUM]
+2026-11-13T20:00:38.651451Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.651668Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.659868Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_ABjmwb/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.663883Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.672222Z INFO plans: plan generated openPlanId=open-56bd757a8c4c9e2793e8abd01af829c2 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.672473Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.673421Z INFO plans: open plan item added openPlanId=open-56bd757a8c4c9e2793e8abd01af829c2 itemId=item-de659bcaf64223404c65aca50d43bc8b stage=warm-up position=1
+2026-11-13T20:00:38.673578Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.674399Z INFO plans: open plan item added openPlanId=open-56bd757a8c4c9e2793e8abd01af829c2 itemId=item-d65603f12a1792f3fbb5beafc9e659c5 stage=main position=1
+2026-11-13T20:00:38.674555Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.675114Z INFO trainings: session started openPlanId=open-56bd757a8c4c9e2793e8abd01af829c2 sourcePlanId=- items=5
+2026-11-13T20:00:38.675268Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.676060Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[parameters.repetitions:MINIMUM]
+2026-11-13T20:00:38.676198Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.676504Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.684232Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_Vb2yfE/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.688023Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.696683Z INFO plans: plan generated openPlanId=open-2bccd7f5d09865b082f01339123d748a targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.696934Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.698014Z INFO plans: open plan item added openPlanId=open-2bccd7f5d09865b082f01339123d748a itemId=item-0193477519b5a734605e416619d9eb53 stage=warm-up position=1
+2026-11-13T20:00:38.698175Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.698957Z INFO plans: open plan item added openPlanId=open-2bccd7f5d09865b082f01339123d748a itemId=item-6ccfa284446bf0a802b42e149c94dd6f stage=main position=1
+2026-11-13T20:00:38.699115Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.699590Z INFO trainings: session started openPlanId=open-2bccd7f5d09865b082f01339123d748a sourcePlanId=- items=5
+2026-11-13T20:00:38.699743Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.700289Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[parameters.intervalSeconds:MINIMUM]
+2026-11-13T20:00:38.700395Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.700622Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.708699Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_lAZTji/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.712611Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.721577Z INFO plans: plan generated openPlanId=open-6418785c2fa76af1f6f043d8bfa47503 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.721880Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:38.722920Z INFO plans: open plan item added openPlanId=open-6418785c2fa76af1f6f043d8bfa47503 itemId=item-c1e72c01b1b1d5e58dd9d0ce12818a83 stage=warm-up position=1
+2026-11-13T20:00:38.723101Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.723837Z INFO plans: open plan item added openPlanId=open-6418785c2fa76af1f6f043d8bfa47503 itemId=item-d308c75edf20626821d544a1baee6d96 stage=main position=1
+2026-11-13T20:00:38.724025Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.724568Z INFO trainings: session started openPlanId=open-6418785c2fa76af1f6f043d8bfa47503 sourcePlanId=- items=5
+2026-11-13T20:00:38.724722Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.725261Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[parameters.restSeconds:MINIMUM]
+2026-11-13T20:00:38.725371Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.725652Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.736511Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_Zwb3V1/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.740382Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.748973Z INFO plans: plan generated openPlanId=open-971f37a6b69be55c661f26c9a5a4238b targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.749224Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.750198Z INFO plans: open plan item added openPlanId=open-971f37a6b69be55c661f26c9a5a4238b itemId=item-07363d923345a7693bdc4477bebdd780 stage=warm-up position=1
+2026-11-13T20:00:38.750358Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.751143Z INFO plans: open plan item added openPlanId=open-971f37a6b69be55c661f26c9a5a4238b itemId=item-6de5a775575257da804f59fc0b4adc4a stage=main position=1
+2026-11-13T20:00:38.751305Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.751801Z INFO trainings: session started openPlanId=open-971f37a6b69be55c661f26c9a5a4238b sourcePlanId=- items=5
+2026-11-13T20:00:38.751970Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.752928Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[parameters.rounds:INTEGER]
+2026-11-13T20:00:38.753052Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.753298Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.763209Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_McL5Ct/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.767166Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.775459Z INFO plans: plan generated openPlanId=open-57b2bb8f3fa3f9a1d0e95497d7d4b64a targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.775699Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.776842Z INFO plans: open plan item added openPlanId=open-57b2bb8f3fa3f9a1d0e95497d7d4b64a itemId=item-f33a08b2593a05602c06bd4dfdf27257 stage=warm-up position=1
+2026-11-13T20:00:38.777028Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.777791Z INFO plans: open plan item added openPlanId=open-57b2bb8f3fa3f9a1d0e95497d7d4b64a itemId=item-37e35f22a90108e5b689c1cd38fb3ea9 stage=main position=1
+2026-11-13T20:00:38.777990Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.778520Z INFO trainings: session started openPlanId=open-57b2bb8f3fa3f9a1d0e95497d7d4b64a sourcePlanId=- items=5
+2026-11-13T20:00:38.778690Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.779328Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[parameters.rounds:ADDITIONAL_PROPERTIES]
+2026-11-13T20:00:38.779439Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.779743Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.790851Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_rOOkyk/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.794723Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.803245Z INFO plans: plan generated openPlanId=open-83ee2148a20875e5c47519d6bea7fa3c targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.803508Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.804430Z INFO plans: open plan item added openPlanId=open-83ee2148a20875e5c47519d6bea7fa3c itemId=item-dfe611563151f038763b3178df2525ec stage=warm-up position=1
+2026-11-13T20:00:38.804614Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.805475Z INFO plans: open plan item added openPlanId=open-83ee2148a20875e5c47519d6bea7fa3c itemId=item-a826fb7a2090de9ba66c4b138d9f7357 stage=main position=1
+2026-11-13T20:00:38.805663Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.806151Z INFO trainings: session started openPlanId=open-83ee2148a20875e5c47519d6bea7fa3c sourcePlanId=- items=5
+2026-11-13T20:00:38.806306Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.806867Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[parameters.repetitionTimeSeconds:NOT_EDITABLE]
+2026-11-13T20:00:38.807012Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.807246Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.815350Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_ecmwyV/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.819155Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.827449Z INFO plans: plan generated openPlanId=open-48abf84df5553fca80cc21e3aa04a510 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.827666Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.828574Z INFO plans: open plan item added openPlanId=open-48abf84df5553fca80cc21e3aa04a510 itemId=item-3c5803ac0a5458adf7d9095fa1c61084 stage=warm-up position=1
+2026-11-13T20:00:38.828732Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.829535Z INFO plans: open plan item added openPlanId=open-48abf84df5553fca80cc21e3aa04a510 itemId=item-75f106546476e27a415041b4cb150ee7 stage=main position=1
+2026-11-13T20:00:38.829749Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.830405Z INFO trainings: session started openPlanId=open-48abf84df5553fca80cc21e3aa04a510 sourcePlanId=- items=5
+2026-11-13T20:00:38.830599Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.831265Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[stage:ADDITIONAL_PROPERTIES]
+2026-11-13T20:00:38.831399Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.831634Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.839444Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_MnCvob/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.843309Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.852011Z INFO plans: plan generated openPlanId=open-22ec7d4795c4af0ebcbbf2298d0c906d targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.852264Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.853145Z INFO plans: open plan item added openPlanId=open-22ec7d4795c4af0ebcbbf2298d0c906d itemId=item-290956399be4e0b42ac6d2ad65ee8768 stage=warm-up position=1
+2026-11-13T20:00:38.853317Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.854045Z INFO plans: open plan item added openPlanId=open-22ec7d4795c4af0ebcbbf2298d0c906d itemId=item-5ad2ca1008492161bcec373bfa48ab4a stage=main position=1
+2026-11-13T20:00:38.854240Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.854868Z INFO trainings: session started openPlanId=open-22ec7d4795c4af0ebcbbf2298d0c906d sourcePlanId=- items=5
+2026-11-13T20:00:38.855033Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.855535Z WARNING http: domain error operationId=updateExecutedPlanItem code=VALIDATION_FAILED status=422 details=[position:ADDITIONAL_PROPERTIES]
+2026-11-13T20:00:38.855671Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=422 durationMs=0
+2026-11-13T20:00:38.855897Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.863843Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_qN537w/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.867903Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.876530Z INFO plans: plan generated openPlanId=open-288742444bdc14689d1380d37ff6cd89 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.876746Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.877746Z INFO plans: open plan item added openPlanId=open-288742444bdc14689d1380d37ff6cd89 itemId=item-bb034660a5511032213d0eff21364ae2 stage=warm-up position=1
+2026-11-13T20:00:38.877915Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.878613Z INFO plans: open plan item added openPlanId=open-288742444bdc14689d1380d37ff6cd89 itemId=item-5b1886778eb1acda184780b383965ac3 stage=main position=1
+2026-11-13T20:00:38.878851Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.879344Z INFO trainings: session started openPlanId=open-288742444bdc14689d1380d37ff6cd89 sourcePlanId=- items=5
+2026-11-13T20:00:38.879500Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.880178Z INFO http: request method=GET operationId=getOpenPlan status=200 durationMs=0
+2026-11-13T20:00:38.880756Z INFO trainings: executed item deleted itemId=item-5b1886778eb1acda184780b383965ac3 left=4
+2026-11-13T20:00:38.880898Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:38.881452Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:38.881894Z INFO http: request method=GET operationId=getOpenPlan status=200 durationMs=0
+2026-11-13T20:00:38.889780Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_tHv48q/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.893598Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.902149Z INFO plans: plan generated openPlanId=open-bde0e806e24b02a3c008ffacfca1e99d targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.902370Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.903185Z INFO plans: open plan item added openPlanId=open-bde0e806e24b02a3c008ffacfca1e99d itemId=item-69e216c06dee22e52a0cd14b92291bd8 stage=warm-up position=1
+2026-11-13T20:00:38.903353Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.904190Z INFO plans: open plan item added openPlanId=open-bde0e806e24b02a3c008ffacfca1e99d itemId=item-048527699d9756d8ef457999a674eaaf stage=main position=1
+2026-11-13T20:00:38.904366Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.904880Z INFO trainings: session started openPlanId=open-bde0e806e24b02a3c008ffacfca1e99d sourcePlanId=- items=5
+2026-11-13T20:00:38.905048Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.905481Z WARNING http: domain error operationId=deleteExecutedPlanItem code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:38.905579Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=404 durationMs=0
+2026-11-13T20:00:38.905760Z WARNING http: domain error operationId=updateExecutedPlanItem code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:38.905851Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=404 durationMs=0
+2026-11-13T20:00:38.913382Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_pDL3JS/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.917123Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.917263Z WARNING http: domain error operationId=deleteExecutedPlanItem code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:38.917368Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=404 durationMs=3
+2026-11-13T20:00:38.917591Z WARNING http: domain error operationId=updateExecutedPlanItem code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:38.917687Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=404 durationMs=0
+2026-11-13T20:00:38.925161Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_EDwaca/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.929007Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.937214Z INFO plans: plan generated openPlanId=open-ef9786177ba8c196fe0374f10180eb93 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.937490Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=12
+2026-11-13T20:00:38.939562Z INFO plans: training plan saved planId=plan-fc550919ee3f949fd3ba0e7fd60fa90c openPlanId=open-ef9786177ba8c196fe0374f10180eb93 items=3
+2026-11-13T20:00:38.939806Z INFO http: request method=POST operationId=saveNewTrainingPlan status=201 durationMs=1
+2026-11-13T20:00:38.941755Z INFO plans: saved plan opened openPlanId=open-d26cc8010abfc8b918b37f62e0d58122 planId=plan-fc550919ee3f949fd3ba0e7fd60fa90c
+2026-11-13T20:00:38.941936Z INFO http: request method=POST operationId=openSavedPlan status=201 durationMs=1
+2026-11-13T20:00:38.942385Z INFO trainings: completed trainings listed count=0
+2026-11-13T20:00:38.942500Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=0
+2026-11-13T20:00:38.942834Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:38.942934Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:38.951505Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_kYuRXR/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.955732Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:38.971201Z INFO plans: plan generated openPlanId=open-ccb29971f7037665d3f67af7111d3f42 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:38.971671Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=19
+2026-11-13T20:00:38.973662Z INFO plans: open plan item added openPlanId=open-ccb29971f7037665d3f67af7111d3f42 itemId=item-f54a051fe7f16ba219e8e98d6a3d83dc stage=warm-up position=1
+2026-11-13T20:00:38.973888Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=1
+2026-11-13T20:00:38.975010Z INFO plans: open plan item added openPlanId=open-ccb29971f7037665d3f67af7111d3f42 itemId=item-7590545b4ee05b87c5e9e412543ee75a stage=main position=1
+2026-11-13T20:00:38.975214Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:38.975887Z INFO trainings: session started openPlanId=open-ccb29971f7037665d3f67af7111d3f42 sourcePlanId=- items=5
+2026-11-13T20:00:38.976084Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:38.976758Z INFO trainings: session aborted items=5
+2026-11-13T20:00:38.976896Z INFO http: request method=DELETE operationId=abortCurrentSession status=204 durationMs=0
+2026-11-13T20:00:38.977447Z INFO plans: training plans listed count=0
+2026-11-13T20:00:38.977632Z INFO http: request method=GET operationId=listTrainingPlans status=200 durationMs=0
+2026-11-13T20:00:38.978015Z INFO http: request method=GET operationId=getOpenPlan status=200 durationMs=0
+2026-11-13T20:00:38.986565Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_YIdGqm/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:38.990819Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.000482Z INFO plans: plan generated openPlanId=open-c472022dd7290257f93e01d3b78da53c targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.000729Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:39.001755Z INFO plans: open plan item added openPlanId=open-c472022dd7290257f93e01d3b78da53c itemId=item-0ffbfe67797a0d647a5330df24b5ab90 stage=warm-up position=1
+2026-11-13T20:00:39.001949Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:39.002797Z INFO plans: open plan item added openPlanId=open-c472022dd7290257f93e01d3b78da53c itemId=item-8825d99820c6cebb44c908948443daed stage=main position=1
+2026-11-13T20:00:39.002990Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:39.003604Z INFO trainings: session started openPlanId=open-c472022dd7290257f93e01d3b78da53c sourcePlanId=- items=5
+2026-11-13T20:00:39.003804Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:39.004302Z INFO trainings: executed item deleted itemId=item-2e01350a4ce03ffafa0ab9fdfd53373f left=4
+2026-11-13T20:00:39.004447Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.004902Z INFO trainings: executed item deleted itemId=item-0ffbfe67797a0d647a5330df24b5ab90 left=3
+2026-11-13T20:00:39.005062Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.005482Z INFO trainings: executed item deleted itemId=item-c575b91bb9c14e22ebd3b00ce85ebe10 left=2
+2026-11-13T20:00:39.005634Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.005982Z INFO trainings: executed item deleted itemId=item-8825d99820c6cebb44c908948443daed left=1
+2026-11-13T20:00:39.006116Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.006364Z INFO trainings: executed item deleted itemId=item-22eb15c15c6216647ac4a90ff23fccb4 left=0
+2026-11-13T20:00:39.006479Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.006950Z WARNING http: domain error operationId=completeTraining code=EXECUTED_PLAN_EMPTY status=422 details=[]
+2026-11-13T20:00:39.007115Z INFO http: request method=POST operationId=completeTraining status=422 durationMs=0
+2026-11-13T20:00:39.007326Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:39.007718Z INFO trainings: completed trainings listed count=0
+2026-11-13T20:00:39.007827Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=0
+2026-11-13T20:00:39.007991Z INFO trainings: session aborted items=0
+2026-11-13T20:00:39.008084Z INFO http: request method=DELETE operationId=abortCurrentSession status=204 durationMs=0
+2026-11-13T20:00:39.008205Z WARNING http: domain error operationId=getCurrentSession code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:39.008291Z INFO http: request method=GET operationId=getCurrentSession status=404 durationMs=0
+2026-11-13T20:00:39.008497Z INFO trainings: completed trainings listed count=0
+2026-11-13T20:00:39.008597Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=0
+2026-11-13T20:00:39.018117Z INFO plans: plan generated openPlanId=open-660a045cc3bbfa8886d02d1ebfb97e6a targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.018331Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=9
+2026-11-13T20:00:39.019192Z INFO plans: open plan item added openPlanId=open-660a045cc3bbfa8886d02d1ebfb97e6a itemId=item-1ff9f02dbdde6ad922a536b1d747075a stage=warm-up position=1
+2026-11-13T20:00:39.019354Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:39.020150Z INFO plans: open plan item added openPlanId=open-660a045cc3bbfa8886d02d1ebfb97e6a itemId=item-5f3c8162e1f8171ac5a3f28c6ca805e3 stage=main position=1
+2026-11-13T20:00:39.020312Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=0
+2026-11-13T20:00:39.020814Z INFO trainings: session started openPlanId=open-660a045cc3bbfa8886d02d1ebfb97e6a sourcePlanId=- items=5
+2026-11-13T20:00:39.020960Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:39.032501Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_DgYq7I/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.036495Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.036633Z WARNING http: domain error operationId=abortCurrentSession code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:39.036740Z INFO http: request method=DELETE operationId=abortCurrentSession status=404 durationMs=4
+2026-11-13T20:00:39.126195Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_I7ddAV/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.352050Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.396686Z INFO plans: plan generated openPlanId=open-593ba79ee887a0de5495d1bf753241bb targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.400099Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=86
+2026-11-13T20:00:39.407340Z INFO trainings: session started openPlanId=open-593ba79ee887a0de5495d1bf753241bb sourcePlanId=- items=3
+2026-11-13T20:00:39.407753Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:39.410614Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:39.412088Z INFO plans: training plans listed count=0
+2026-11-13T20:00:39.412311Z INFO http: request method=GET operationId=listTrainingPlans status=200 durationMs=1
+2026-11-13T20:00:39.412933Z INFO http: request method=GET operationId=getOpenPlan status=200 durationMs=0
+2026-11-13T20:00:39.432934Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_sls57s/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.437704Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.447063Z INFO plans: plan generated openPlanId=open-adb5ce5defc3ef9c57dcdfd15bae1433 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.447458Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=14
+2026-11-13T20:00:39.452514Z INFO plans: training plan saved planId=plan-5fd601fbeb8ab068ad8c5a140efbb887 openPlanId=open-adb5ce5defc3ef9c57dcdfd15bae1433 items=3
+2026-11-13T20:00:39.456756Z INFO http: request method=POST operationId=saveNewTrainingPlan status=201 durationMs=7
+2026-11-13T20:00:39.460600Z INFO plans: saved plan opened openPlanId=open-8ab89f28597105ae62cbe92b7ab49cde planId=plan-5fd601fbeb8ab068ad8c5a140efbb887
+2026-11-13T20:00:39.465214Z INFO http: request method=POST operationId=openSavedPlan status=201 durationMs=6
+2026-11-13T20:00:39.466251Z INFO trainings: session started openPlanId=open-8ab89f28597105ae62cbe92b7ab49cde sourcePlanId=plan-5fd601fbeb8ab068ad8c5a140efbb887 items=3
+2026-11-13T20:00:39.469729Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=3
+2026-11-13T20:00:39.481199Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_J9Oj8Z/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.486046Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.495363Z INFO plans: plan generated openPlanId=open-0986085ad7fe54c479af39775a8edc90 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.495660Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=14
+2026-11-13T20:00:39.496720Z INFO trainings: session started openPlanId=open-0986085ad7fe54c479af39775a8edc90 sourcePlanId=- items=3
+2026-11-13T20:00:39.496934Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:39.506425Z INFO plans: plan generated openPlanId=open-b7272dbc2515888287422a526bce7063 targetSeconds=5400 totalSeconds=4860 items=2/1/1 checkedSelections=1
+2026-11-13T20:00:39.506798Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=9
+2026-11-13T20:00:39.508148Z WARNING http: domain error operationId=startCurrentSession code=SESSION_ALREADY_ACTIVE status=409 details=[]
+2026-11-13T20:00:39.508402Z INFO http: request method=POST operationId=startCurrentSession status=409 durationMs=0
+2026-11-13T20:00:39.508762Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:39.519635Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_K17s8w/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.524096Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.532872Z INFO plans: plan generated openPlanId=open-ad2d58e5dd5527f99f9f52dbb5014829 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.533126Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:39.534918Z INFO plans: open plan item deleted openPlanId=open-ad2d58e5dd5527f99f9f52dbb5014829 itemId=item-7ed4c2eff37cf30be4eb8e2452a4557a
+2026-11-13T20:00:39.535206Z INFO http: request method=DELETE operationId=deleteOpenPlanItem status=200 durationMs=1
+2026-11-13T20:00:39.536129Z INFO plans: open plan item deleted openPlanId=open-ad2d58e5dd5527f99f9f52dbb5014829 itemId=item-74029242a97445c227a237868f9961a4
+2026-11-13T20:00:39.536315Z INFO http: request method=DELETE operationId=deleteOpenPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.537086Z INFO plans: open plan item deleted openPlanId=open-ad2d58e5dd5527f99f9f52dbb5014829 itemId=item-a88113a30fbb0fb20edc5b8eff6c331b
+2026-11-13T20:00:39.537239Z INFO http: request method=DELETE operationId=deleteOpenPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.537659Z WARNING http: domain error operationId=startCurrentSession code=PLAN_EMPTY status=422 details=[]
+2026-11-13T20:00:39.537802Z INFO http: request method=POST operationId=startCurrentSession status=422 durationMs=0
+2026-11-13T20:00:39.538011Z WARNING http: domain error operationId=getCurrentSession code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:39.538112Z INFO http: request method=GET operationId=getCurrentSession status=404 durationMs=0
+2026-11-13T20:00:39.548834Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_CjAAou/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.553238Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.553453Z WARNING http: domain error operationId=startCurrentSession code=OPEN_PLAN_NOT_FOUND status=422 details=[]
+2026-11-13T20:00:39.553569Z INFO http: request method=POST operationId=startCurrentSession status=422 durationMs=4
+2026-11-13T20:00:39.568721Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_Fi8dpG/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.573049Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.573227Z WARNING http: domain error operationId=getCurrentSession code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:39.573343Z INFO http: request method=GET operationId=getCurrentSession status=404 durationMs=4
+2026-11-13T20:00:39.581563Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_m1kJEQ/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.585701Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.586498Z INFO trainings: completed trainings listed count=0
+2026-11-13T20:00:39.586685Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=4
+2026-11-13T20:00:39.587077Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:39.587171Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=0
+2026-11-13T20:00:39.597143Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_e4ffxq/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.601630Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.617321Z INFO plans: plan generated openPlanId=open-d91682e67145409043c7bd01bfa33ef9 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.617703Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=20
+2026-11-13T20:00:39.618835Z INFO trainings: session started openPlanId=open-d91682e67145409043c7bd01bfa33ef9 sourcePlanId=- items=3
+2026-11-13T20:00:39.619271Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:39.620273Z INFO trainings: completed trainings listed count=0
+2026-11-13T20:00:39.620409Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=0
+2026-11-13T20:00:39.628848Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_bdK8j9/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.633420Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.642886Z INFO plans: plan generated openPlanId=open-7bf328eca488042d145f10cddbd2f9ed targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.643208Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=14
+2026-11-13T20:00:39.645729Z INFO plans: open plan item added openPlanId=open-7bf328eca488042d145f10cddbd2f9ed itemId=item-6f804cd1e3e068fb8c98fdc0d40e3261 stage=warm-up position=1
+2026-11-13T20:00:39.646015Z INFO http: request method=POST operationId=addOpenPlanItem status=201 durationMs=1
+2026-11-13T20:00:39.646930Z INFO trainings: session started openPlanId=open-7bf328eca488042d145f10cddbd2f9ed sourcePlanId=- items=4
+2026-11-13T20:00:39.647101Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:39.648664Z INFO plans: open plan item updated openPlanId=open-7bf328eca488042d145f10cddbd2f9ed itemId=item-6f804cd1e3e068fb8c98fdc0d40e3261 parameters=true stage=warm-up position=1
+2026-11-13T20:00:39.648851Z INFO http: request method=PATCH operationId=updateOpenPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.649644Z INFO http: request method=GET operationId=getCurrentSession status=200 durationMs=0
+2026-11-13T20:00:39.650790Z INFO trainings: executed item updated itemId=item-6f804cd1e3e068fb8c98fdc0d40e3261
+2026-11-13T20:00:39.650953Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=200 durationMs=0
+2026-11-13T20:00:39.651748Z INFO http: request method=GET operationId=getOpenPlan status=200 durationMs=0
+2026-11-13T20:00:39.664388Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_x4wEI3/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:39.668704Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:39.677752Z INFO plans: plan generated openPlanId=open-7e3ab66e361d912b9969d1877366c3cd targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.677995Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=13
+2026-11-13T20:00:39.679196Z INFO plans: training plan saved planId=plan-be73196631d79c7c121b79ec2230975c openPlanId=open-7e3ab66e361d912b9969d1877366c3cd items=3
+2026-11-13T20:00:39.679369Z INFO http: request method=POST operationId=saveNewTrainingPlan status=201 durationMs=0
+2026-11-13T20:00:39.689350Z INFO plans: plan generated openPlanId=open-b88dad8cd20f53cd4dd9718d22f8f19e targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.689716Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=9
+2026-11-13T20:00:39.690513Z INFO trainings: session started openPlanId=open-b88dad8cd20f53cd4dd9718d22f8f19e sourcePlanId=- items=3
+2026-11-13T20:00:39.690692Z INFO http: request method=POST operationId=startCurrentSession status=201 durationMs=0
+2026-11-13T20:00:39.700689Z INFO plans: plan generated openPlanId=open-5782f4711fb829c53207dea2e3b679f3 targetSeconds=3600 totalSeconds=3240 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:39.700980Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=9
+2026-11-13T20:00:39.701951Z INFO plans: saved plan opened openPlanId=open-818cbc0ac3e46cb03b522cc1a6de8d91 planId=plan-be73196631d79c7c121b79ec2230975c
+2026-11-13T20:00:39.702152Z INFO http: request method=POST operationId=openSavedPlan status=201 durationMs=0
+2026-11-13T20:00:39.992407Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_awmmHO/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.031252Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.034632Z INFO catalog: exercises listed count=7
+2026-11-13T20:00:40.036161Z INFO http: request method=GET operationId=listExercises status=200 durationMs=39
+2026-11-13T20:00:40.060479Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_uRRI7P/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.066635Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.070338Z INFO catalog: exercise created id=custom-8ade2ddcb0ca36159f50dde8c8ffd5db variants=1
+2026-11-13T20:00:40.070648Z INFO http: request method=POST operationId=createExercise status=201 durationMs=9
+2026-11-13T20:00:40.082173Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_vYl7aQ/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.086557Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.087368Z WARNING http: domain error operationId=getExercise code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.087616Z INFO http: request method=GET operationId=getExercise status=404 durationMs=5
+2026-11-13T20:00:40.096633Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_OIeeNq/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.101141Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.101724Z WARNING http: domain error operationId=updateExercise code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.101870Z INFO http: request method=PUT operationId=updateExercise status=404 durationMs=4
+2026-11-13T20:00:40.110703Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_zzVl9W/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.114899Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.115622Z INFO http: request method=GET operationId=getDictionary status=200 durationMs=4
+2026-11-13T20:00:40.125006Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_osGy40/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.129274Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.162608Z INFO plans: plan generated openPlanId=open-fa607f829d78e1a490ec2d121763e93b targetSeconds=5400 totalSeconds=4860 items=1/1/1 checkedSelections=1
+2026-11-13T20:00:40.163986Z INFO http: request method=POST operationId=generatePlan status=201 durationMs=38
+2026-11-13T20:00:40.175655Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_Qo8dHm/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.180299Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.181201Z WARNING http: domain error operationId=openSavedPlan code=PLAN_NOT_FOUND status=422 details=[]
+2026-11-13T20:00:40.181347Z INFO http: request method=POST operationId=openSavedPlan status=422 durationMs=5
+2026-11-13T20:00:40.190916Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_xoQbtb/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.195020Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.195314Z WARNING http: domain error operationId=getOpenPlan code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.195442Z INFO http: request method=GET operationId=getOpenPlan status=404 durationMs=4
+2026-11-13T20:00:40.203612Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_kLzoWM/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.207746Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.208123Z WARNING http: domain error operationId=renameOpenPlan code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.208242Z INFO http: request method=PATCH operationId=renameOpenPlan status=404 durationMs=4
+2026-11-13T20:00:40.215790Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_w1qXuF/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.219662Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.220408Z WARNING http: domain error operationId=addOpenPlanItem code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.220524Z INFO http: request method=POST operationId=addOpenPlanItem status=404 durationMs=4
+2026-11-13T20:00:40.228335Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_HhtGZ0/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.232563Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.233076Z WARNING http: domain error operationId=replaceOpenPlanItem code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.233187Z INFO http: request method=PUT operationId=replaceOpenPlanItem status=404 durationMs=4
+2026-11-13T20:00:40.241208Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_Uf3lXk/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.245112Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.245729Z WARNING http: domain error operationId=updateOpenPlanItem code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.245842Z INFO http: request method=PATCH operationId=updateOpenPlanItem status=404 durationMs=4
+2026-11-13T20:00:40.253223Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_7o9BuK/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.257134Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.257399Z WARNING http: domain error operationId=deleteOpenPlanItem code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.257520Z INFO http: request method=DELETE operationId=deleteOpenPlanItem status=404 durationMs=4
+2026-11-13T20:00:40.264544Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_PSLQgh/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.268692Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.269630Z INFO plans: training plans listed count=0
+2026-11-13T20:00:40.269830Z INFO http: request method=GET operationId=listTrainingPlans status=200 durationMs=5
+2026-11-13T20:00:40.276935Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_Wy0Cfl/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.280924Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.281473Z WARNING http: domain error operationId=saveNewTrainingPlan code=OPEN_PLAN_NOT_FOUND status=422 details=[]
+2026-11-13T20:00:40.281616Z INFO http: request method=POST operationId=saveNewTrainingPlan status=422 durationMs=4
+2026-11-13T20:00:40.289157Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_KI2r9h/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.293108Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.293736Z WARNING http: domain error operationId=getTrainingPlan code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.293880Z INFO http: request method=GET operationId=getTrainingPlan status=404 durationMs=4
+2026-11-13T20:00:40.300882Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_TsXoJN/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.304735Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.305098Z WARNING http: domain error operationId=overwriteTrainingPlan code=OPEN_PLAN_NOT_FOUND status=422 details=[]
+2026-11-13T20:00:40.305202Z INFO http: request method=PUT operationId=overwriteTrainingPlan status=422 durationMs=4
+2026-11-13T20:00:40.313588Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_6rPdlu/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.317778Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.318135Z WARNING http: domain error operationId=deleteTrainingPlan code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.318281Z INFO http: request method=DELETE operationId=deleteTrainingPlan status=404 durationMs=4
+2026-11-13T20:00:40.326412Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_jLpPBO/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.330157Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.330637Z WARNING http: domain error operationId=startCurrentSession code=OPEN_PLAN_NOT_FOUND status=422 details=[]
+2026-11-13T20:00:40.330759Z INFO http: request method=POST operationId=startCurrentSession status=422 durationMs=4
+2026-11-13T20:00:40.338171Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_2xK909/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.342037Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.342294Z WARNING http: domain error operationId=getCurrentSession code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:40.342419Z INFO http: request method=GET operationId=getCurrentSession status=404 durationMs=4
+2026-11-13T20:00:40.350012Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_t9dVxW/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.353983Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.354215Z WARNING http: domain error operationId=abortCurrentSession code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:40.354329Z INFO http: request method=DELETE operationId=abortCurrentSession status=404 durationMs=4
+2026-11-13T20:00:40.362045Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_0r32yN/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.366056Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.366566Z WARNING http: domain error operationId=updateExecutedPlanItem code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:40.366690Z INFO http: request method=PATCH operationId=updateExecutedPlanItem status=404 durationMs=4
+2026-11-13T20:00:40.374867Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_WG6Ym9/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.378794Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.379072Z WARNING http: domain error operationId=deleteExecutedPlanItem code=NO_CURRENT_SESSION status=404 details=[]
+2026-11-13T20:00:40.379199Z INFO http: request method=DELETE operationId=deleteExecutedPlanItem status=404 durationMs=4
+2026-11-13T20:00:40.386848Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_qdcBxl/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.391017Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.391621Z WARNING http: domain error operationId=completeTraining code=NO_CURRENT_SESSION status=409 details=[]
+2026-11-13T20:00:40.391756Z INFO http: request method=POST operationId=completeTraining status=409 durationMs=4
+2026-11-13T20:00:40.400996Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_izflPb/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.406632Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.407773Z INFO trainings: completed trainings listed count=0
+2026-11-13T20:00:40.407962Z INFO http: request method=GET operationId=listCompletedTrainings status=200 durationMs=6
+2026-11-13T20:00:40.415492Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_ljQrGX/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.419305Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.419704Z WARNING http: domain error operationId=getCompletedTraining code=NOT_FOUND status=404 details=[]
+2026-11-13T20:00:40.419832Z INFO http: request method=GET operationId=getCompletedTraining status=404 durationMs=4
+2026-11-13T20:00:40.428484Z INFO app: app composed operations=27 database=/var/folders/h1/tw4fkhlx7k7dpkqxht_vy8z40000gn/T/boxing_api_test_9Qn68r/api.sqlite catalog=../src/assets/catalog/test-catalog.json
+2026-11-13T20:00:40.432696Z INFO catalog: catalog installed version=test-1 previous=- placeholder=true initial=8 markedDeprecated=[]
+2026-11-13T20:00:40.433030Z WARNING http: not implemented operationId=getAnalytics stub="decode analytics period"
+2026-11-13T20:00:40.433142Z INFO http: request method=GET operationId=getAnalytics status=501 durationMs=4
