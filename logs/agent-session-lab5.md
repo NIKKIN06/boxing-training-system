@@ -1148,3 +1148,66 @@
 - Висновок: записи ERROR будь-якого походження містять лише тип винятку (і код SQLite, якщо доступний) та стек; вмісту полів і SQL у лозі немає.
 
 **Повний діалог:** не збережено агентом
+
+**Коміт:** `274638a` feat: [agent] sanitize unexpected exception logging (REQ-NF-004) — створено людиною вручну (коміт агента перервано). Наступний коміт людини: `1003649` docs: [agent] add TG-012 to TEST-GATE record (logs/test-gate.md). Хеші — з `git log --oneline -5`.
+
+## Етап 17. Крок 3: рефакторинг без зміни зовнішньої поведінки; скрипт перевірки через Prism proxy — 14.11.2026
+**Модель:** Claude Opus 5.5 (claude-opus-5-5), Claude Code у VS Code
+**Запити:**
+1. Аналіз без змін: проблеми коду з посиланнями на файли й рядки (дублювання, задовгі методи й файли, змішування відповідальностей, магічні значення) і план малими кроками; зупинитися до погодження. Змінювати лише src/; tests/ і spec/ не змінювати; нової функціональності не додавати; межі компонентів і семантика логування зберігаються.
+2. Після погодження — кожен крок окремо: зміна → повний набір (326) → `dart analyze --fatal-infos` → `git diff --cached --stat` → коміт `refactor: [agent] …`.
+3. Контрольний лог control-green-refactor-<дата>.log і порівняння з еталоном за типами й рівнями записів, без даних користувача.
+4. Скрипт tests/tool/prism_check.sh для людини: curl-запити до Prism proxy 127.0.0.1:4010, кожна з 27 операцій хоча б раз (POS із docs/api/scenarios.md з підготовкою стану; NEG без стану), заголовки `sl-violations`, підсумок у logs/app/contract-prism-<дата>.log; не запускати.
+
+**Аналіз (крок 1, без змін; довжини методів — скрипт `method_lengths.py` поза репозиторієм):**
+- Дублювання: робочі списки етапів і пошук елемента (plan_services.dart / training_services.dart), підрахунок елементів, перенумерація позицій, перетворення `StorageWriteException` → STORAGE_WRITE_FAILED у трьох сервісах, ручне копіювання `PlanItem` / `PlanContent`, `_wire` = `_enum` (plan_json / exercise_json), серіалізація етапів (і подвійний `planContentToJson` у сховищі), `_recommended` / `_bound` генератора, повтор завершення в bin/server.dart.
+- Задовгі методи / файли: `buildRouter` 209 рядків, `PlanGenerator.generate` 114, `buildApp` 94, `generatePlan` 74, `exerciseInput` 72; json_mapping.dart 734 рядки (чотири відповідальності), plan_services.dart 567 (три сервіси).
+- Змішування відповідальностей: правило попереджень у `recomputePlan` разом із читанням репозиторію; доменна `localDateOf` у модулі формату передачі.
+- Магічні значення: 3600 / 60 / 59, 9 / 10 / 11 (допуск), нижні межі SRS §5.3 (1 / 0) у двох модулях, −29 (період D-21), `'completeTraining'`, content-type, RegExp дати, 16 / 256 (id).
+- Публічні назви, які використовують тести (`grep` по tests/test): `buildApp`, `AppConfig`, `Clock`, `RandomSource`, `LogSink`, `operationIds` — не змінювались.
+
+**Рішення людини (14.11.2026):** гілку `UnimplementedError` → 501 не видаляти (змінило б поведінку); два розбори дат лишити окремими (різна поведінка при помилці); у prism_check.sh id витягувати python3, не jq; кроки R1–R10 і серію комітів погоджено; перед комітом виводити `git diff --cached --stat` і результат тестів без очікування підтвердження; зупинитися, якщо не 326 з 326, є зауваження analyze або потрібна зміна tests/, spec/, текстів логів чи публічних назв, що їх використовують тести.
+
+**Пропозиція агента та дії (крок 2).** Для кожного кроку — скрипт `check_step.sh` поза репозиторієм: `dart test` (лог застосунку — у scratchpad) і `dart analyze --fatal-infos` у src/ і tests/. Результат кожного кроку: 326 тестів, 326 `success`; analyze — «No issues found!» в обох пакетах. Зупинок не було.
+
+| Крок | Зміна | Коміт |
+|---|---|---|
+| R1 | `itemCount`, `stageWorkingLists`, `locateItem`, `renumberStages` у domain/plan_rules.dart замість копій у двох сервісах | `d4c44d5` refactor: [agent] extract shared stage list helpers |
+| R2 | `PlanItem.copyWith`, `PlanContent.copyWith`; `withName` видалено | `406c6b0` refactor: [agent] add copyWith to plan item and content |
+| R3 | `guardStorageWrite` (application/storage_write.dart) у трьох сервісах | `9655c2b` refactor: [agent] unify storage write failure mapping |
+| R4 | доменне `planWarnings(...)`; `recomputePlan` лише читає каталог | `616004f` refactor: [agent] move plan warnings rule to domain |
+| R5 | `enumFromJson`, `stagesToJson`, `warningsToJson`; `localDateOf` → domain/training.dart | `7961e5f` refactor: [agent] deduplicate wire helpers |
+| R6 | іменовані константи (`secondsPerHour`, `maxTargetMinutes`, межі допуску, `minCountValue`, `minRestSeconds`, `defaultPeriodDays`, `jsonContentType`, шаблон дати, довжина id) | `ce0ed52` refactor: [agent] name magic values |
+| R7 | json_mapping.dart → request_decoder.dart, body_reader.dart, response_encoder.dart, error_mapping.dart; `_variant` виділено з `exerciseInput` | `759cfe7` refactor: [agent] split http json mapping by responsibility |
+| R8 | plan_services.dart → plan_generation_service.dart, open_plan_service.dart, training_plan_service.dart; експорти boxing_api.dart оновлено | `13ff5da` refactor: [agent] split plan services into files |
+| R9 | `generate` → `_candidates`, `_requireNoCandidateGap`, `_requireVolumeWithinBounds`, `_search`; `_pick`, `_rests`; у `generatePlan` — `_toOpenPlan`, `_reasonsForLog` | `7a2ef7e` refactor: [agent] split plan generator steps |
+| R10 | `buildRouter` → групи маршрутів класу `_Routes`; `_openDatabase`, `_buildServices`; у server.dart `closeSinks` / `abort` | `d60d9de` refactor: [agent] split router and composition root |
+
+- Збереження поведінки: порядок викликів `random` і `ids` у генерації не змінювався (від нього залежать детерміновані тести); перенесений код R7 і R8 звірено `diff` з попередньою версією (відмінність лише у виділеному `_variant`); для R10 скриптом перевірено, що 27 маршрутів зареєстровано в тому самому порядку і з тими самими викликами decode / service / encode.
+- bin/server.dart тести не покривають, тому окремо запущено сервер (логи в scratchpad): `--catalog=assets/catalog/missing.json` → код виходу 1, `ERROR app: catalog initialization failed`, `ERROR server: startup aborted …` (як на етапі 16); звичайний старт → `listExercises` 200, SIGINT → `stopping` / `stopped`, код виходу 0.
+- Файли json_mapping.dart і plan_services.dart прибрано командами `git rm` / `git mv` (інструмент редагування не видаляє файли), вміст перенесено інструментом Write / Edit.
+- Після рефакторингу найдовші методи (той самий скрипт): `resolveItemParameters` 95, `_Routes.plans` 77 (таблиця маршрутів), `_fit` 63, `buildApp` 61; найбільший файл — plan_generator.dart, 461 рядок. `resolveItemParameters` і `_fit` не змінювались: їх немає в погодженому плані.
+
+**Контрольний запуск (крок 3):** `BOXING_API_TEST_LOG_DIR=../logs/app BOXING_API_TEST_LOG_FILE=control-green-refactor-20261114.log dart test --reporter compact --file-reporter json:../logs/app/control-green-refactor-20261114.jsonl` → код виходу 0; `dart analyze --fatal-infos` у src/ і tests/ → «No issues found!».
+
+**Аналіз логу logs/app/control-green-refactor-20261114.log (скрипт `log_compare.py`, поза репозиторієм; еталон — logs/app/control-green-logfix-20261113.log, src/ на `274638a`):**
+- Записів 2545 / 2545; INFO 2401, WARNING 140, ERROR 4 — як в еталоні.
+- Логер + рівень: app INFO 365, catalog INFO 466, http INFO 974, http WARNING 140, plans INFO 452, storage ERROR 4, trainings INFO 144 — збігаються.
+- Шаблони повідомлень (значення `key=value` замінено на `*`): 37 / 37, множини й кількості збігаються.
+- ERROR — 4 змодельовані збої запису (`completedTraining.insert`, `trainingPlan.insert`, `trainingPlan.update`, `trainingPlan.delete`), опис `DriftRemoteException`, зі стеком. Рядків логу 2710 проти 2709: у стеку `completedTraining.insert` з'явився кадр `guardStorageWrite` (раніше там був inline try); текст записів не змінився.
+- WARNING — коди контракту, розподіл за кодами збігається з еталоном; `unhandled exception` — 0, `not implemented` — 0; запитів 974 / 974.
+- Пошук `[TEST]`, `/Users/`, `SELECT`, `INSERT`, `Секретна`, `Ранкове` — збігів 0.
+- Тести: 326 / 326 `success`, ті самі назви, регресій 0 (звірка з control-green-logfix-20261113.jsonl).
+- Висновок: зовнішня поведінка й записи логу за типами й рівнями не змінились; даних користувача й абсолютних шляхів у лозі немає.
+
+**Скрипт tests/tool/prism_check.sh (крок 4, не запускався):**
+- Передумови в шапці: API на 127.0.0.1:8080 з `--db=:memory:` і тестовим каталогом (свіжий старт), Prism proxy `npx -y --registry=https://registry.npmjs.org/ @stoplight/prism-cli@5 proxy spec/openapi.yaml http://127.0.0.1:8080 -h 127.0.0.1 -p 4010`, curl і python3.
+- 15 NEG без стану (NEG-02, 04, 05, 06, 13, 20, 24, 25, 27–33; NEG-24, 25, 30, 31 — до появи сесії); NEG-32 і NEG-33 порушують схему навмисно, тож порушення запиту для них очікуване.
+- POS у порядку з підготовкою стану: власна вправа (id і варіант — з відповіді), генерація, зміни відкритого плану (id елемента — з `Location`), збереження, відкриття збереженого, перезапис, сесія (поле фактичного значення — за режимом елемента), завершення, історія, аналітика за останні 30 днів і без параметрів, друга сесія → abort, видалення плану. id витягуються python3 (рішення людини).
+- У лог: для кожного виклику — ID сценарію, operationId, метод, шлях, статус, `sl-violations` і лише `code` тіла (без вмісту полів). Підсумок: кількість викликів, покриття 27 операцій, розбіжності статусів, очікувані й неочікувані порушення. Код виходу 0 / 1 / 2.
+- Перевірки без запуску: `bash -n` — без помилок; у тексті 27 різних operationId у викликах `call`. Тіло POS-09 окремо перевірено запитом до локального сервера (не через скрипт): генерація успішна, три етапи. Права виконання встановлено `chmod +x`.
+- Виконати скрипт і проаналізувати logs/app/contract-prism-<дата>.log має людина.
+
+**Повний діалог:** не збережено агентом
+
+**Коміт:** docs: [agent] refactoring control run and prism check script — журнал, контрольний лог (.log, .jsonl) і скрипт; хеш — у `git log` після коміту.
