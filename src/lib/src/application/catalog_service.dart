@@ -64,9 +64,7 @@ final class CatalogService {
     final all = await exercises.findAll();
     final items = [
       for (final e in all)
-        if (!e.deprecated &&
-            _matches(e, filter) &&
-            (search == null || e.name.toLowerCase().contains(search)))
+        if (!e.deprecated && _matches(e, filter) && _matchesName(e, search))
           ExerciseSummary(id: e.id, name: e.name, type: e.type, origin: e.origin),
     ];
     _log.info(
@@ -193,6 +191,11 @@ final class CatalogService {
       throw DomainError(ErrorCode.unknownDictionaryValue, details: details);
     }
   }
+
+  /// ADD-003 D-36, D-37: [search] (already lower-cased) is a substring of the
+  /// lower-cased name; the description is not used. `null` — no search.
+  static bool _matchesName(Exercise e, String? search) =>
+      search == null || e.name.toLowerCase().contains(search);
 
   /// AC-F-003, D-09: «OR» within one attribute, «AND» across attributes.
   static bool _matches(Exercise e, ExerciseFilter f) {
