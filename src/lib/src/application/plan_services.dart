@@ -159,7 +159,7 @@ final class OpenPlanService {
     final plan = OpenPlan(
       id: open.id,
       sourcePlanId: open.sourcePlanId,
-      content: withName(open.content, name),
+      content: open.content.copyWith(name: name),
     );
     openPlans.put(plan);
     _log.info('open plan renamed openPlanId=${plan.id} empty=${name.isEmpty}');
@@ -276,12 +276,9 @@ final class OpenPlanService {
     }
     target.insert(
       position,
-      _newItem(
-        itemId,
-        current.exerciseId,
-        current.exerciseName,
-        current.variant,
-        parameters,
+      current.copyWith(
+        parameters: parameters,
+        estimatedDurationSeconds: itemDurationSeconds(parameters),
       ),
     );
     final plan = await _store(open, lists);
@@ -361,16 +358,6 @@ final class OpenPlanService {
   }
 }
 
-PlanContent withName(PlanContent c, String? name) => PlanContent(
-  name: name,
-  generationParameters: c.generationParameters,
-  targetDurationSeconds: c.targetDurationSeconds,
-  durationTolerance: c.durationTolerance,
-  stages: c.stages,
-  estimatedDurationSeconds: c.estimatedDurationSeconds,
-  warnings: c.warnings,
-);
-
 /// T-41, AC-F-010: after a change — stages in the fixed order, positions
 /// 0…n−1, the total by §5.4 and the warnings: FILTER_MISMATCH per item and
 /// attribute against the source parameters (D-14), STAGE_EMPTY per empty
@@ -403,11 +390,7 @@ Future<PlanContent> recomputePlan(
     if (total < tolerance.minSeconds || total > tolerance.maxSeconds)
       const PlanWarning(code: PlanWarningCode.durationOutOfTolerance),
   ];
-  return PlanContent(
-    name: base.name,
-    generationParameters: params,
-    targetDurationSeconds: base.targetDurationSeconds,
-    durationTolerance: tolerance,
+  return base.copyWith(
     stages: stages,
     estimatedDurationSeconds: total,
     warnings: warnings,
@@ -516,9 +499,8 @@ final class TrainingPlanService {
     return SavedPlan(
       id: id,
       modifiedAt: now,
-      content: withName(
-        open.content,
-        name == null || name.isEmpty ? defaultPlanName(now) : name,
+      content: open.content.copyWith(
+        name: name == null || name.isEmpty ? defaultPlanName(now) : name,
       ),
     );
   }

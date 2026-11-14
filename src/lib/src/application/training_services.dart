@@ -89,13 +89,7 @@ final class CurrentSessionService {
     if (details.isNotEmpty) {
       throw DomainError(ErrorCode.validationFailed, details: details);
     }
-    lists[s][i] = PlanItem(
-      id: item.id,
-      exerciseId: item.exerciseId,
-      exerciseName: item.exerciseName,
-      variant: item.variant,
-      stage: item.stage,
-      position: item.position,
+    lists[s][i] = item.copyWith(
       parameters: resolved!,
       estimatedDurationSeconds: itemDurationSeconds(resolved),
     );

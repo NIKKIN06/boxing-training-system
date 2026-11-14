@@ -103,6 +103,24 @@ final class PlanItem {
   final int position;
   final PlanItemParameters parameters;
   final int estimatedDurationSeconds;
+
+  /// A copy with the given fields replaced.
+  PlanItem copyWith({
+    Stage? stage,
+    int? position,
+    PlanItemParameters? parameters,
+    int? estimatedDurationSeconds,
+  }) => PlanItem(
+    id: id,
+    exerciseId: exerciseId,
+    exerciseName: exerciseName,
+    variant: variant,
+    stage: stage ?? this.stage,
+    position: position ?? this.position,
+    parameters: parameters ?? this.parameters,
+    estimatedDurationSeconds:
+        estimatedDurationSeconds ?? this.estimatedDurationSeconds,
+  );
 }
 
 /// One stage with ordered items (schema `PlanStage`).
@@ -156,6 +174,24 @@ final class PlanContent {
   final List<PlanStage> stages;
   final int estimatedDurationSeconds;
   final List<PlanWarning> warnings;
+
+  /// A copy with the given fields replaced; [name] replaces the name only
+  /// when given (a name is never reset to `null`).
+  PlanContent copyWith({
+    String? name,
+    List<PlanStage>? stages,
+    int? estimatedDurationSeconds,
+    List<PlanWarning>? warnings,
+  }) => PlanContent(
+    name: name ?? this.name,
+    generationParameters: generationParameters,
+    targetDurationSeconds: targetDurationSeconds,
+    durationTolerance: durationTolerance,
+    stages: stages ?? this.stages,
+    estimatedDurationSeconds:
+        estimatedDurationSeconds ?? this.estimatedDurationSeconds,
+    warnings: warnings ?? this.warnings,
+  );
 }
 
 /// Open plan — working copy kept in memory only (ADD-002 D-29, D-30; schema `OpenPlan`).

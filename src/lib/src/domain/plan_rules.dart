@@ -232,16 +232,7 @@ List<PlanStage> renumberStages(List<List<PlanItem>> lists) => [
       stage: stage,
       items: [
         for (final (p, i) in lists[s].indexed)
-          PlanItem(
-            id: i.id,
-            exerciseId: i.exerciseId,
-            exerciseName: i.exerciseName,
-            variant: i.variant,
-            stage: stage,
-            position: p,
-            parameters: i.parameters,
-            estimatedDurationSeconds: i.estimatedDurationSeconds,
-          ),
+          i.copyWith(stage: stage, position: p),
       ],
     ),
 ];
