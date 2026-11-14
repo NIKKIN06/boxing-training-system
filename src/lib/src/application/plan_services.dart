@@ -179,7 +179,7 @@ final class OpenPlanService {
       request.exerciseId,
       request.variantId,
     );
-    final lists = _stageLists(open.content);
+    final lists = stageWorkingLists(open.content.stages);
     final target = lists[request.stage.index];
     final (parameters, details) = resolveItemParameters(
       variant,
@@ -214,8 +214,8 @@ final class OpenPlanService {
     PlanItemReplace request,
   ) async {
     final open = _open(openPlanId);
-    final lists = _stageLists(open.content);
-    final (s, i) = _locate(lists, itemId);
+    final lists = stageWorkingLists(open.content.stages);
+    final (s, i) = locateItem(lists, itemId);
     final (exercise, variant) = await _selectable(
       request.exerciseId,
       request.variantId,
@@ -250,8 +250,8 @@ final class OpenPlanService {
     PlanItemPatch patch,
   ) async {
     final open = _open(openPlanId);
-    final lists = _stageLists(open.content);
-    final (s, i) = _locate(lists, itemId);
+    final lists = stageWorkingLists(open.content.stages);
+    final (s, i) = locateItem(lists, itemId);
     final current = lists[s][i];
     final details = <ErrorDetail>[];
     var parameters = current.parameters;
@@ -296,8 +296,8 @@ final class OpenPlanService {
   /// an entirely empty open plan is allowed but cannot be saved (BDD-033).
   Future<OpenPlan> deleteOpenPlanItem(String openPlanId, String itemId) async {
     final open = _open(openPlanId);
-    final lists = _stageLists(open.content);
-    final (s, i) = _locate(lists, itemId);
+    final lists = stageWorkingLists(open.content.stages);
+    final (s, i) = locateItem(lists, itemId);
     lists[s].removeAt(i);
     final plan = await _store(open, lists);
     _log.info('open plan item deleted openPlanId=${plan.id} itemId=$itemId');
@@ -332,14 +332,6 @@ final class OpenPlanService {
     throw const DomainError(ErrorCode.variantNotFound);
   }
 
-  static (int, int) _locate(List<List<PlanItem>> lists, String itemId) {
-    for (var s = 0; s < lists.length; s++) {
-      final i = lists[s].indexWhere((item) => item.id == itemId);
-      if (i >= 0) return (s, i);
-    }
-    throw const DomainError(ErrorCode.notFound);
-  }
-
   /// A copy of the exercise name and of the variant (SRS §4.5).
   static PlanItem _newItem(
     String id,
@@ -369,12 +361,6 @@ final class OpenPlanService {
   }
 }
 
-/// Working copy of the items of the three stages, in the order of [Stage].
-List<List<PlanItem>> _stageLists(PlanContent c) => [
-  for (final s in Stage.values)
-    List.of(c.stages.firstWhere((st) => st.stage == s).items),
-];
-
 PlanContent withName(PlanContent c, String? name) => PlanContent(
   name: name,
   generationParameters: c.generationParameters,
@@ -396,25 +382,7 @@ Future<PlanContent> recomputePlan(
   List<List<PlanItem>> lists,
   ExerciseRepository exercises,
 ) async {
-  final stages = [
-    for (final (s, stage) in Stage.values.indexed)
-      PlanStage(
-        stage: stage,
-        items: [
-          for (final (p, i) in lists[s].indexed)
-            PlanItem(
-              id: i.id,
-              exerciseId: i.exerciseId,
-              exerciseName: i.exerciseName,
-              variant: i.variant,
-              stage: stage,
-              position: p,
-              parameters: i.parameters,
-              estimatedDurationSeconds: i.estimatedDurationSeconds,
-            ),
-        ],
-      ),
-  ];
+  final stages = renumberStages(lists);
   final catalog = {for (final e in await exercises.findAll()) e.id: e};
   final params = base.generationParameters;
   final total = planDurationSeconds(stages);
@@ -484,7 +452,7 @@ final class TrainingPlanService {
     );
     _log.info(
       'training plan saved planId=${saved.id} openPlanId=${open.id} '
-      'items=${_count(saved.content)}',
+      'items=${itemCount(saved.content.stages)}',
     );
     return saved;
   }
@@ -514,7 +482,7 @@ final class TrainingPlanService {
     );
     _log.info(
       'training plan overwritten planId=$planId openPlanId=${open.id} '
-      'items=${_count(saved.content)}',
+      'items=${itemCount(saved.content.stages)}',
     );
     return saved;
   }
@@ -534,11 +502,10 @@ final class TrainingPlanService {
     return open;
   }
 
-  static int _count(PlanContent c) =>
-      c.stages.fold(0, (n, s) => n + s.items.length);
-
   static void _requireNotEmpty(OpenPlan open) {
-    if (_count(open.content) == 0) throw const DomainError(ErrorCode.planEmpty);
+    if (itemCount(open.content.stages) == 0) {
+      throw const DomainError(ErrorCode.planEmpty);
+    }
   }
 
   /// `modifiedAt` and the default name use the moment of this save (REV-009,

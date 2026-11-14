@@ -40,7 +40,7 @@ final class CurrentSessionService {
     }
     final open = openPlans.findById(openPlanId);
     if (open == null) throw const DomainError(ErrorCode.openPlanNotFound);
-    if (open.content.stages.every((s) => s.items.isEmpty)) {
+    if (itemCount(open.content.stages) == 0) {
       throw const DomainError(ErrorCode.planEmpty);
     }
     final now = clock.now();
@@ -77,8 +77,8 @@ final class CurrentSessionService {
     ParametersInput parameters,
   ) async {
     final current = _current();
-    final lists = _lists(current.executedPlan);
-    final (s, i) = _locate(lists, itemId);
+    final lists = stageWorkingLists(current.executedPlan.stages);
+    final (s, i) = locateItem(lists, itemId);
     final item = lists[s][i];
     final (resolved, details) = resolveItemParameters(
       item.variant,
@@ -108,8 +108,8 @@ final class CurrentSessionService {
   /// (BDD-028); the open plan does not change.
   Future<CurrentSession> deleteExecutedPlanItem(String itemId) async {
     final current = _current();
-    final lists = _lists(current.executedPlan);
-    final (s, i) = _locate(lists, itemId);
+    final lists = stageWorkingLists(current.executedPlan.stages);
+    final (s, i) = locateItem(lists, itemId);
     lists[s].removeAt(i);
     final updated = _with(current, lists);
     _log.info(
@@ -125,52 +125,19 @@ final class CurrentSessionService {
     return current;
   }
 
-  static List<List<PlanItem>> _lists(ExecutedPlan p) => [
-    for (final s in Stage.values)
-      List.of(p.stages.firstWhere((st) => st.stage == s).items),
-  ];
-
-  static (int, int) _locate(List<List<PlanItem>> lists, String itemId) {
-    for (var s = 0; s < lists.length; s++) {
-      final i = lists[s].indexWhere((item) => item.id == itemId);
-      if (i >= 0) return (s, i);
-    }
-    throw const DomainError(ErrorCode.notFound);
-  }
-
   /// Stores the changed executed plan with positions 0…n−1.
   CurrentSession _with(CurrentSession current, List<List<PlanItem>> lists) {
     final updated = CurrentSession(
       startedAt: current.startedAt,
       localStartDate: current.localStartDate,
-      executedPlan: ExecutedPlan(
-        stages: [
-          for (final (s, stage) in Stage.values.indexed)
-            PlanStage(
-              stage: stage,
-              items: [
-                for (final (p, i) in lists[s].indexed)
-                  PlanItem(
-                    id: i.id,
-                    exerciseId: i.exerciseId,
-                    exerciseName: i.exerciseName,
-                    variant: i.variant,
-                    stage: stage,
-                    position: p,
-                    parameters: i.parameters,
-                    estimatedDurationSeconds: i.estimatedDurationSeconds,
-                  ),
-              ],
-            ),
-        ],
-      ),
+      executedPlan: ExecutedPlan(stages: renumberStages(lists)),
     );
     session.set(updated);
     return updated;
   }
 }
 
-int _count(ExecutedPlan p) => p.stages.fold(0, (n, s) => n + s.items.length);
+int _count(ExecutedPlan p) => itemCount(p.stages);
 
 /// Completed trainings and history (REQ-F-013, REQ-F-014; REQ-NF-003).
 final class CompletedTrainingService {

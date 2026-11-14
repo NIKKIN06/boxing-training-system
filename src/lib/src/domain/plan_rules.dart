@@ -203,6 +203,49 @@ List<WarningAttribute> filterMismatches(
   }
 }
 
+/// Number of items in [stages].
+int itemCount(Iterable<PlanStage> stages) =>
+    stages.fold(0, (n, s) => n + s.items.length);
+
+/// Working copy of the items of the three stages, in the order of [Stage]
+/// (open plan editing, executed plan editing).
+List<List<PlanItem>> stageWorkingLists(List<PlanStage> stages) => [
+  for (final s in Stage.values)
+    List.of(stages.firstWhere((st) => st.stage == s).items),
+];
+
+/// `(stage index, item index)` of [itemId] in [lists]; an absent item →
+/// NOT_FOUND.
+(int, int) locateItem(List<List<PlanItem>> lists, String itemId) {
+  for (var s = 0; s < lists.length; s++) {
+    final i = lists[s].indexWhere((item) => item.id == itemId);
+    if (i >= 0) return (s, i);
+  }
+  throw const DomainError(ErrorCode.notFound);
+}
+
+/// AC-F-010, D-19: the stages of [lists] in the fixed order, each item with
+/// its stage and the position 0…n−1.
+List<PlanStage> renumberStages(List<List<PlanItem>> lists) => [
+  for (final (s, stage) in Stage.values.indexed)
+    PlanStage(
+      stage: stage,
+      items: [
+        for (final (p, i) in lists[s].indexed)
+          PlanItem(
+            id: i.id,
+            exerciseId: i.exerciseId,
+            exerciseName: i.exerciseName,
+            variant: i.variant,
+            stage: stage,
+            position: p,
+            parameters: i.parameters,
+            estimatedDurationSeconds: i.estimatedDurationSeconds,
+          ),
+      ],
+    ),
+];
+
 /// D-16, D-32: «План від ДД.ММ.РРРР ГГ:ХХ» with the local date and time of
 /// the save.
 String defaultPlanName(DateTime localTime) {
